@@ -29,13 +29,19 @@ func (d *Disk) Init(server *Server) {
 	d.BlockDevice.Init(server, d)
 }
 
-func (d *Disk) Location() (string, error) {
+func (d *Disk) LocationPath() (string, error) {
 	output, err := d.server.Exec("find -L /dev/disk/by-path/ -samefile " + d.Path + " -printf '%f\n'")
 	if err != nil {
 		return "", errs.WithEF(err, d.fields, "Failed to get disk location")
 	}
-	path := strings.TrimSpace(string(output))
-	logs.WithF(d.fields.WithField("path", path)).Trace("Disk location")
+	return strings.TrimSpace(string(output)), nil
+}
+
+func (d *Disk) Location() (string, error) {
+	path, err := d.LocationPath()
+	if err != nil {
+		return "", err
+	}
 	return d.server.BayLocation(path), nil
 }
 

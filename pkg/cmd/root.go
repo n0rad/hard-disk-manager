@@ -91,7 +91,7 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 			"Find backup configs and run backups"),
 		commandWithRequiredDiskSelector("backup", []string{}, hdm.Backup,
 			"Find backup configs and run backups"),
-		commandWithRequiredDiskSelector("location", []string{}, hdm.Location,
+		commandWithDiskSelector("location", []string{}, hdm.Location,
 			"Get disk location"),
 		commandWithRequiredDiskSelector("remove", []string{}, hdm.Remove,
 			"Remove or cleanup removed disk (kill,umount,restart,mdadm,crypt)"),

@@ -18,11 +18,11 @@ import (
 )
 
 type Hdm struct {
-	DBPath  string
-	Servers Servers
+	DBPath     string
+	Servers    Servers
 	LuksFormat []struct {
-		Hash string
-		Cipher string
+		Hash    string
+		Cipher  string
 		keySize string
 	}
 }
@@ -116,14 +116,37 @@ func (hdm *Hdm) Remove(selector DisksSelector) error {
 }
 
 func (hdm *Hdm) Location(selector DisksSelector) error {
-	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	if _, err := fmt.Fprintln(w, "Name\tLocation\tLabel\tPath"); err != nil {
+		logs.WithE(err).Fatal("fail")
+	}
+
+	err := hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
 		location, err := disk.Location()
 		if err != nil {
 			return err
 		}
-		println(location)
+		path, err := disk.LocationPath()
+		if err != nil {
+			return err
+		}
+
+		if _, err := fmt.Fprintln(w,
+			disk.Name+"\t"+
+				location+"\t"+
+				disk.findDeepestBlockDevice().Label+"\t"+
+				path+"\t" +
+				""); err != nil {
+			logs.WithE(err).Fatal("Fail tp print")
+		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	_ = w.Flush()
+	return nil
 }
 
 func (hdm *Hdm) Prepare(selector DisksSelector) error {

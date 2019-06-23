@@ -60,10 +60,13 @@ HDM is a single binary file, just download and extract it to any bin directory
 - prepare by location
 - periodic set to readonly
 - save last backup time so we know we should do it again
-- list disks location by server
 - put sas disk in sleep mode
-- get disk by-path from label
 - get disk name from location
 - refuse to prepare a new disk if label is already sued by another device
 - agent: inotify any file change: run backup, re-index
 - agent: trigger notification to operator: disk needs to be plugged, size of directory cannot be backuped, disk has failure
+
+
+
+
+

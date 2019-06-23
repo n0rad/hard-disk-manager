@@ -5,6 +5,7 @@ import (
 	"github.com/n0rad/go-erlog/logs"
 	hdm2 "github.com/n0rad/hard-drive-manager/pkg/hdm"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func command(use string, aliases []string, hdmCommand func() error, short string) *cobra.Command {
@@ -59,6 +60,7 @@ func commandWithRequiredDiskSelector(use string, aliases []string, hdmCommand fu
 		if err := selector.IsValid(); err != nil {
 			_, _ = fmt.Fprintln(cmd.OutOrStderr(), err.Error())
 			_ = cmd.Usage()
+			os.Exit(1)
 		}
 		realRun(cmd, args)
 	}

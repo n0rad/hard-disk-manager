@@ -84,6 +84,14 @@ func (b *BlockDevice) Init(server *Server, disk *Disk) {
 	}
 }
 
+func (b BlockDevice) findDeepestBlockDevice() BlockDevice {
+	if len(b.Children) > 0 {
+		return b.Children[0].findDeepestBlockDevice()
+	}
+	return b
+}
+
+
 func (b *BlockDevice) addAndGiveNewDevices(password string) (bool, error) {
 	logs.WithFields(b.fields).Debug("Disk add")
 	if len(b.Children) > 0 {
