@@ -76,10 +76,10 @@ func (b *Backup) Backupable(disks Disks) (error, error) {
 	target := disks.findDeepestBlockDeviceByLabel(b.TargetLabel)
 
 	if target == nil {
-		return errs.WithF(b.fields, "TargetLabel disk cannot be found"), nil
+		return errs.WithF(b.fields, "Disk cannot be found"), nil
 	}
 	if target.Mountpoint == "" {
-		return errs.WithF(b.fields.WithField("disk", target), "TargetLabel disk is not mounted"), nil
+		return errs.WithF(b.fields.WithField("disk", target), "Disk is not mounted"), nil
 	}
 
 	sourceSize, err := b.sourceSize()
@@ -111,7 +111,8 @@ func (b *Backup) Backup(disks Disks) error {
 		return errs.WithEF(err, b.fields, "Failed to see if directory is backupable")
 	}
 	if why != nil {
-		return errs.WithEF(why, b.fields, "Directory is not backupable")
+		logs.WithEF(why, b.fields).Warn("Directory is not backupable")
+		return nil
 	}
 
 	targetPath := b.targetPath(*disks.findDeepestBlockDeviceByLabel(b.TargetLabel))

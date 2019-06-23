@@ -221,7 +221,7 @@ func (d *Disk) Prepare(label string, cryptPassword string) error {
 		return errs.WithEF(err, d.fields, "Failed to rescan disk after luksOpen")
 	}
 
-	if _, err = d.server.Exec("sudo mkfs.ext4 -L " + label + " -F " + d.Children[0].Children[0].Path); err != nil {
+	if _, err = d.server.Exec("sudo mkfs.xfs -L " + label + " -f " + d.Children[0].Children[0].Path); err != nil {
 		return errs.WithEF(err, d.fields, "Failed to make filesystem")
 	}
 

@@ -1,79 +1,69 @@
 
 # HDM
 
-HDM is a software that do Hard Drives Management.
+HDM is a software that do Hard Drive Management.
 
 It handle physical and logical disks lifecycle throughout servers.
 
-HDM get: 
-- `list` Info (location, serial, size, labels, form factor, ...) about plugged and unplugged disks across servers
-- with a `scan` 
-- Disks `health`
-- `index` files location, size and date 
-- `search` for files location, even on unplugged disks
-- `verify`, `inspect`, `checkup`
-- `index` disks file 
-- Check directories are `backupable` 
+Disks States: 
+- `list`: List disks Info (serial, size, labels, form factor, ...) for plugged and unplugged disks
+- `index`: Index files location, size and date 
+- `search`: Search for files, even on unplugged disks
+- `location`: Get disk physical location 
+- `forget` : Remove all stored info about a disk and his files
 
-HDM do:
-- New disks `prepare` for usage (partition, encrypt, format, mount)
-- Auto `add` plugged-in disks for usage (luksOpen, mount, restart)
-- Handle disk `remove` actions (stop, kill, umount, luksClose )
-- Auto cleanup removed disks
-- Handle disks health `test`
-- Pending blocks `repair`
-- Trigger `backup`, even for disks of different size
-- Run `backup`
-- Directories `sync` across servers
-- `restore`
+Add/Remove disks:
+- `prepare` : Prepare a new disks (partition, encrypt, format, mount) (requires no partitions)
+- `add` : Add plugged-in disks for usage (mdadm, luksOpen, mount, restart)
+- `remove`: Pre or post disk unplug actions (stop, kill, umount, luksClose, spin-down, sleep)
+- `erase`: Erase entire disk (requires no partitions)
+
+Disk health :
+- `health`: Report disks health 
+- `test`: Test disk healthiness
+- `repair`: Repair pending blocks
+
+Disk saving/sync:
+- `backupable`: Check directories can be backup (target size, target plugged)
+- `backup`: backup directories
+- `restore`: restore a file from backup, also used by `repair`
+
+Global lifecycle:
+- `check`: visit all checks commands to ensure everything is ok
+- `agent`: Run a agent that inotify and self handle all possible commands and ask for human intervention
 
 
-HDM will notify for
-- Notify for disks in bad state
+## Current requirements
 
-
-- `check`
-- run an `agent` that
-
-HDM ask for human intervention to:
-- Give password to format/open disks
-- `destroy` Disk into too bad state to be trustable
-- Plug a specific disk for backup, repair or restore 
-- handle Directory not backupable due to unmatched source vs target size
-
-## Requirements
-
+- uniq label for each partitions of all disks if using labels as id
 - can ssh to servers with ssh agent
 - can ssh from server to servers
 - can run sudo on servers without password
-- lsbk >= 2.33
+- lsblk >= 2.33
 - smartctl >= 7.0
 - hdparm
 - rsync
 
 ## Install
 
-Same single binary file for agent, controller and cli
+HDM is a single binary file, just download and extract it to any bin directory
 
 ## Usage
 
 
 ## TODO
 
-- find non backed-up path
-
-
-
-Agent:
-- inotify any file change: run backup, re-index
-- trigger notification to operator: disk needs to be plugged, size of directory cannot be backuped, disk has failure
-- 
-
-
-sdo -> 325
-sdk -> 155
-
-
-switch 15W
-freebox 22W
-bbox -> 7W
+- find non backed-up paths
+- get disk name for a file in any filesystem (links, overlays)
+- sync directories across servers
+- remove without selector should find mounted removed devices
+- prepare by location
+- periodic set to readonly
+- save last backup time so we know we should do it again
+- list disks location by server
+- put sas disk in sleep mode
+- get disk by-path from label
+- get disk name from location
+- refuse to prepare a new disk if label is already sued by another device
+- agent: inotify any file change: run backup, re-index
+- agent: trigger notification to operator: disk needs to be plugged, size of directory cannot be backuped, disk has failure

@@ -18,7 +18,7 @@ func (d Disks) findDeepestBlockDeviceByLabel(label string) *BlockDevice {
 	for _, disk := range d {
 		for _, partition := range disk.Children {
 			if partition.Partlabel == label {
-				device := d.findDeepestBlockDevice(partition)
+				device := findDeepestBlockDevice(partition)
 				return &device
 			}
 		}
@@ -26,9 +26,9 @@ func (d Disks) findDeepestBlockDeviceByLabel(label string) *BlockDevice {
 	return nil
 }
 
-func (d Disks) findDeepestBlockDevice(device BlockDevice) BlockDevice {
+func findDeepestBlockDevice(device BlockDevice) BlockDevice {
 	if len(device.Children) > 0 {
-		return d.findDeepestBlockDevice(device.Children[0])
+		return findDeepestBlockDevice(device.Children[0])
 	}
 	return device
 }

@@ -11,6 +11,9 @@ type DisksSelector struct {
 }
 
 func (d DisksSelector) MatchDisk(disk Disk) bool {
+	if d.Disk != "" && d.Disk == disk.Name {
+		return true
+	}
 	for _, child := range disk.Children {
 		res := d.MatchPartition(disk, child)
 		if res {

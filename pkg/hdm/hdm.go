@@ -78,6 +78,18 @@ func (hdm *Hdm) List() error {
 	return nil
 }
 
+func (hdm *Hdm) Index(selector DisksSelector) error {
+	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+		//res, err := findDeepestBlockDevice(disk.BlockDevice).Index()
+		//if err != nil {
+		//	return err
+		//}
+		//print(res)
+		//return err
+		return nil
+	})
+}
+
 func (hdm *Hdm) Add(selector DisksSelector) error {
 	password, err := utils.AskPasswordWithConfirmation(false)
 	if err != nil {
@@ -130,6 +142,26 @@ func (hdm *Hdm) Prepare(selector DisksSelector) error {
 		}
 
 		return disk.Prepare(label, password)
+	})
+}
+
+func (hdm *Hdm) Backupable(selector DisksSelector) error {
+	fields := data.WithField("selector", selector)
+
+	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+		dd := disks.findDeepestBlockDeviceByLabel(selector.Label) // TODO that sux hard
+		if dd == nil {
+			return errs.WithF(fields, "disk not found")
+		}
+
+		paths, err := dd.FindNotBackedUp()
+		if err != nil {
+			return errs.WithEF(err, fields, "Failed to find non backup dirs")
+		}
+		for _, path := range paths {
+			println(path)
+		}
+		return nil
 	})
 }
 

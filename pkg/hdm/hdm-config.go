@@ -7,6 +7,8 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 )
 
+const hdmYamlFilename="hdm.yaml"
+
 type HdmConfig struct {
 	Backups []Backup
 

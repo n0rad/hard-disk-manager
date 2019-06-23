@@ -4,7 +4,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"strings"
+	"github.com/n0rad/hard-drive-manager/pkg/utils"
 )
 
 type Lsblk struct {
@@ -77,7 +77,7 @@ func (b *BlockDevice) String() string {
 
 func (b *BlockDevice) Init(server *Server, disk *Disk) {
 	b.server = server
-	//d.disk = disk
+	//b.disk = disk
 	b.fields = data.WithField("path", b.Path).WithField("server", b.server.Name)
 	for i := range b.Children {
 		b.Children[i].Init(server, disk)
@@ -101,19 +101,18 @@ func (b *BlockDevice) addAndGiveNewDevices(password string) (bool, error) {
 	}
 
 	newDevices := false
-	switch b.Fstype {
-	case "crypto_LUKS":
+	if b.Fstype == "crypto_LUKS" {
 		if err := b.luksOpen(password); err != nil {
 			return false, err
 		}
 		newDevices = true
-	case "ext4":
+	} else if utils.SliceContains(filesystems, b.Fstype) {
 		if err := b.Mount(); err != nil {
 			b.DeleteMountDir()
 			return false, err
 		}
-	case "":
-		return false, errs.WithF(b.fields, "Empty fs type")
+	} else {
+		return false, errs.WithF(b.fields.WithField("fstype", b.Fstype), "Unknown fstype")
 	}
 	return newDevices, nil
 }
@@ -134,7 +133,7 @@ func (b *BlockDevice) Remove() error {
 		}
 	}
 
-	if b.Fstype == "ext4" {
+	if utils.SliceContains(filesystems, b.Fstype) {
 		b.DeleteMountDir()
 	}
 
@@ -143,8 +142,18 @@ func (b *BlockDevice) Remove() error {
 		if err := b.luksClose(); err != nil {
 			return err
 		}
+	case "disk":
+		if err := b.sleep(); err != nil {
+			return err
+		}
 	}
-	// TODO put in standby
+	return nil
+}
+
+func (b *BlockDevice) sleep() error {
+	if out, err := b.server.Exec("sudo hdparm -y " + b.Path); err != nil {
+		return errs.WithEF(err, b.fields.WithField("out", out), "Failed to put disk in sleep")
+	}
 	return nil
 }
 
@@ -189,11 +198,11 @@ func (b *BlockDevice) DeleteMountDir() {
 
 func (b *BlockDevice) Unmount() error {
 	logs.WithFields(b.fields).Info("Disk unmount")
-	if b.Fstype != "ext4" { // TODO support other FS than ext4
+	if !utils.SliceContains(filesystems, b.Fstype) {
 		return errs.WithF(b.fields, "Cannot umount, unsupported fstype")
 	}
 
-	if out, err := b.server.Exec("sudo umount /dev/mapper/" + b.Label); err != nil {
+	if out, err := b.server.Exec("sudo umount " + b.Mountpoint); err != nil {
 		return errs.WithEF(err, b.fields.WithField("out", out), "Failed to unmount")
 	}
 
@@ -215,7 +224,7 @@ func (b *BlockDevice) Mount() error {
 		return nil
 	}
 
-	if b.Fstype != "ext4" { // TODO support other FS than ext4
+	if ! utils.SliceContains(filesystems, b.Fstype) {
 		return errs.WithF(b.fields, "Cannot mount, not a support filesystem")
 	}
 	if b.Label == "" {
@@ -242,38 +251,4 @@ func (b *BlockDevice) Mount() error {
 		return errs.WithEF(err, b.fields.WithField("out", string(out)), "Failed to mount")
 	}
 	return nil
-}
-
-func (b *BlockDevice) FindHdmConfigs() ([]HdmConfig, error) {
-	var hdmConfigs []HdmConfig
-	for _, child := range b.Children {
-		configs, err := child.FindHdmConfigs()
-		if err != nil {
-			return hdmConfigs, err
-		}
-		hdmConfigs = append(hdmConfigs, configs...)
-	}
-
-	if b.Mountpoint == "" {
-		return hdmConfigs, errs.WithF(b.fields, "Disk has not mount point")
-	}
-
-	configs, err := b.server.Exec("sudo find " + b.Mountpoint + " -type f -not -path '" + b.Mountpoint + pathBackups + "/*' -name hdm.yaml")
-	if err != nil {
-		return hdmConfigs, errs.WithEF(err, b.fields, "Failed to find hdm.yaml files")
-	}
-
-	lines := strings.Split(string(configs), "\n")
-	for _, line := range lines {
-		if line == "" {
-			continue
-		}
-		config := HdmConfig{}
-		logs.WithF(b.fields.WithField("path", line)).Debug("hdm.yaml found")
-		if err := config.FillFromFile(*b, line); err != nil {
-			return hdmConfigs, err
-		}
-		hdmConfigs = append(hdmConfigs, config)
-	}
-	return hdmConfigs, nil
 }
