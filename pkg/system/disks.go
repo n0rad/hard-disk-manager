@@ -1,4 +1,4 @@
-package hdm
+package system
 
 type Disks []Disk
 
@@ -18,7 +18,7 @@ func (d Disks) findDeepestBlockDeviceByLabel(label string) *BlockDevice {
 	for _, disk := range d {
 		for _, partition := range disk.Children {
 			if partition.Partlabel == label {
-				device := partition.findDeepestBlockDevice()
+				device := partition.FindDeepestBlockDevice()
 				return &device
 			}
 		}

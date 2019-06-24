@@ -26,6 +26,7 @@ Disk health :
 Disk saving/sync:
 - `backupable`: Check directories can be backup (target size, target plugged)
 - `backup`: backup directories
+- `backups`: list backups
 - `restore`: restore a file from backup, also used by `repair`
 
 Global lifecycle:
@@ -35,14 +36,15 @@ Global lifecycle:
 
 ## Current requirements
 
-- uniq label for each partitions of all disks if using labels as id
-- can ssh to servers with ssh agent
-- can ssh from server to servers
-- can run sudo on servers without password
-- lsblk >= 2.33
-- smartctl >= 7.0
-- hdparm
-- rsync
+- uniq label for each partitions of all disks if using labels as id -> identify disks
+- can ssh to servers with ssh agent -> run hdm outside of servers
+- can ssh from server to servers -> run rsync cross servers
+- can run sudo on servers without password -> run as root
+- lsblk >= 2.33 detect disks
+- smartctl >= 7.0 -> disk health
+- hdparm -> put disk in sleep
+- rsync -> all backups commands
+- udev -> list disks by path
 
 ## Install
 
@@ -63,6 +65,7 @@ HDM is a single binary file, just download and extract it to any bin directory
 - put sas disk in sleep mode
 - get disk name from location
 - refuse to prepare a new disk if label is already sued by another device
+- report conflicts in labels
 - agent: inotify any file change: run backup, re-index
 - agent: trigger notification to operator: disk needs to be plugged, size of directory cannot be backuped, disk has failure
 

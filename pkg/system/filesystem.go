@@ -1,4 +1,4 @@
-package hdm
+package system
 
 import (
 	"github.com/n0rad/go-erlog/errs"
@@ -77,28 +77,35 @@ func (b *BlockDevice) FindNotBackedUp() ([]string, error) {
 		return []string{}, errs.WithF(b.fields, "Cannot index, disk is not mounted")
 	}
 
-	output, err := b.server.Exec("sudo find " + b.Mountpoint + " -type d ! -name " + hdmYamlFilename + " -printf '%P\n'")
+	//output, err := b.server.Exec("sudo find " + b.Mountpoint + " -type d ! -name " + hdmYamlFilename + " -printf '%P\n'")
+	output, err := b.server.Exec("find " + b.Mountpoint + " -type d -print0 | while read -d $'\\0' dir; do ls -1 \"$dir/"+ hdmYamlFilename +"\"&> /dev/null || echo $dir; done")
 	if err != nil {
 		return []string{}, errs.WithEF(err, b.fields, "Failed to find in mountpoint")
 	}
 
 	lines := strings.Split(string(output), "\n")
 	notBackedupRoots := make(map[string]bool, len(lines))
+	process := make(map[string]bool, len(lines))
 	for _, line := range lines {
+		//println(line)
 		notBackedupRoots[line] = true
+		process[line] = true
 	}
 
 	for _, line := range lines {
 		dir := path.Dir(line)
+		//println(dir)
 		if _, ok := notBackedupRoots[dir]; ok {
-			delete(notBackedupRoots, "line")
+			//println("delete " + line)
+			delete(process, line)
 		}
 	}
 
 	var res []string
-	for notBackedup := range notBackedupRoots {
+	for notBackedup := range process {
 		res = append(res, notBackedup)
 	}
 
 	return res, nil
 }
+

@@ -1,4 +1,4 @@
-package hdm
+package system
 
 import (
 	"github.com/n0rad/go-erlog/errs"
@@ -61,7 +61,7 @@ func (d DisksSelector) IsValid() error {
 
 type Servers []Server
 
-func (s *Servers) init() error {
+func (s *Servers) Init() error {
 	for _, server := range *s {
 		if err := server.Init(); err != nil {
 			return err

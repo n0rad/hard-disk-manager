@@ -7,6 +7,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-drive-manager/pkg/system"
 	"github.com/n0rad/hard-drive-manager/pkg/utils"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,7 @@ import (
 
 type Hdm struct {
 	DBPath     string
-	Servers    Servers
+	Servers    system.Servers
 	LuksFormat []struct {
 		Hash    string
 		Cipher  string
@@ -43,7 +44,7 @@ func (hdm *Hdm) InitFromFile(configPath string) error {
 		hdm.DBPath = filepath.Dir(configPath) + pathDB
 	}
 
-	if err := hdm.Servers.init(); err != nil {
+	if err := hdm.Servers.Init(); err != nil {
 		return errs.WithE(err, "Failed to init servers")
 	}
 
@@ -55,7 +56,7 @@ func (hdm *Hdm) InitFromFile(configPath string) error {
 }
 
 func (hdm *Hdm) List() error {
-	disks, err := LoadDisksFromDB(hdm.DBPath, hdm.Servers)
+	disks, err := system.LoadDisksFromDB(hdm.DBPath, hdm.Servers)
 	if err != nil {
 		logs.Fatal("Failed to load disks from DB")
 	}
@@ -78,8 +79,8 @@ func (hdm *Hdm) List() error {
 	return nil
 }
 
-func (hdm *Hdm) Index(selector DisksSelector) error {
-	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+func (hdm *Hdm) Index(selector system.DisksSelector) error {
+	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
 		//res, err := findDeepestBlockDevice(disk.BlockDevice).Index()
 		//if err != nil {
 		//	return err
@@ -90,18 +91,18 @@ func (hdm *Hdm) Index(selector DisksSelector) error {
 	})
 }
 
-func (hdm *Hdm) Add(selector DisksSelector) error {
+func (hdm *Hdm) Add(selector system.DisksSelector) error {
 	password, err := utils.AskPasswordWithConfirmation(false)
 	if err != nil {
 		return errs.WithE(err, "Failed to get password")
 	}
 
-	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
 		return disk.Add(password)
 	})
 }
 
-func (hdm *Hdm) Remove(selector DisksSelector) error {
+func (hdm *Hdm) Remove(selector system.DisksSelector) error {
 	fields := data.WithField("selector", selector)
 
 	disk, err := hdm.Servers.GetDisk(selector)
@@ -115,14 +116,14 @@ func (hdm *Hdm) Remove(selector DisksSelector) error {
 	return disk.Remove()
 }
 
-func (hdm *Hdm) Location(selector DisksSelector) error {
+func (hdm *Hdm) Location(selector system.DisksSelector) error {
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	if _, err := fmt.Fprintln(w, "Name\tLocation\tLabel\tPath"); err != nil {
 		logs.WithE(err).Fatal("fail")
 	}
 
-	err := hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+	err := hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
 		location, err := disk.Location()
 		if err != nil {
 			return err
@@ -135,7 +136,7 @@ func (hdm *Hdm) Location(selector DisksSelector) error {
 		if _, err := fmt.Fprintln(w,
 			disk.Name+"\t"+
 				location+"\t"+
-				disk.findDeepestBlockDevice().Label+"\t"+
+				disk.FindDeepestBlockDevice().Label+"\t"+
 				path+"\t" +
 				""); err != nil {
 			logs.WithE(err).Fatal("Fail tp print")
@@ -149,12 +150,12 @@ func (hdm *Hdm) Location(selector DisksSelector) error {
 	return nil
 }
 
-func (hdm *Hdm) Prepare(selector DisksSelector) error {
+func (hdm *Hdm) Prepare(selector system.DisksSelector) error {
 	fields := data.WithField("selector", selector)
 	label := selector.Label
 	selector.Label = ""
 
-	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
 		if disk.HasChildren() {
 			return errs.WithF(fields, "Cannot prepare, disk has partitions")
 		}
@@ -168,14 +169,11 @@ func (hdm *Hdm) Prepare(selector DisksSelector) error {
 	})
 }
 
-func (hdm *Hdm) Backupable(selector DisksSelector) error {
+func (hdm *Hdm) Backupable(selector system.DisksSelector) error {
 	fields := data.WithField("selector", selector)
 
-	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
-		dd := disks.findDeepestBlockDeviceByLabel(selector.Label) // TODO that sux hard
-		if dd == nil {
-			return errs.WithF(fields, "disk not found")
-		}
+	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
+		dd := disk.FindDeepestBlockDevice()
 
 		paths, err := dd.FindNotBackedUp()
 		if err != nil {
@@ -188,10 +186,10 @@ func (hdm *Hdm) Backupable(selector DisksSelector) error {
 	})
 }
 
-func (hdm *Hdm) Backup(selector DisksSelector) error {
+func (hdm *Hdm) Backup(selector system.DisksSelector) error {
 	fields := data.WithField("selector", selector)
 
-	return hdm.Servers.RunForDisks(selector, func(disks Disks, disk Disk) error {
+	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
 		configs, err := disk.FindHdmConfigs()
 		if err != nil {
 			return errs.WithEF(err, fields, "Cannot backup, Failed to load hdm configs files")

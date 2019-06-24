@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/n0rad/go-erlog/logs"
-	hdm2 "github.com/n0rad/hard-drive-manager/pkg/hdm"
+	"github.com/n0rad/hard-drive-manager/pkg/system"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -21,8 +21,8 @@ func command(use string, aliases []string, hdmCommand func() error, short string
 	}
 }
 
-func withDiskSelector(use string, aliases []string, hdmCommand func(selector hdm2.DisksSelector) error, short string, ) (*cobra.Command, *hdm2.DisksSelector) {
-	selector := hdm2.DisksSelector{}
+func withDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string, ) (*cobra.Command, *system.DisksSelector) {
+	selector := system.DisksSelector{}
 	cmd := &cobra.Command{
 		Use:     use,
 		Aliases: aliases,
@@ -39,12 +39,12 @@ func withDiskSelector(use string, aliases []string, hdmCommand func(selector hdm
 	return cmd, &selector
 }
 
-func commandWithDiskSelector(use string, aliases []string, hdmCommand func(selector hdm2.DisksSelector) error, short string, ) *cobra.Command {
+func commandWithDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string, ) *cobra.Command {
 	cmd, _ := withDiskSelector(use, aliases, hdmCommand, short)
 	return cmd
 }
 
-func commandWithRequiredServerDiskAndLabel(use string, aliases []string, hdmCommand func(selector hdm2.DisksSelector) error, short string) *cobra.Command {
+func commandWithRequiredServerDiskAndLabel(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string) *cobra.Command {
 	cmd, _ := withDiskSelector(use, aliases, hdmCommand, short)
 	_ = cmd.MarkFlagRequired("server")
 	_ = cmd.MarkFlagRequired("disk")
@@ -53,7 +53,7 @@ func commandWithRequiredServerDiskAndLabel(use string, aliases []string, hdmComm
 }
 
 
-func commandWithRequiredDiskSelector(use string, aliases []string, hdmCommand func(selector hdm2.DisksSelector) error, short string) *cobra.Command {
+func commandWithRequiredDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string) *cobra.Command {
 	cmd, selector := withDiskSelector(use, aliases, hdmCommand, short)
 	realRun := cmd.Run
 	cmd.Run = func(cmd *cobra.Command, args []string) {

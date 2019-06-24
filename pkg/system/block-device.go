@@ -1,4 +1,4 @@
-package hdm
+package system
 
 import (
 	"github.com/n0rad/go-erlog/data"
@@ -84,9 +84,9 @@ func (b *BlockDevice) Init(server *Server, disk *Disk) {
 	}
 }
 
-func (b BlockDevice) findDeepestBlockDevice() BlockDevice {
+func (b BlockDevice) FindDeepestBlockDevice() BlockDevice {
 	if len(b.Children) > 0 {
-		return b.Children[0].findDeepestBlockDevice()
+		return b.Children[0].FindDeepestBlockDevice()
 	}
 	return b
 }
@@ -115,8 +115,8 @@ func (b *BlockDevice) addAndGiveNewDevices(password string) (bool, error) {
 		}
 		newDevices = true
 	} else if utils.SliceContains(filesystems, b.Fstype) {
-		if err := b.Mount(); err != nil {
-			b.DeleteMountDir()
+		if err := b.mount(); err != nil {
+			b.deleteMountDir()
 			return false, err
 		}
 	} else {
@@ -136,13 +136,13 @@ func (b *BlockDevice) Remove() error {
 	}
 
 	if b.Mountpoint != "" {
-		if err := b.Unmount(); err != nil {
+		if err := b.unmount(); err != nil {
 			return err
 		}
 	}
 
 	if utils.SliceContains(filesystems, b.Fstype) {
-		b.DeleteMountDir()
+		b.deleteMountDir()
 	}
 
 	switch b.Type {
@@ -199,12 +199,12 @@ func (b *BlockDevice) luksClose() error {
 	return nil
 }
 
-func (b *BlockDevice) DeleteMountDir() {
+func (b *BlockDevice) deleteMountDir() {
 	logs.WithFields(b.fields).Info("Disk remove mount dir")
 	_, _ = b.server.Exec("sudo rmdir /mnt/" + b.Label)
 }
 
-func (b *BlockDevice) Unmount() error {
+func (b *BlockDevice) unmount() error {
 	logs.WithFields(b.fields).Info("Disk unmount")
 	if !utils.SliceContains(filesystems, b.Fstype) {
 		return errs.WithF(b.fields, "Cannot umount, unsupported fstype")
@@ -221,7 +221,7 @@ func (b *BlockDevice) Unmount() error {
 	return nil
 }
 
-func (b *BlockDevice) Mount() error {
+func (b *BlockDevice) mount() error {
 	logs.WithFields(b.fields).Info("Disk mount")
 
 	blockDevicePath := "/dev/mapper/" + b.Label
