@@ -1,7 +1,7 @@
 
 # HDM
 
-HDM is a software that do Hard Drive Management.
+HDM is a software that do Hard Disk Management.
 
 It handle physical and logical disks lifecycle throughout servers.
 
