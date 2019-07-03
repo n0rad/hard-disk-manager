@@ -2,20 +2,17 @@ package hdm
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-drive-manager/pkg/system"
-	"github.com/n0rad/hard-drive-manager/pkg/utils"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"io/ioutil"
 	"log"
 	"net/rpc"
 	"os"
 	"path/filepath"
-	"strconv"
-	"text/tabwriter"
+	"strings"
 )
 
 type Hdm struct {
@@ -26,6 +23,8 @@ type Hdm struct {
 		Cipher  string
 		keySize string
 	}
+
+	fields data.Fields
 }
 
 const pathDB = "/db"
@@ -55,154 +54,6 @@ func (hdm *Hdm) InitFromFile(configPath string) error {
 	return nil
 }
 
-func (hdm *Hdm) List() error {
-	disks, err := system.LoadDisksFromDB(hdm.DBPath, hdm.Servers)
-	if err != nil {
-		logs.Fatal("Failed to load disks from DB")
-	}
-
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	if _, err := fmt.Fprintln(w, "Label\tRota\tTran\tSize\tserver\tdays\tuncorrect"); err != nil {
-		logs.WithE(err).Fatal("fail")
-	}
-	for _, disk := range disks {
-		if _, err := fmt.Fprintln(w, disk.Label+"\t"+
-			strconv.FormatBool(disk.Rota)+"\t"+
-			disk.Tran+"\t"+
-			disk.Size+"\t"+
-			disk.ServerName+"\t"+
-			strconv.Itoa(disk.SmartResult.PowerOnTime.Hours/24)+"\t"); err != nil {
-			logs.WithE(err).Fatal("fail")
-		}
-	}
-	_ = w.Flush()
-	return nil
-}
-
-func (hdm *Hdm) Index(selector system.DisksSelector) error {
-	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		//res, err := findDeepestBlockDevice(disk.BlockDevice).Index()
-		//if err != nil {
-		//	return err
-		//}
-		//print(res)
-		//return err
-		return nil
-	})
-}
-
-func (hdm *Hdm) Add(selector system.DisksSelector) error {
-	password, err := utils.AskPasswordWithConfirmation(false)
-	if err != nil {
-		return errs.WithE(err, "Failed to get password")
-	}
-
-	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		return disk.Add(password)
-	})
-}
-
-func (hdm *Hdm) Remove(selector system.DisksSelector) error {
-	fields := data.WithField("selector", selector)
-
-	disk, err := hdm.Servers.GetDisk(selector)
-	if err != nil {
-		return err
-	}
-	if disk == nil {
-		return errs.WithF(fields, "Disk not found")
-	}
-
-	return disk.Remove()
-}
-
-func (hdm *Hdm) Location(selector system.DisksSelector) error {
-
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	if _, err := fmt.Fprintln(w, "Name\tLocation\tLabel\tPath"); err != nil {
-		logs.WithE(err).Fatal("fail")
-	}
-
-	err := hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		location, err := disk.Location()
-		if err != nil {
-			return err
-		}
-		path, err := disk.LocationPath()
-		if err != nil {
-			return err
-		}
-
-		if _, err := fmt.Fprintln(w,
-			disk.Name+"\t"+
-				location+"\t"+
-				disk.FindDeepestBlockDevice().Label+"\t"+
-				path+"\t" +
-				""); err != nil {
-			logs.WithE(err).Fatal("Fail tp print")
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	_ = w.Flush()
-	return nil
-}
-
-func (hdm *Hdm) Prepare(selector system.DisksSelector) error {
-	fields := data.WithField("selector", selector)
-	label := selector.Label
-	selector.Label = ""
-
-	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		if disk.HasChildren() {
-			return errs.WithF(fields, "Cannot prepare, disk has partitions")
-		}
-
-		password, err := utils.AskPasswordWithConfirmation(true)
-		if err != nil {
-			return errs.WithE(err, "Failed to get password")
-		}
-
-		return disk.Prepare(label, password)
-	})
-}
-
-func (hdm *Hdm) Backupable(selector system.DisksSelector) error {
-	fields := data.WithField("selector", selector)
-
-	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		dd := disk.FindDeepestBlockDevice()
-
-		paths, err := dd.FindNotBackedUp()
-		if err != nil {
-			return errs.WithEF(err, fields, "Failed to find non backup dirs")
-		}
-		for _, path := range paths {
-			println(path)
-		}
-		return nil
-	})
-}
-
-func (hdm *Hdm) Backup(selector system.DisksSelector) error {
-	fields := data.WithField("selector", selector)
-
-	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		configs, err := disk.FindHdmConfigs()
-		if err != nil {
-			return errs.WithEF(err, fields, "Cannot backup, Failed to load hdm configs files")
-		}
-
-		for _, config := range configs {
-			if err := config.RunBackups(disks); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
 
 func (hdm *Hdm) Agent() error {
 	// get passwords for disks
@@ -227,4 +78,41 @@ func (hdm *Hdm) Password() error {
 			log.Fatal(err)
 		}
 	}
+}
+
+func (hdm *Hdm) FindConfigs(b system.BlockDevice) ([]Config, error) {
+	var hdmConfigs []Config
+	if len(b.Children) > 0 {
+		for _, child := range b.Children {
+			configs, err := hdm.FindConfigs(child)
+			if err != nil {
+				return hdmConfigs, err
+			}
+			hdmConfigs = append(hdmConfigs, configs...)
+		}
+		return hdmConfigs, nil
+	}
+
+	if b.Mountpoint == "" {
+		return hdmConfigs, errs.WithF(hdm.fields, "Disk has not mount point")
+	}
+
+	configs, err := b.Exec("sudo find " + b.Mountpoint + " -type f -not -path '" + b.Mountpoint + pathBackups + "/*' -name " + hdmYamlFilename)
+	if err != nil {
+		return hdmConfigs, errs.WithEF(err, hdm.fields, "Failed to find hdm.yaml files")
+	}
+
+	lines := strings.Split(string(configs), "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		config := Config{}
+		logs.WithF(hdm.fields.WithField("path", line)).Debug(hdmYamlFilename + " found")
+		if err := config.FillFromFile(b, line); err != nil {
+			return hdmConfigs, err
+		}
+		hdmConfigs = append(hdmConfigs, config)
+	}
+	return hdmConfigs, nil
 }

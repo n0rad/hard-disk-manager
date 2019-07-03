@@ -4,7 +4,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-drive-manager/pkg/utils"
+	"github.com/n0rad/hard-disk-manager/pkg/utils"
 )
 
 type Lsblk struct {
@@ -200,6 +200,7 @@ func (b *BlockDevice) luksClose() error {
 }
 
 func (b *BlockDevice) deleteMountDir() {
+	//TODO do not delete if there is no label
 	logs.WithFields(b.fields).Info("Disk remove mount dir")
 	_, _ = b.server.Exec("sudo rmdir /mnt/" + b.Label)
 }
@@ -227,7 +228,8 @@ func (b *BlockDevice) mount() error {
 	blockDevicePath := "/dev/mapper/" + b.Label
 	mountPath := "/mnt/" + b.Label
 
-	if _, err := b.server.Exec("cat /proc/mounts | cut -f1,2 -d' ' | grep '" + blockDevicePath + " " + mountPath + "'"); err == nil {
+	// TODO do not go further if there is no label
+	if _, err := b.server.Exec("cat /proc/mounts | cut -f1,2 -d' ' | grep '" + blockDevicePath + " " + mountPath + "$'"); err == nil {
 		logs.WithF(b.fields).Debug("Directory is already mounted")
 		return nil
 	}
@@ -251,7 +253,7 @@ func (b *BlockDevice) mount() error {
 		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Directory is not empty")
 	}
 
-	if out, err := b.server.Exec("! cat /proc/mounts | cut -f2 -d' ' | grep " + mountPath); err != nil {
+	if out, err := b.server.Exec("! cat /proc/mounts | cut -f2 -d' ' | grep " + mountPath + "$"); err != nil {
 		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Directory is already mounted")
 	}
 

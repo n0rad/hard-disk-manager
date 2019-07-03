@@ -10,7 +10,7 @@ Disks States:
 - `index`: Index files location, size and date 
 - `search`: Search for files, even on unplugged disks
 - `location`: Get disk physical location 
-- `forget` : Remove all stored info about a disk and his files
+- `forget` : Remove all stored info about a disk, its backups, files and pending actions
 
 Add/Remove disks:
 - `prepare` : Prepare a new disks (partition, encrypt, format, mount) (requires no partitions)
@@ -18,15 +18,15 @@ Add/Remove disks:
 - `remove`: Pre or post disk unplug actions (stop, kill, umount, luksClose, spin-down, sleep)
 - `erase`: Erase entire disk (requires no partitions)
 
-Disk health :
+Disk health:
 - `health`: Report disks health 
 - `test`: Test disk healthiness
 - `repair`: Repair pending blocks
 
-Disk saving/sync:
+Data backup/sync:
+- `backups`: list backups
 - `backupable`: Check directories can be backup (target size, target plugged)
 - `backup`: backup directories
-- `backups`: list backups
 - `restore`: restore a file from backup, also used by `repair`
 
 Global lifecycle:
@@ -68,8 +68,15 @@ HDM is a single binary file, just download and extract it to any bin directory
 - report conflicts in labels
 - agent: inotify any file change: run backup, re-index
 - agent: trigger notification to operator: disk needs to be plugged, size of directory cannot be backuped, disk has failure
-
-
-
-
+- list path by backup target
+- change backup target cleanups backups
+- evaluate global target size from backups source before starting
+- kill running command in case of ctrl+c
+- location should support disks without partitions
+- luksClose after prepare ??
+- wipefs on prepare
+- smartctl -a /dev/sdc | egrep '197 |198 |187 |188 |  5 Re'
+- sync before remove ?
+- shred ?
+- support do not get too deep in finding hdm.yaml
 

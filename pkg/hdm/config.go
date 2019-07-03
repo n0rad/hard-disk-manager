@@ -1,22 +1,23 @@
-package system
+package hdm
 
 import (
 	"github.com/alessio/shellescape"
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 )
 
 const hdmYamlFilename="hdm.yaml"
 
-type HdmConfig struct {
-	Backups []Backup
+type Config struct {
+	Backups []BackupConfig
 
 	configPath string
 	fields     data.Fields
 }
 
-func (h *HdmConfig) Init(filesystem BlockDevice, configPath string) error {
+func (h *Config) Init(filesystem system.BlockDevice, configPath string) error {
 	for i := range h.Backups {
 		if err := h.Backups[i].Init(filesystem, configPath); err != nil {
 			return err
@@ -28,8 +29,8 @@ func (h *HdmConfig) Init(filesystem BlockDevice, configPath string) error {
 	return nil
 }
 
-func (h *HdmConfig) FillFromFile(filesystem BlockDevice, file string) error {
-	bytes, err := filesystem.server.Exec("sudo cat " + shellescape.Quote(file))
+func (h *Config) FillFromFile(filesystem system.BlockDevice, file string) error {
+	bytes, err := filesystem.Exec("sudo cat " + shellescape.Quote(file))
 	if err != nil {
 		return errs.WithEF(err, data.WithField("file", file),"Failed to cat file")
 	}
@@ -45,7 +46,7 @@ func (h *HdmConfig) FillFromFile(filesystem BlockDevice, file string) error {
 	return nil
 }
 
-func (h *HdmConfig) RunBackups(disks Disks) error {
+func (h *Config) RunBackups(disks system.Disks) error {
 	for _, backup := range h.Backups {
 		if err := backup.Backup(disks); err != nil {
 			return err

@@ -1,10 +1,9 @@
-module github.com/n0rad/hard-drive-manager
+module github.com/n0rad/hard-disk-manager
 
 go 1.12
 
 require (
 	github.com/alessio/shellescape v0.0.0-20190409004728-b115ca0f9053
-	github.com/awnumar/memguard v0.16.2
 	github.com/davidmz/go-pageant v1.0.1 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/kr/fs v0.1.0 // indirect

@@ -6,7 +6,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-drive-manager/pkg/tools"
+	"github.com/n0rad/hard-disk-manager/pkg/tools"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -23,6 +23,10 @@ type Disk struct {
 	SmartResult *tools.SmartResult
 
 	ServerName string `json:"server"`
+}
+
+func (b *Disk) String() string {
+	return b.Path
 }
 
 func (d *Disk) Init(server *Server) {
@@ -231,6 +235,16 @@ func (d *Disk) Prepare(label string, cryptPassword string) error {
 		return errs.WithEF(err, d.fields, "Failed to make filesystem")
 	}
 
+	return nil
+}
+
+func (d *Disk) Erase() error {
+	if len(d.Children) > 0 {
+		return errs.WithF(d.fields, "Disk has partitions")
+	}
+	if _, err := d.server.Exec("sudo hdparm --user-master u --security-erase Nine " + d.Path); err != nil {
+		return errs.WithEF(err, d.fields, "Fail to erase disk")
+	}
 	return nil
 }
 
