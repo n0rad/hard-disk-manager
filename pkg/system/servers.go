@@ -10,15 +10,24 @@ type DisksSelector struct {
 	Disk   string
 }
 
-func (d DisksSelector) MatchDisk(disk Disk) bool {
-	if d.Disk != "" && d.Disk == disk.Name {
-		return true
-	}
-	for _, child := range disk.Children {
-		res := d.MatchPartition(disk, child)
-		if res {
+func (d DisksSelector)  MatchDisk(disk Disk) bool {
+	if d.Server == disk.ServerName {
+		if d.Disk == "" && d.Label == "" {
 			return true
 		}
+		if d.Disk != "" && d.Disk == disk.Name {
+			return true
+		}
+		if d.Label != "" && d.Label == disk.Partlabel {
+			return true
+		}
+		for _, child := range disk.Children {
+			res := d.MatchPartition(disk, child)
+			if res {
+				return true
+			}
+		}
+		return false
 	}
 	return false
 }
@@ -127,7 +136,3 @@ func (s Servers) RunForDisks(selector DisksSelector, toRun func(disks Disks, dis
 	}
 	return nil
 }
-
-///sys/block/sda/device/scsi_device/0\:0\:0\:0/device/
-
-//

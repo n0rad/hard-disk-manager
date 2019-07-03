@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/n0rad/go-erlog/logs"
 	_ "github.com/n0rad/go-erlog/register"
-	"github.com/n0rad/hard-drive-manager/pkg/cmd"
+	"github.com/n0rad/hard-disk-manager/pkg/cmd"
 	"io/ioutil"
 	"math/rand"
 	"os"

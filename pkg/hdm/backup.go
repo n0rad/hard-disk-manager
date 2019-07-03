@@ -1,19 +1,21 @@
-package system
+package hdm
 
 import (
 	"github.com/alessio/shellescape"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const pathBackups = "/Backups"
 
-type Backup struct {
+type BackupConfig struct {
 	TargetLabel string
 	//Interval time.Duration
 	//Filter   string
@@ -24,10 +26,17 @@ type Backup struct {
 	fullPath          string
 	inBlockDevicePath string
 	configPath        string
-	filesystem        BlockDevice
+	filesystem        system.BlockDevice
 }
 
-func (b *Backup) Init(filesystem BlockDevice, configPath string) error {
+type Backup struct {
+	Config     BackupConfig
+	Path       string
+	DiskName   string
+	LastBackup time.Time
+}
+
+func (b *BackupConfig) Init(filesystem system.BlockDevice, configPath string) error {
 	if b.TargetLabel == "" {
 		return errs.With("TargetLabel cannot be empty")
 	}
@@ -42,8 +51,8 @@ func (b *Backup) Init(filesystem BlockDevice, configPath string) error {
 	return nil
 }
 
-func (b *Backup) sourceSize() (int, error) {
-	bytes, err := b.filesystem.server.Exec("sudo du -s " + shellescape.Quote(b.fullPath) + " | cut -f1")
+func (b *BackupConfig) sourceSize() (int, error) {
+	bytes, err := b.filesystem.Exec("sudo du -s " + shellescape.Quote(b.fullPath) + " | cut -f1")
 	if err != nil {
 		return 0, errs.WithEF(err, b.fields, "Failed to get directory size")
 	}
@@ -54,14 +63,14 @@ func (b *Backup) sourceSize() (int, error) {
 	return size, nil
 }
 
-func (b *Backup) targetSize(target BlockDevice) (int, error) {
-	targetPath := b.targetPath(target)
-	_, err := b.filesystem.server.Exec("sudo test -d " + targetPath)
+func (b *BackupConfig) targetSize(target system.BlockDevice) (int, error) {
+	targetPath := b.targetPath(target) + "/" + path.Base(b.fullPath)
+	_, err := b.filesystem.Exec("sudo test -d " + shellescape.Quote(targetPath))
 	if err != nil {
 		return 0, nil
 	}
 
-	bytes, err := b.filesystem.server.Exec("sudo du -s " + targetPath + " | cut -f1")
+	bytes, err := b.filesystem.Exec("sudo du -s " + shellescape.Quote(targetPath) + " | cut -f1")
 	if err != nil {
 		return 0, errs.WithEF(err, b.fields, "Failed to get directory size")
 	}
@@ -72,8 +81,8 @@ func (b *Backup) targetSize(target BlockDevice) (int, error) {
 	return size, nil
 }
 
-func (b *Backup) Backupable(disks Disks) (error, error) {
-	target := disks.findDeepestBlockDeviceByLabel(b.TargetLabel)
+func (b *BackupConfig) Backupable(disks system.Disks) (error, error) {
+	target := disks.FindDeepestBlockDeviceByLabel(b.TargetLabel)
 
 	if target == nil {
 		return errs.WithF(b.fields, "Disk cannot be found"), nil
@@ -105,7 +114,7 @@ func (b *Backup) Backupable(disks Disks) (error, error) {
 	return nil, nil
 }
 
-func (b *Backup) Backup(disks Disks) error {
+func (b *BackupConfig) Backup(disks system.Disks) error {
 	why, err := b.Backupable(disks)
 	if err != nil {
 		return errs.WithEF(err, b.fields, "Failed to see if directory is backupable")
@@ -115,9 +124,9 @@ func (b *Backup) Backup(disks Disks) error {
 		return nil
 	}
 
-	targetPath := b.targetPath(*disks.findDeepestBlockDeviceByLabel(b.TargetLabel))
+	targetPath := b.targetPath(*disks.FindDeepestBlockDeviceByLabel(b.TargetLabel))
 
-	if _, err := b.filesystem.server.Exec("sudo mkdir -p " + targetPath); err != nil {
+	if _, err := b.filesystem.Exec("sudo mkdir -p " + targetPath); err != nil {
 		return errs.WithEF(err, b.fields.WithField("path", targetPath), "Failed to create target backup path")
 	}
 
@@ -127,13 +136,13 @@ func (b *Backup) Backup(disks Disks) error {
 	}
 
 	logs.WithField("path", b.fullPath).WithField("target", b.TargetLabel).Info("Running backup")
-	_, err = b.filesystem.server.Exec("sudo rsync -avP " + deleteIfSourceRemoved + " --itemize-changes " + shellescape.Quote(b.fullPath) + " " + targetPath) // TODO support sync to other server
+	_, err = b.filesystem.Exec("sudo rsync -avP " + deleteIfSourceRemoved + " --itemize-changes " + shellescape.Quote(b.fullPath) + " " + targetPath) // TODO support sync to other server
 	if err != nil {
 		return errs.WithEF(err, b.fields, "Backup failed")
 	}
 	return nil
 }
 
-func (b *Backup) targetPath(target BlockDevice) string {
+func (b *BackupConfig) targetPath(target system.BlockDevice) string {
 	return shellescape.Quote(target.Mountpoint + pathBackups + path.Dir(b.inBlockDevicePath))
 }

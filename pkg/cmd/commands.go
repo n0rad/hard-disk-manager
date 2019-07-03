@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-drive-manager/pkg/system"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/spf13/cobra"
 	"os"
 )

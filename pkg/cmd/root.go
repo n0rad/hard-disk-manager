@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/n0rad/go-erlog/logs"
-	hdm2 "github.com/n0rad/hard-drive-manager/pkg/hdm"
+	hdm2 "github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -14,7 +14,6 @@ import (
 //# mount to /mnt
 //# rebuild Merged
 //# restart containers ?
-
 
 // search for failing disks
 // sync disks across servers
@@ -78,26 +77,45 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 		},
 	}
 
+	// main
 	cmd.AddCommand(
 		command("agent", []string{"ls"}, hdm.Agent,
 			"Run an agent that self handle disks"),
+	)
+
+	// state
+	cmd.AddCommand(
 		command("list", []string{"ls"}, hdm.List,
 			"List known disks (even unplugged)"),
 		commandWithDiskSelector("index", []string{}, hdm.Index,
 			"Index files from disks"),
-		commandWithDiskSelector("add", []string{}, hdm.Add,
-			"Add disks as usable (mdadm,crypt,mount,restart)"),
-		commandWithRequiredDiskSelector("backupable", []string{}, hdm.Backupable,
-			"Find backup configs and run backups"),
-		commandWithRequiredDiskSelector("backup", []string{}, hdm.Backup,
-			"Find backup configs and run backups"),
 		commandWithDiskSelector("location", []string{}, hdm.Location,
 			"Get disk location"),
+	)
+
+	// cycle
+	cmd.AddCommand(
+		commandWithDiskSelector("add", []string{}, hdm.Add,
+			"Add disks as usable (mdadm,crypt,mount,restart)"),
 		commandWithRequiredDiskSelector("remove", []string{}, hdm.Remove,
 			"Remove or cleanup removed disk (kill,umount,restart,mdadm,crypt)"),
 		commandWithRequiredServerDiskAndLabel("prepare", []string{}, hdm.Prepare,
 			"Make disks usable(luksOpen,mount,restart)"),
-		)
+		commandWithRequiredServerDiskAndLabel("erase", []string{}, hdm.Erase,
+			"securely erase disk"),
+	)
+
+	// heal
+
+	// backup
+	cmd.AddCommand(
+		commandWithRequiredDiskSelector("backupable", []string{}, hdm.Backupable,
+			"Find backup configs and run backups"),
+		commandWithRequiredDiskSelector("backup", []string{}, hdm.Backup,
+			"Find backup configs and run backups"),
+		command("backups", []string{}, hdm.Backups,
+			"Find backup configs and run backups"),
+	)
 
 	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "L", "", "Set log level")
 	cmd.PersistentFlags().BoolVarP(&version, "version", "V", false, "Display version")
