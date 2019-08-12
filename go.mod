@@ -7,8 +7,10 @@ require (
 	github.com/davidmz/go-pageant v1.0.1 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/kr/fs v0.1.0 // indirect
+	github.com/kr/pretty v0.1.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/n0rad/go-erlog v0.0.0-20190510152055-0a033e8086d8
+	github.com/pilebones/go-udev v0.0.0-20180820235104-043677e09b13
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pkg/sftp v1.10.0 // indirect
 	github.com/sfreiberg/simplessh v0.0.0-20180301191542-495cbb862a9c
