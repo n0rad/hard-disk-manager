@@ -1,0 +1,26 @@
+[4523543.157512] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.166627] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.175616] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.184633] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.193629] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.203668] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.203700] scsi_io_completion: 6 callbacks suppressed
+[4523543.203711] sd 0:0:41:0: [sdp] tag#2 FAILED Result: hostbyte=DID_SOFT_ERROR driverbyte=DRIVER_OK
+[4523543.203717] sd 0:0:41:0: [sdp] tag#2 CDB: Read(10) 28 00 1a 31 a7 b3 00 00 01 00
+[4523543.203719] print_req_error: 6 callbacks suppressed
+[4523543.203723] print_req_error: I/O error, dev sdp, sector 439461811
+[4523543.203875] XFS (dm-14): metadata I/O error: block 0x1a311fb3 ("xfs_trans_read_buf_map") error 5 numblks 1
+[4523543.204076] XFS (dm-14): xfs_do_force_shutdown(0x1) called from line 236 of file fs/xfs/libxfs/xfs_defer.c.  Return address = 0x00000000762dd416
+[4523543.205523] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.214627] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.223608] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.232615] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.241620] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.251621] mpt2sas_cm0: log_info(0x31120100): originator(PL), code(0x12), sub_code(0x0100)
+[4523543.251641] sd 0:0:41:0: [sdp] tag#2 FAILED Result: hostbyte=DID_SOFT_ERROR driverbyte=DRIVER_OK
+[4523543.251647] sd 0:0:41:0: [sdp] tag#2 CDB: Write(10) 2a 00 11 76 a2 1c 00 00 03 00
+[4523543.251651] print_req_error: I/O error, dev sdp, sector 292987420
+[4523543.251792] XFS (dm-14): metadata I/O error: block 0x11761a1c ("xlog_iodone") error 5 numblks 64
+[4523543.251973] XFS (dm-14): xfs_do_force_shutdown(0x2) called from line 1261 of file fs/xfs/xfs_log.c.  Return address = 0x00000000c8bde0ea
+[4523543.251996] XFS (dm-14): Log I/O Error Detected.  Shutting down filesystem
+[4523543.252128] XFS (dm-14): Please umount the filesystem and rectify the problem(s)
