@@ -2,6 +2,7 @@ package system
 
 import (
 	"github.com/n0rad/go-erlog/errs"
+	"github.com/n0rad/go-erlog/logs"
 )
 
 type DisksSelector struct {
@@ -130,7 +131,8 @@ func (s Servers) RunForDisks(selector DisksSelector, toRun func(disks Disks, dis
 				continue
 			}
 			if err := toRun(disks, disk); err != nil {
-				return errs.WithE(err, "Command failed")
+				logs.WithEF(err, disk.fields).Error("Run for disk Command failed")
+				//return errs.WithEF(err, disk.fields,)
 			}
 		}
 	}

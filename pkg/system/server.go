@@ -5,7 +5,8 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/sfreiberg/simplessh"
+	"github.com/n0rad/hard-disk-manager/pkg/tools"
+	"strings"
 )
 
 type Bay struct {
@@ -14,18 +15,24 @@ type Bay struct {
 }
 
 type Server struct {
-	Name     string
-	Hostname string
-	Username string
-	Bays     []Bay
+	Name          string
+	Hostname      string
+	LocalHostname string
+	Username      string
+	Bays          []Bay
 
 	fields data.Fields
+	runner tools.Runner
 }
 
 // TODO use it and move runner
 func (s *Server) Init() error {
 	s.fields = data.WithField("server", s.Name)
-
+	s.runner = &tools.LocalRunner{}
+	//s.runner = &tools.SshRunner{
+	//	Hostname: s.Hostname,
+	//	Username: s.Username,
+	//}
 	return nil
 }
 
@@ -38,29 +45,15 @@ func (s *Server) BayLocation(path string) string {
 	return ""
 }
 
-func (s Server) Exec(cmd string) ([]byte, error) {
-	logs.WithFields(s.fields).WithField("cmd", cmd).Debug("Running command on server")
-	client, err := simplessh.ConnectWithAgent(s.Hostname, s.Username)
-	if err != nil {
-		return []byte{}, errs.WithEF(err, data.WithField("hostname", s.Hostname).WithField("username", s.Username), "Fail to ssh to server")
-	}
-	defer client.Close()
-
-	output, err := client.Exec(cmd)
-	logs.WithField("output", string(output)).
-		WithField("command", cmd).
-		Trace("command output")
-	if err != nil {
-		return []byte{}, errs.WithEF(err, s.fields.WithField("cmd", cmd).WithField("output", string(output)), "Exec command failed")
-	}
-
-	return output, nil
+func (s Server) Exec(head string, args ...string) (string, error) {
+	stdout, _, err := s.runner.ExecGetOutputError(head, args...)
+	return stdout, err
 }
 
 func (s Server) ScanDisks() (Disks, error) {
 	logs.WithField("server", s.Name).Info("Scan disks")
 	var disks Disks
-	output, err := s.Exec("sudo lsblk -J -O")
+	output, err := s.Exec("lsblk", "-J", "-O")
 	if err != nil {
 		return disks, errs.WithE(err, "Fail to get disks from lsblk")
 	}
@@ -88,4 +81,13 @@ func (s Server) ScanDisks() (Disks, error) {
 	}
 
 	return disks, nil
+}
+
+func (s Server) ListDisks() ([]string, error) {
+	logs.WithField("server", s.Name).Debug("List disks")
+	output, err := s.Exec("lsblk", "-n", "-d", "-o", "path")
+	if err != nil {
+		return []string{}, errs.WithE(err, "Fail to get disks from lsblk")
+	}
+	return strings.Split(string(output), "\n"), nil
 }

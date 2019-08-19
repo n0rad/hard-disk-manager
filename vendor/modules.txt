@@ -1,11 +1,21 @@
 # github.com/alessio/shellescape v0.0.0-20190409004728-b115ca0f9053
 github.com/alessio/shellescape
+# github.com/client9/misspell v0.3.4
+github.com/client9/misspell/cmd/misspell
+github.com/client9/misspell
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/davidmz/go-pageant v1.0.1
 github.com/davidmz/go-pageant
+# github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835
+github.com/fzipp/gocyclo
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
+# github.com/go-bindata/go-bindata v3.1.2+incompatible
+github.com/go-bindata/go-bindata/go-bindata
+github.com/go-bindata/go-bindata
+# github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8
+github.com/gordonklaus/ineffassign
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/kr/fs v0.1.0
@@ -50,9 +60,16 @@ golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/internal/subtle
+# golang.org/x/lint v0.0.0-20190409202823-959b441ac422
+golang.org/x/lint/golint
+golang.org/x/lint
 # golang.org/x/sys v0.0.0-20190412213103-97732733099d
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu
+# golang.org/x/tools v0.0.0-20190311212946-11955173bddd
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/gcimporter
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2

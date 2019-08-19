@@ -6,7 +6,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
+	system "github.com/n0rad/hard-disk-manager/pkg/system"
 	"io/ioutil"
 	"log"
 	"net/rpc"
@@ -54,12 +54,6 @@ func (hdm *Hdm) InitFromFile(configPath string) error {
 	return nil
 }
 
-
-func (hdm *Hdm) Agent() error {
-	// get passwords for disks
-	return nil
-}
-
 func (hdm *Hdm) Password() error {
 	client, err := rpc.Dial("unix", "/run/hdm.socket")
 	if err != nil {
@@ -97,7 +91,7 @@ func (hdm *Hdm) FindConfigs(b system.BlockDevice) ([]Config, error) {
 		return hdmConfigs, errs.WithF(hdm.fields, "Disk has not mount point")
 	}
 
-	configs, err := b.Exec("sudo find " + b.Mountpoint + " -type f -not -path '" + b.Mountpoint + pathBackups + "/*' -name " + hdmYamlFilename)
+	configs, err := b.ExecShell("find " + b.Mountpoint + " -type f -not -path '" + b.Mountpoint + pathBackups + "/*' -name " + hdmYamlFilename)
 	if err != nil {
 		return hdmConfigs, errs.WithEF(err, hdm.fields, "Failed to find hdm.yaml files")
 	}

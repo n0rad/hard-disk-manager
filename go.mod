@@ -4,8 +4,12 @@ go 1.12
 
 require (
 	github.com/alessio/shellescape v0.0.0-20190409004728-b115ca0f9053
+	github.com/client9/misspell v0.3.4
 	github.com/davidmz/go-pageant v1.0.1 // indirect
+	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-bindata/go-bindata v3.1.2+incompatible
+	github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/pretty v0.1.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -17,4 +21,5 @@ require (
 	github.com/spf13/cobra v0.0.4
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
+	golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 )

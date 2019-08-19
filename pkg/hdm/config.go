@@ -12,6 +12,7 @@ const hdmYamlFilename="hdm.yaml"
 
 type Config struct {
 	Backups []BackupConfig
+	Syncs []SyncConfig
 
 	configPath string
 	fields     data.Fields
@@ -30,12 +31,12 @@ func (h *Config) Init(filesystem system.BlockDevice, configPath string) error {
 }
 
 func (h *Config) FillFromFile(filesystem system.BlockDevice, file string) error {
-	bytes, err := filesystem.Exec("sudo cat " + shellescape.Quote(file))
+	bytes, err := filesystem.ExecShell("cat " + shellescape.Quote(file))
 	if err != nil {
 		return errs.WithEF(err, data.WithField("file", file),"Failed to cat file")
 	}
 
-	if err := yaml.Unmarshal(bytes, h); err != nil {
+	if err := yaml.Unmarshal([]byte(bytes), h); err != nil {
 		return errs.WithEF(err, data.WithField("content", string(bytes)), "Failed to parse hdm file")
 	}
 

@@ -235,6 +235,14 @@ func (d *Disk) Prepare(label string, cryptPassword string) error {
 		return errs.WithEF(err, d.fields, "Failed to make filesystem")
 	}
 
+	if err := d.Scan(); err != nil {
+		return errs.WithEF(err, d.fields, "Failed to rescan disk after luksOpen")
+	}
+
+	if err := d.Children[0].Children[0].luksClose(); err != nil {
+		return errs.WithEF(err, d.fields, "Failed to close partition")
+	}
+
 	return nil
 }
 

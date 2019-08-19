@@ -3,7 +3,7 @@ package hdm
 import (
 	"fmt"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
+	system "github.com/n0rad/hard-disk-manager/pkg/system"
 	"os"
 	"strconv"
 	"strings"

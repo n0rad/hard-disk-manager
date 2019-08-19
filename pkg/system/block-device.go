@@ -159,7 +159,7 @@ func (b *BlockDevice) Remove() error {
 }
 
 func (b *BlockDevice) sleep() error {
-	if out, err := b.server.Exec("sudo hdparm -y " + b.Path); err != nil {
+	if out, err := b.server.Exec("sudo", "hdparm", "-y ", b.Path); err != nil {
 		return errs.WithEF(err, b.fields.WithField("out", out), "Failed to put disk in sleep")
 	}
 	return nil

@@ -52,7 +52,6 @@ func commandWithRequiredServerDiskAndLabel(use string, aliases []string, hdmComm
 	return cmd
 }
 
-
 func commandWithRequiredDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string) *cobra.Command {
 	cmd, selector := withDiskSelector(use, aliases, hdmCommand, short)
 	realRun := cmd.Run

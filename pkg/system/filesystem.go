@@ -15,7 +15,7 @@ func (b *BlockDevice) Index() (string, error) {
 	// todo this should be a stream
 	output, err := b.server.Exec("sudo find " + b.Mountpoint + " -type f -printf '%A@ %s %P\n'")
 	if err != nil {
-		return "", errs.WithEF(err, b.fields, "Failed to run du on blockDevice")
+		return "", errs.WithEF(err, b.fields, "Failed to find files in filesystem")
 	}
 	return string(output), nil
 }
@@ -23,7 +23,7 @@ func (b *BlockDevice) Index() (string, error) {
 func (b *BlockDevice) SpaceAvailable() (int, error) {
 	output, err := b.server.Exec("df " + b.Path + " --output=avail | tail -n +2")
 	if err != nil {
-		return 0, errs.WithEF(err, b.fields, "Failed to run du on blockDevice")
+		return 0, errs.WithEF(err, b.fields, "Failed to run 'df' on blockDevice")
 	}
 
 	size, err := strconv.Atoi(strings.TrimSpace(string(output)))
@@ -33,6 +33,7 @@ func (b *BlockDevice) SpaceAvailable() (int, error) {
 	return size, nil
 }
 
-func (b *BlockDevice) Exec(cmd string) ([]byte, error) {
-	return b.server.Exec(cmd)
+func (b *BlockDevice) ExecShell(head string, args ...string) (string, error) {
+	return b.server.Exec("sh", "-c", strings.Join([]string{head, " ", strings.Join(args, " ")}, " "))
+	//return b.server.Exec(head, args...)
 }

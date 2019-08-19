@@ -3,7 +3,7 @@ package hdm
 import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
+	system "github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
 )
 

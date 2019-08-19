@@ -73,10 +73,9 @@ HDM is a single binary file, just download and extract it to any bin directory
 - evaluate global target size from backups source before starting
 - kill running command in case of ctrl+c
 - location should support disks without partitions
-- luksClose after prepare ??
 - wipefs on prepare
 - smartctl -a /dev/sdc | egrep '197 |198 |187 |188 |  5 Re'
 - sync before remove ?
 - shred ?
 - support do not get too deep in finding hdm.yaml
-
+- sudo lsblk -o name,size,type,fstype,label,partlabel,mountpoint,path
