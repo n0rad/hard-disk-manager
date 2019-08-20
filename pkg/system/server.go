@@ -6,7 +6,6 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/tools"
-	"strings"
 )
 
 type Bay struct {
@@ -83,11 +82,45 @@ func (s Server) ScanDisks() (Disks, error) {
 	return disks, nil
 }
 
-func (s Server) ListDisks() ([]string, error) {
-	logs.WithField("server", s.Name).Debug("List disks")
-	output, err := s.Exec("lsblk", "-n", "-d", "-o", "path")
-	if err != nil {
-		return []string{}, errs.WithE(err, "Fail to get disks from lsblk")
+func (s Server) ScanDisk(path string) (Disk, error) {
+	logs.WithField("server", s.Name).Debug("Scan disks")
+	if path == "" {
+		return Disk{}, errs.With("Path is reuiqred to scan disk")
 	}
-	return strings.Split(string(output), "\n"), nil
+
+	output, err := s.Exec("lsblk", "-J", "-O", path)
+	if err != nil {
+		return Disk{}, errs.WithE(err, "Fail to get disk from lsblk")
+	}
+
+	lsblk := Lsblk{}
+	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
+		return Disk{}, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
+	}
+
+	if len(lsblk.Blockdevices) != 1 {
+		return Disk{}, errs.WithF(data.WithField("output", output), "Scan disk give more than disk")
+	}
+
+	lsblk.Blockdevices[0].Init(&s)
+
+	return lsblk.Blockdevices[0], nil
+}
+
+func (s Server) ListFlatBlockDevices() ([]BlockDevice, error) {
+	logs.WithField("server", s.Name).Debug("List disks")
+	lsblk := struct {
+		Blockdevices []BlockDevice `json:"blockdevices"`
+	}{}
+
+	output, err := s.Exec("lsblk",  "-J", "-o", "path,type")
+	if err != nil {
+		return lsblk.Blockdevices, errs.WithE(err, "Fail to get disks from lsblk")
+	}
+
+	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
+		return lsblk.Blockdevices, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
+	}
+
+	return lsblk.Blockdevices, nil
 }

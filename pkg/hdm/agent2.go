@@ -7,20 +7,20 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/pilebones/go-udev/netlink"
 	"sync"
-	"time"
 )
 
 type Agent struct {
 	server     system.Server
 	udevConn   *netlink.UEventConn
 	stop       chan struct{}
-	disks      map[string]agent.DiskManager
+	diskManagers      map[string]agent.DiskManager
 	disksMutex sync.Mutex
 }
 
 func (a *Agent) Start() error {
-	a.disks = make(map[string]agent.DiskManager)
+	a.diskManagers = make(map[string]agent.DiskManager)
 	a.stop = make(chan struct{})
+
 	a.udevConn = new(netlink.UEventConn)
 	if err := a.udevConn.Connect(netlink.UdevEvent); err != nil {
 		return errs.WithE(err, "Unable to connect to Netlink Kobject UEvent socket")
@@ -30,97 +30,106 @@ func (a *Agent) Start() error {
 		return errs.WithE(err, "Failed to init empty server")
 	}
 
-	go a.periodicDiskWatch(func(disks []string) {
-		a.disksMutex.Lock()
-		for _, v := range disks {
-			if _, ok := a.disks[v]; !ok {
-				a.disks[v] = agent.NewDiskManager(v)
-			}
-		}
+	go a.watchUdevBlockEvents()
 
-		for k, v := range a.disks {
-			found := false
-			for _, disk := range disks {
-				if k == disk {
-					found = true
-					break
-				}
-			}
-			if !found {
-				logs.WithField("dev", k).Warn("Found disk by full scan that should not exists")
-				v.Stop()
-				delete(a.disks, k)
-			}
-		}
-		a.disksMutex.Unlock()
-	})
+	if err := a.addCurrentBlockDevices(); err != nil {
+		a.Stop()
+		return errs.WithE(err, "Cannot add current block devices after watching events")
+	}
 
-	go a.watchUdevDiskEvents(func(event netlink.UEvent) {
-		a.disksMutex.Lock()
-		switch event.Action {
-		case "add":
-			if _, ok := a.disks[event.Env["DEVNAME"]]; !ok {
-				a.disks[event.Env["DEVNAME"]] = agent.NewDiskManager(event.Env["DEVNAME"])
-			} else {
-				logs.WithField("dev", event.Env["DEVNAME"]).Warn("Received add on already existing disk")
-			}
-		case "remove":
-			if diskManager, ok := a.disks[event.Env["DEVNAME"]]; ok {
-				diskManager.Stop()
-				delete(a.disks, event.Env["DEVNAME"])
-			} else {
-				logs.WithField("dev", event.Env["DEVNAME"]).Warn("Received remove on not found disk")
-			}
-		case "change":
-			if diskManager, ok := a.disks[event.Env["DEVNAME"]]; ok {
-				diskManager.Stop()
-				delete(a.disks, event.Env["DEVNAME"])
-			}
-			a.disks[event.Env["DEVNAME"]] = agent.NewDiskManager(event.Env["DEVNAME"])
-		default:
-			logs.WithField("event", event).Warn("Unknown udev event type")
-		}
-		a.disksMutex.Unlock()
-	})
 	return nil
 }
 
 func (a *Agent) Stop() {
 	a.stop <- struct{}{}
+	// TODO waitgroup
 	_ = a.udevConn.Close()
-}
 
-func (a *Agent) periodicDiskWatch(handler func(disks []string)) {
-	updateDisksList := func() {
-		disks, err := a.server.ListDisks()
-		if err != nil {
-			logs.WithE(err).Warn("Failed to scan disks")
-		}
-		handler(disks)
-	}
-
-	updateDisksList()
-
-	ticker := time.NewTicker(5 * time.Second)
-	for {
-		select {
-		case <-ticker.C:
-			updateDisksList()
-		case <-a.stop:
-			ticker.Stop()
-			return
-		}
+	a.disksMutex.Lock()
+	defer a.disksMutex.Unlock()
+	for _, v := range a.diskManagers {
+		v.Stop()
 	}
 }
 
-func (a *Agent) watchUdevDiskEvents(handler func(event netlink.UEvent)) {
+///////////////////////
+
+type BlockDeviceEvent struct {
+	Action netlink.KObjAction
+	Path string
+	Type string
+}
+
+func (a *Agent) addDisk(path string) {
+	if _, ok := a.diskManagers[path]; !ok {
+		a.diskManagers[path] = agent.NewDiskManager(path)
+	} else {
+		logs.WithField("path", path).Warn("Cannot add disk, already exists")
+	}
+}
+
+func (a *Agent) removeDisk(path string) {
+	if diskManager, ok := a.diskManagers[path]; ok {
+		diskManager.Stop()
+		delete(a.diskManagers, path)
+	} else {
+		logs.WithField("path", path).Warn("Cannot remove disk, not found")
+	}
+}
+
+func (a *Agent) addCurrentBlockDevices() error {
+	blockDevices, err := a.server.ListFlatBlockDevices()
+	if err != nil {
+		return errs.WithE(err, "Failed to list current block devices")
+	}
+	for _, v := range blockDevices {
+		a.handleEvent(BlockDeviceEvent{
+			Action: netlink.ADD,
+			Type: v.Type,
+			Path: v.Path,
+		})
+	}
+	return nil
+}
+
+func (a *Agent) handleEvent(event BlockDeviceEvent) {
+	a.disksMutex.Lock()
+	defer a.disksMutex.Unlock()
+
+	switch event.Type {
+	case "disk":
+		switch event.Action {
+		case "add":
+			a.addDisk(event.Path)
+		case "remove":
+			a.removeDisk(event.Path)
+		case "change":
+			a.removeDisk(event.Path)
+			a.addDisk(event.Path)
+		default:
+			logs.WithField("event", event).Warn("Unknown udev event type")
+		}
+	case "part", "partition":
+		logs.WithField("event", event).Info("Children event")
+		//if manager, ok := a.diskManagers[event.Path]; ok {
+		//	manager.AddChildrenEvent(event)
+		//} else {
+		//	logs.WithField("event", event).Warn("Disk not found to add event")
+		//	// disk not found to add partition
+		//}
+	default:
+		logs.WithField("event", event).Warn("Unknown event type")
+	}
+}
+
+func (a *Agent) watchUdevBlockEvents() {
 	matcher := netlink.RuleDefinitions{
 		Rules: []netlink.RuleDefinition{
 			{
 				//Action: "",
 				Env: map[string]string{
 					"SUBSYSTEM": "block",
-					"DEVTYPE":   "disk",
+					//"DEVTYPE":   "disk",
 					//  ID_BUS=ata
 					//	ID_TYPE=disk
 				},
@@ -137,7 +146,11 @@ func (a *Agent) watchUdevDiskEvents(handler func(event netlink.UEvent)) {
 		select {
 		case uevent := <-queue:
 			logs.WithField("uevent", uevent).Trace("Received udev event")
-			handler(uevent)
+			a.handleEvent(BlockDeviceEvent{
+				Action: uevent.Action,
+				Path: uevent.Env["DEVNAME"],
+				Type: uevent.Env["DEVTYPE"],
+			})
 		case err := <-errors:
 			logs.WithE(err).Warn("Received error for udev watcher")
 		case <-a.stop:
