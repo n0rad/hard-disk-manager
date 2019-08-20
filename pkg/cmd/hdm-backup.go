@@ -1,20 +1,21 @@
-package hdm
+package cmd
 
 import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
-	system "github.com/n0rad/hard-disk-manager/pkg/system"
+	"github.com/n0rad/hard-disk-manager/pkg/hdm"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"path"
 	"strings"
 )
 
-func (hdm *Hdm) Backupable(selector system.DisksSelector) error {
+func Backupable(selector system.DisksSelector) error {
 	fields := data.WithField("selector", selector)
 
-	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
+	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
 		dd := disk.FindDeepestBlockDevice()
 
-		paths, err := hdm.FindNotBackedUp(dd)
+		paths, err := FindNotBackedUp(dd)
 		if err != nil {
 			return errs.WithEF(err, fields, "Failed to find non backup dirs")
 		}
@@ -25,16 +26,15 @@ func (hdm *Hdm) Backupable(selector system.DisksSelector) error {
 	})
 }
 
-
-func (hdm *Hdm) Backups() error {
+func Backups() error {
 	return nil
 }
 
-func (hdm *Hdm) Backup(selector system.DisksSelector) error {
+func BackupCmd(selector system.DisksSelector) error {
 	fields := data.WithField("selector", selector)
 
-	return hdm.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		configs, err := hdm.FindConfigs(*disk.BlockDevice)
+	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
+		configs, err := hdm.HDM.FindConfigs(*disk.BlockDevice)
 		if err != nil {
 			return errs.WithEF(err, fields, "Cannot backup, Failed to load hdm configs files")
 		}
@@ -48,14 +48,14 @@ func (hdm *Hdm) Backup(selector system.DisksSelector) error {
 	})
 }
 
-func (hdm *Hdm) FindNotBackedUp(b system.BlockDevice) ([]string, error) {
+func FindNotBackedUp(b system.BlockDevice) ([]string, error) {
 	if b.Mountpoint == "" {
-		return []string{}, errs.WithF(hdm.fields, "Cannot Find Not backed-up, disk is not mounted")
+		return []string{}, errs.With( "Cannot Find Not backed-up, disk is not mounted")
 	}
 
-	output, err := b.ExecShell("find " + b.Mountpoint + " -type d -print0 | while read -d $'\\0' dir; do ls -1 \"$dir/"+ hdmYamlFilename +"\"&> /dev/null || echo $dir; done")
+	output, err := b.ExecShell("find " + b.Mountpoint + " -type d -print0 | while read -d $'\\0' dir; do ls -1 \"$dir/" + hdm.HdmYamlFilename + "\"&> /dev/null || echo $dir; done")
 	if err != nil {
-		return []string{}, errs.WithEF(err, hdm.fields, "Failed to find in mountpoint")
+		return []string{}, errs.WithE(err, "Failed to find in mountpoint")
 	}
 
 	lines := strings.Split(string(output), "\n")

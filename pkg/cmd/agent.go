@@ -1,17 +1,18 @@
-package hdm
+package cmd
 
 import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/app"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-func (hdm *Hdm) Agent() error {
+func Agent() error {
 	// TODO get passwords for disks
 
-	agent := Agent{}
+	agent := app.Agent{}
 
 	if err := agent.Start(); err != nil {
 		return errs.WithE(err, "Failed to init agent")

@@ -7,12 +7,9 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/tools"
-	"io/ioutil"
-	"os"
 	"strings"
 )
 
-const pathDisks = "/disks"
 
 //partprobe
 //wipefs --all /dev/sdX
@@ -49,40 +46,6 @@ func (d *Disk) Location() (string, error) {
 	return d.server.BayLocation(path), nil
 }
 
-func LoadDisksFromDB(DBPath string, servers Servers) ([]Disk, error) {
-	DBDiskPath := DBPath + pathDisks
-	var disks []Disk
-	pathField := data.WithField("path", DBDiskPath)
-	if err := os.MkdirAll(DBDiskPath, 0755); err != nil {
-		return disks, errs.WithEF(err, pathField, "Failed to create disks db path")
-	}
-
-	files, err := ioutil.ReadDir(DBDiskPath)
-	if err != nil {
-		return disks, errs.WithEF(err, pathField, "Failed to read db directory")
-	}
-
-	for _, file := range files {
-		disk := Disk{}
-		filePath := DBDiskPath + "/" + file.Name()
-
-		bytes, err := ioutil.ReadFile(filePath)
-		fileField := data.WithField("file", filePath)
-		if err != nil {
-			return disks, errs.WithEF(err, fileField, "Failed to read disk db file")
-		}
-
-		if err := disk.PopulateFromBytes(bytes); err != nil {
-			return disks, errs.WithEF(err, fileField, "Failed to load disk from db file")
-		}
-
-		disk.Init(servers.GetServer(disk.ServerName))
-
-		disks = append(disks, disk)
-	}
-	return disks, nil
-}
-
 func (d *Disk) Add(password string) error {
 	for {
 		newDevices, err := d.addAndGiveNewDevices(password)
@@ -115,23 +78,6 @@ func (d *Disk) PopulateFromBytes(bytes []byte) error {
 	return nil
 }
 
-func (d *Disk) Save(dir string) error {
-	diskYaml, err := yaml.Marshal(d)
-	if err != nil {
-		return errs.WithEF(err, d.fields, "Failed to marshal disk")
-	}
-
-	file, err := os.OpenFile(dir+pathDisks+"/"+d.Serial+".yaml", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return errs.WithEF(err, d.fields, "Failed to open disk file")
-	}
-	defer file.Close()
-
-	if _, err := file.Write(diskYaml); err != nil {
-		return errs.WithEF(err, d.fields, "Failed to write disk yaml to file")
-	}
-	return nil
-}
 
 func (d *Disk) ReplaceFromLsblk() error {
 	logs.WithFields(d.fields).Info("Running lsblk")

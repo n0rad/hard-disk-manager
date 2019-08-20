@@ -1,4 +1,4 @@
-package hdm
+package app
 
 import (
 	"github.com/n0rad/go-erlog/errs"

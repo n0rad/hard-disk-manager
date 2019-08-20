@@ -8,7 +8,7 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 )
 
-const hdmYamlFilename="hdm.yaml"
+const HdmYamlFilename="hdm.yaml"
 
 type Config struct {
 	Backups []BackupConfig

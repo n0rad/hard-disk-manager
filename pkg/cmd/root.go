@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/n0rad/go-erlog/logs"
-	hdm2 "github.com/n0rad/hard-disk-manager/pkg/hdm"
+	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 //# compare all disks with unencrypted & mounted
@@ -45,22 +44,12 @@ import (
 //hdm load
 //hdm unload
 
-var hdm = hdm2.Hdm{}
-
 func RootCommand(Version string, BuildTime string) *cobra.Command {
 	var logLevel string
-	var version bool
-	var hdmConfig string
+	var hdmHome string
 
 	cmd := &cobra.Command{
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			if version {
-				fmt.Println("HDM")
-				fmt.Println("Version :", Version)
-				fmt.Println("Build Time :", BuildTime)
-				os.Exit(0)
-			}
-
 			if logLevel != "" {
 				level, err := logs.ParseLevel(logLevel)
 				if err != nil {
@@ -71,37 +60,47 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 				//logs.SetLevel(logs.WARN)
 			}
 
-			if err := hdm.InitFromFile(hdmConfig); err != nil {
+			if err := hdm.HDM.Init(hdmHome); err != nil {
 				logs.WithE(err).Fatal("Cannot start, failed to load configuration")
 			}
 		},
 	}
 
+	cmd.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "Display HDM version",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("hdm")
+			fmt.Println("version : ", Version)
+			fmt.Println("Build Time : ", BuildTime)
+		},
+	})
+
 	// main
 	cmd.AddCommand(
-		command("agent", []string{"ls"}, hdm.Agent,
+		command("agent", []string{}, Agent,
 			"Run an agent that self handle disks"),
 	)
 
 	// state
 	cmd.AddCommand(
-		command("list", []string{"ls"}, hdm.List,
-			"List known disks (even unplugged)"),
-		commandWithDiskSelector("index", []string{}, hdm.Index,
+		//command("list", []string{"ls"}, List,
+		//	"List known disks (even unplugged)"),
+		commandWithDiskSelector("index", []string{}, Index,
 			"Index files from disks"),
-		commandWithDiskSelector("location", []string{}, hdm.Location,
+		commandWithDiskSelector("location", []string{}, Location,
 			"Get disk location"),
 	)
 
 	// cycle
 	cmd.AddCommand(
-		commandWithDiskSelector("add", []string{}, hdm.Add,
+		commandWithDiskSelector("add", []string{}, Add,
 			"Add disks as usable (mdadm,crypt,mount,restart)"),
-		commandWithRequiredDiskSelector("remove", []string{}, hdm.Remove,
+		commandWithRequiredDiskSelector("remove", []string{}, Remove,
 			"Remove or cleanup removed disk (kill,umount,restart,mdadm,crypt)"),
-		commandWithRequiredServerDiskAndLabel("prepare", []string{}, hdm.Prepare,
+		commandWithRequiredServerDiskAndLabel("prepare", []string{}, Prepare,
 			"Make disks usable(luksOpen,mount,restart)"),
-		commandWithRequiredServerDiskAndLabel("erase", []string{}, hdm.Erase,
+		commandWithRequiredServerDiskAndLabel("erase", []string{}, Erase,
 			"securely erase disk"),
 	)
 
@@ -109,18 +108,16 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 
 	// backup
 	cmd.AddCommand(
-		commandWithRequiredDiskSelector("backupable", []string{}, hdm.Backupable,
+		commandWithRequiredDiskSelector("backupable", []string{}, Backupable,
 			"Find backup configs and run backups"),
-		commandWithRequiredDiskSelector("backup", []string{}, hdm.Backup,
+		commandWithRequiredDiskSelector("backup", []string{}, BackupCmd,
 			"Find backup configs and run backups"),
-		command("backups", []string{}, hdm.Backups,
+		command("backups", []string{}, Backups,
 			"Find backup configs and run backups"),
 	)
 
 	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "L", "", "Set log level")
-	cmd.PersistentFlags().BoolVarP(&version, "version", "V", false, "Display version")
-	cmd.PersistentFlags().StringVarP(&hdmConfig, "config", "C", homeDotConfigPath()+"/hdm/config.yaml", "configFile")
-
+	cmd.PersistentFlags().StringVarP(&hdmHome, "home", "H", homeDotConfigPath()+"/hdm", "configFile")
 	return cmd
 }
 
