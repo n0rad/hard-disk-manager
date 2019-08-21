@@ -7,28 +7,28 @@ import (
 	"syscall"
 )
 
-func AskPasswordWithConfirmation(confirmation bool) (string, error) {
+func AskPasswordWithConfirmation(confirmation bool) ([]byte, error) {
 	for {
 		print("Password: ")
-		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+		password, err := terminal.ReadPassword(int(syscall.Stdin))
 		if err != nil {
-			return "", errs.WithE(err, "Cannot read password")
+			return nil, errs.WithE(err, "Cannot read password")
 		}
 
 		print("\n")
 		if !confirmation {
-			return string(bytePassword), nil
+			return password, nil
 		}
 
 		print("Confirm: ")
-		bytePassword2, err := terminal.ReadPassword(int(syscall.Stdin))
+		passwordConfirm, err := terminal.ReadPassword(int(syscall.Stdin))
 		if err != nil {
-			return "", errs.WithE(err, "Cannot read password")
+			return nil, errs.WithE(err, "Cannot read password")
 		}
 		print("\n")
 
-		if string(bytePassword) == string(bytePassword2) && string(bytePassword) != "" {
-			return string(bytePassword), nil
+		if string(password) == string(passwordConfirm) && string(password) != "" {
+			return password, nil
 		} else {
 			fmt.Println("\nEmpty password or do not match...\n")
 		}

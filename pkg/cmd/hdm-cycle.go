@@ -23,7 +23,7 @@ func Prepare(selector system.DisksSelector) error {
 			return errs.WithE(err, "Failed to get password")
 		}
 
-		return disk.Prepare(label, password)
+		return disk.Prepare(label, string(password))
 	})
 }
 
@@ -40,7 +40,7 @@ func Add(selector system.DisksSelector) error {
 	}
 
 	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		return disk.Add(password)
+		return disk.Add(string(password))
 	})
 }
 

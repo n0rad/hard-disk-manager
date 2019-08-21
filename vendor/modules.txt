@@ -1,5 +1,10 @@
 # github.com/alessio/shellescape v0.0.0-20190409004728-b115ca0f9053
 github.com/alessio/shellescape
+# github.com/awnumar/memcall v0.0.0-20190811121346-2affb857f00a
+github.com/awnumar/memcall
+# github.com/awnumar/memguard v0.19.1
+github.com/awnumar/memguard
+github.com/awnumar/memguard/core
 # github.com/client9/misspell v0.3.4
 github.com/client9/misspell/cmd/misspell
 github.com/client9/misspell
@@ -20,10 +25,6 @@ github.com/gordonklaus/ineffassign
 github.com/inconshreveable/mousetrap
 # github.com/kr/fs v0.1.0
 github.com/kr/fs
-# github.com/kr/pretty v0.1.0
-github.com/kr/pretty
-# github.com/kr/text v0.1.0
-github.com/kr/text
 # github.com/mgutz/ansi v0.0.0-20150914162238-c286dcecd19f
 github.com/mgutz/ansi
 # github.com/mitchellh/go-homedir v1.1.0
@@ -50,20 +51,23 @@ github.com/spf13/cobra
 github.com/spf13/pflag
 # github.com/stretchr/testify v1.2.2
 github.com/stretchr/testify/assert
-# golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
+# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
+golang.org/x/crypto/blake2b
+golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/poly1305
-golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/internal/subtle
+golang.org/x/crypto/salsa20/salsa
+golang.org/x/crypto/ed25519/internal/edwards25519
 # golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 golang.org/x/lint/golint
 golang.org/x/lint
-# golang.org/x/sys v0.0.0-20190412213103-97732733099d
+# golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu

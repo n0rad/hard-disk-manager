@@ -80,6 +80,7 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 	cmd.AddCommand(
 		command("agent", []string{}, Agent,
 			"Run an agent that self handle disks"),
+		passwordCmd(),
 	)
 
 	// state

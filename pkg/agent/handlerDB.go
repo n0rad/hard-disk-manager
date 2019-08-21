@@ -14,16 +14,13 @@ func (h *HandlerDb) Start() {
 	h.storeInfo()
 }
 
-func (h *HandlerDb) Stop() {
-
-}
-
 ///////////////////////////////////
 
 func (h *HandlerDb) storeInfo() {
 	disk, err := h.server.ScanDisk(h.path)
 	if err != nil {
 		logs.WithE(err).Error("Failed to scan disk")
+		return
 	}
 
 	if err := hdm.HDM.DBDisk().Save(disk); err != nil {
