@@ -113,7 +113,7 @@ func (s Server) ListFlatBlockDevices() ([]BlockDevice, error) {
 		Blockdevices []BlockDevice `json:"blockdevices"`
 	}{}
 
-	output, err := s.Exec("lsblk",  "-J", "-o", "path,type")
+	output, err := s.Exec("lsblk", "-J", "-o", "path,type")
 	if err != nil {
 		return lsblk.Blockdevices, errs.WithE(err, "Fail to get disks from lsblk")
 	}

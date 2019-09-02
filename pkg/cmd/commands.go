@@ -21,7 +21,7 @@ func command(use string, aliases []string, hdmCommand func() error, short string
 	}
 }
 
-func withDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string, ) (*cobra.Command, *system.DisksSelector) {
+func withDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string) (*cobra.Command, *system.DisksSelector) {
 	selector := system.DisksSelector{}
 	cmd := &cobra.Command{
 		Use:     use,
@@ -39,7 +39,7 @@ func withDiskSelector(use string, aliases []string, hdmCommand func(selector sys
 	return cmd, &selector
 }
 
-func commandWithDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string, ) *cobra.Command {
+func commandWithDiskSelector(use string, aliases []string, hdmCommand func(selector system.DisksSelector) error, short string) *cobra.Command {
 	cmd, _ := withDiskSelector(use, aliases, hdmCommand, short)
 	return cmd
 }

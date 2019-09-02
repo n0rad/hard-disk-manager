@@ -45,7 +45,7 @@ func (db *DBDisk) Save(disk system.Disk) error {
 	return nil
 }
 
-func (db *DBDisk) LoadDisks(/*servers Servers*/) ([]system.Disk, error) {
+func (db *DBDisk) LoadDisks( /*servers Servers*/ ) ([]system.Disk, error) {
 	var disks []system.Disk
 	pathField := data.WithField("path", db.path)
 

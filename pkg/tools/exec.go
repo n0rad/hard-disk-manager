@@ -73,5 +73,5 @@ func (s LocalRunner) ExecGetOutputError(head string, args ...string) (string, st
 	cmd.Stderr = &stderr
 	cmd.Start()
 	err := cmd.Wait()
-	return strings.TrimSpace(stdout.String()),  stderr.String(), err
+	return strings.TrimSpace(stdout.String()), stderr.String(), err
 }

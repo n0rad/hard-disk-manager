@@ -45,7 +45,7 @@ func (hdm Hdm) GetPassword() *memguard.Enclave {
 }
 
 func (hdm *Hdm) Init(home string) error {
-	memguard.CatchInterrupt()
+	// TODO memguard.CatchInterrupt()
 
 	configPath := home + pathConfig
 	file, err := ioutil.ReadFile(configPath)

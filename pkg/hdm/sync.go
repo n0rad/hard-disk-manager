@@ -8,7 +8,7 @@ import (
 type SyncConfig struct {
 	system.Rsync
 	TargetServer string
-	TargetLabel string
+	TargetLabel  string
 	//TargetServer           string // TODO this should not be mandatory
 	//TargetLabel            string
 

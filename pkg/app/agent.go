@@ -10,11 +10,11 @@ import (
 )
 
 type Agent struct {
-	server     system.Server
-	udevConn   *netlink.UEventConn
-	stop       chan struct{}
-	diskManagers      map[string]agent.DiskManager
-	disksMutex sync.Mutex
+	server       system.Server
+	udevConn     *netlink.UEventConn
+	stop         chan struct{}
+	diskManagers map[string]agent.DiskManager
+	disksMutex   sync.Mutex
 }
 
 func (a *Agent) Start() error {
@@ -22,6 +22,7 @@ func (a *Agent) Start() error {
 	a.stop = make(chan struct{})
 
 	a.udevConn = new(netlink.UEventConn)
+	defer a.udevConn.Close()
 	if err := a.udevConn.Connect(netlink.UdevEvent); err != nil {
 		return errs.WithE(err, "Unable to connect to Netlink Kobject UEvent socket")
 	}
@@ -30,34 +31,35 @@ func (a *Agent) Start() error {
 		return errs.WithE(err, "Failed to init empty server")
 	}
 
-	go a.watchUdevBlockEvents()
-
 	if err := a.addCurrentBlockDevices(); err != nil {
-		a.Stop()
+		a.Stop(err)
 		return errs.WithE(err, "Cannot add current block devices after watching events")
 	}
 
-	return nil
-}
+	// TODO you can lose events between addCurrent and watch
 
-func (a *Agent) Stop() {
-	a.stop <- struct{}{}
-	// TODO waitgroup
-	_ = a.udevConn.Close()
+	a.watchUdevBlockEvents()
 
+	// cleanup
 	a.disksMutex.Lock()
 	defer a.disksMutex.Unlock()
 	for _, v := range a.diskManagers {
 		v.Stop()
 	}
+
+	return nil
+}
+
+func (a *Agent) Stop(e error) {
+	close(a.stop)
 }
 
 ///////////////////////
 
 type BlockDeviceEvent struct {
 	Action netlink.KObjAction
-	Path string
-	Type string
+	Path   string
+	Type   string
 }
 
 func (a *Agent) addDisk(path string) {
@@ -85,8 +87,8 @@ func (a *Agent) addCurrentBlockDevices() error {
 	for _, v := range blockDevices {
 		a.handleEvent(BlockDeviceEvent{
 			Action: netlink.ADD,
-			Type: v.Type,
-			Path: v.Path,
+			Type:   v.Type,
+			Path:   v.Path,
 		})
 	}
 	return nil
@@ -141,20 +143,20 @@ func (a *Agent) watchUdevBlockEvents() {
 	defer close(queue)
 	errors := make(chan error)
 	defer close(errors)
-	quit := a.udevConn.Monitor(queue, errors, &matcher)
+	quitMonitor := a.udevConn.Monitor(queue, errors, &matcher)
 	for {
 		select {
 		case uevent := <-queue:
 			logs.WithField("uevent", uevent).Trace("Received udev event")
 			a.handleEvent(BlockDeviceEvent{
 				Action: uevent.Action,
-				Path: uevent.Env["DEVNAME"],
-				Type: uevent.Env["DEVTYPE"],
+				Path:   uevent.Env["DEVNAME"],
+				Type:   uevent.Env["DEVTYPE"],
 			})
 		case err := <-errors:
 			logs.WithE(err).Warn("Received error for udev watcher")
 		case <-a.stop:
-			quit <- struct{}{}
+			close(quitMonitor)
 			return
 		}
 	}

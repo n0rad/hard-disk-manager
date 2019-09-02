@@ -14,6 +14,8 @@ type Handler interface {
 }
 
 type CommonHandler struct {
+	disk system.Disk
+
 	path   string
 	server system.Server
 	fields data.Fields
@@ -22,8 +24,7 @@ type CommonHandler struct {
 func (h *CommonHandler) Init(path string) {
 	h.path = path
 	h.fields = data.WithField("path", path)
-	h.server = system.Server{
-	}
+	h.server = system.Server{}
 
 	if err := h.server.Init(); err != nil {
 		logs.WithE(err).Error("fail")

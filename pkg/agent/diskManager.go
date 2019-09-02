@@ -5,7 +5,7 @@ import (
 )
 
 type DiskManager struct {
-	path string
+	path     string
 	handlers []Handler
 
 	//serialJobs chan
@@ -20,7 +20,7 @@ func (d *DiskManager) Stop() {
 //}
 
 func NewDiskManager(path string) DiskManager {
-	handlers := []Handler {
+	handlers := []Handler{
 		&HandlerDb{},
 	}
 
@@ -28,14 +28,9 @@ func NewDiskManager(path string) DiskManager {
 		v.Init(path)
 	}
 
-
 	for _, v := range handlers {
 		v.Start()
 	}
-
-
-
-
 
 	logs.WithField("path", path).Info("New disk manager")
 
@@ -53,7 +48,6 @@ func NewDiskManager(path string) DiskManager {
 
 	return manager
 }
-
 
 // watch disk events -> add/remove disks
 // watch files events -> run sync

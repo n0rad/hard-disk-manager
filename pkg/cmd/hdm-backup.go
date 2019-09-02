@@ -50,7 +50,7 @@ func BackupCmd(selector system.DisksSelector) error {
 
 func FindNotBackedUp(b system.BlockDevice) ([]string, error) {
 	if b.Mountpoint == "" {
-		return []string{}, errs.With( "Cannot Find Not backed-up, disk is not mounted")
+		return []string{}, errs.With("Cannot Find Not backed-up, disk is not mounted")
 	}
 
 	output, err := b.ExecShell("find " + b.Mountpoint + " -type d -print0 | while read -d $'\\0' dir; do ls -1 \"$dir/" + hdm.HdmYamlFilename + "\"&> /dev/null || echo $dir; done")

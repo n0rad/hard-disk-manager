@@ -11,7 +11,7 @@ type DisksSelector struct {
 	Disk   string
 }
 
-func (d DisksSelector)  MatchDisk(disk Disk) bool {
+func (d DisksSelector) MatchDisk(disk Disk) bool {
 	if d.Server == disk.ServerName {
 		if d.Disk == "" && d.Label == "" {
 			return true
@@ -32,7 +32,6 @@ func (d DisksSelector)  MatchDisk(disk Disk) bool {
 	}
 	return false
 }
-
 
 func (d DisksSelector) MatchPartition(disk Disk, device BlockDevice) bool {
 	if d.Server != disk.ServerName {

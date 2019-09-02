@@ -29,14 +29,14 @@ func TestRsyncInit(t *testing.T) {
 }
 
 func TestRsyncSync(t *testing.T) {
-	source, _:= ioutil.TempDir("/tmp", "hdmtest-source")
+	source, _ := ioutil.TempDir("/tmp", "hdmtest-source")
 	target, _ := ioutil.TempDir("/tmp", "hdmtest-source")
 
 	_ = os.Mkdir(source+"/ss ss", 0777)
 	_ = os.Mkdir(target+"/tt tt", 0777)
 	_ = ioutil.WriteFile(source+"/ss ss/file", []byte("yopla"), 0644)
 
-	server := Server{runner: tools.LocalRunner{UnSudo:true}}
+	server := Server{runner: tools.LocalRunner{UnSudo: true}}
 	r := Rsync{
 		SourceFilesystem: BlockDevice{
 			Mountpoint: source,
@@ -77,9 +77,6 @@ func TestRsyncSync(t *testing.T) {
 	//}
 
 }
-
-
-
 
 //if err := r.; err == nil {
 //t.Errorf("should fail if no mountpoints")

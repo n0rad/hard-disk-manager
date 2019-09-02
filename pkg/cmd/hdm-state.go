@@ -46,7 +46,6 @@ func Index(selector system.DisksSelector) error {
 	})
 }
 
-
 func Location(selector system.DisksSelector) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	if _, err := fmt.Fprintln(w, "Name\tLocation\tLabel\tPath,Mount"); err != nil {
@@ -70,12 +69,11 @@ func Location(selector system.DisksSelector) error {
 			}
 		}
 
-
 		if _, err := fmt.Fprintln(w,
 			disk.Name+"\t"+
 				location+"\t"+
 				strings.Join(labels, ",")+"\t"+
-				path+"\t" +
+				path+"\t"+
 				disk.FindDeepestBlockDevice().Mountpoint+"\t"+
 				""); err != nil {
 			logs.WithE(err).Fatal("Fail tp print")

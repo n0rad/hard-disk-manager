@@ -7,6 +7,7 @@ require (
 	github.com/awnumar/memguard v0.19.1
 	github.com/client9/misspell v0.3.4
 	github.com/davidmz/go-pageant v1.0.1 // indirect
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
@@ -15,6 +16,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/n0rad/go-erlog v0.0.0-20190510152055-0a033e8086d8
+	github.com/oklog/run v1.0.0
 	github.com/pilebones/go-udev v0.0.0-20180820235104-043677e09b13
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pkg/sftp v1.10.0 // indirect

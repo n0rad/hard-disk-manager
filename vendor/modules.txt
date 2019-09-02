@@ -12,6 +12,8 @@ github.com/client9/misspell
 github.com/davecgh/go-spew/spew
 # github.com/davidmz/go-pageant v1.0.1
 github.com/davidmz/go-pageant
+# github.com/fsnotify/fsnotify v1.4.7
+github.com/fsnotify/fsnotify
 # github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835
 github.com/fzipp/gocyclo
 # github.com/ghodss/yaml v1.0.0
@@ -35,6 +37,8 @@ github.com/n0rad/go-erlog/register
 github.com/n0rad/go-erlog/data
 github.com/n0rad/go-erlog/errs
 github.com/n0rad/go-erlog
+# github.com/oklog/run v1.0.0
+github.com/oklog/run
 # github.com/pilebones/go-udev v0.0.0-20180820235104-043677e09b13
 github.com/pilebones/go-udev/netlink
 # github.com/pkg/errors v0.8.1

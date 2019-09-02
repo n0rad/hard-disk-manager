@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-
 //partprobe
 //wipefs --all /dev/sdX
 //sudo lsblk -o name,size,type,fstype,label,partlabel,mountpoint,path
@@ -77,7 +76,6 @@ func (d *Disk) PopulateFromBytes(bytes []byte) error {
 
 	return nil
 }
-
 
 func (d *Disk) ReplaceFromLsblk() error {
 	logs.WithFields(d.fields).Info("Running lsblk")

@@ -9,47 +9,75 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"io"
 	"net"
+	"os"
 	"syscall"
 	"time"
 )
 
 type Server struct {
-	Port     int
-	Timeout  time.Duration
+	Port       int
+	Timeout    time.Duration
+	SocketPath string
+
 	commands map[string]func(net.Conn) error
+	stop     chan struct{}
+	listener net.Listener
 }
 
 func (s *Server) Init(port int) {
 	s.Port = 3636
+	s.SocketPath = "/tmp/hdm.sock"
 	s.Timeout = 10 * time.Second
 	s.commands = make(map[string]func(conn net.Conn) error)
 	s.commands["password"] = passwordSocketCommand
 }
 
 func (s *Server) Start() error {
-	_ = syscall.Unlink("/tmp/hdm.sock")
-	listener, err := net.Listen("unix", "/tmp/hdm.sock")
+	s.cleanupSocket()
+	s.stop = make(chan struct{}, 1)
+	defer close(s.stop)
+
+	listener, err := net.Listen("unix", s.SocketPath)
 	if err != nil {
-		return errs.WithE(err, "Failed to listen socket")
+		return errs.WithEF(err, data.WithField("path", s.SocketPath), "Failed to listen on socket")
 	}
-	defer listener.Close()
+	s.listener = listener
+	defer s.cleanupSocket()
 
 	for {
-		conn, err := listener.Accept()
+		conn, err := s.listener.Accept()
 		if err != nil {
-			logs.WithE(err).Error("Failed to accept socket connection")
+			select {
+			case <-s.stop:
+				return nil
+			default:
+				logs.WithE(err).Error("Failed to accept socket connection")
+			}
 			continue
 		}
-
 		go s.handleConnection(conn)
 	}
 }
 
-func (s *Server) Stop() {
-
+func (s *Server) Stop(e error) {
+	s.stop <- struct{}{}
+	if s.listener != nil {
+		s.listener.Close()
+	}
 }
 
 //////////////////////////////
+
+func (s *Server) cleanupSocket() {
+	_, err := os.Stat(s.SocketPath)
+	if os.IsNotExist(err) {
+		return
+	}
+
+	if err := syscall.Unlink(s.SocketPath); err != nil {
+		logs.WithEF(err, data.WithField("path", s.SocketPath)).Warn("Failed to unlink socket")
+	}
+}
 
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {

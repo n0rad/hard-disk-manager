@@ -15,7 +15,7 @@ type BackupConfig struct {
 	Path   string
 	Delete bool
 
-	configPath        string
+	configPath string
 }
 
 type Backup struct {
@@ -47,5 +47,3 @@ func (b *BackupConfig) Backupable(disks system.Disks) (error, error) {
 func (b *BackupConfig) Backup(disks system.Disks) error {
 	return nil
 }
-
-

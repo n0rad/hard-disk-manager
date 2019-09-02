@@ -91,7 +91,6 @@ func (b BlockDevice) FindDeepestBlockDevice() BlockDevice {
 	return b
 }
 
-
 func (b *BlockDevice) addAndGiveNewDevices(password string) (bool, error) {
 	logs.WithFields(b.fields).Debug("Disk add")
 	if len(b.Children) > 0 {
@@ -234,7 +233,7 @@ func (b *BlockDevice) mount() error {
 		return nil
 	}
 
-	if ! utils.SliceContains(filesystems, b.Fstype) {
+	if !utils.SliceContains(filesystems, b.Fstype) {
 		return errs.WithF(b.fields, "Cannot mount, not a support filesystem")
 	}
 	if b.Label == "" {

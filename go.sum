@@ -18,6 +18,7 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davidmz/go-pageant v1.0.1 h1:kzCt64aTc557QYvy5VBSN1pVWO/tNAcqzwlpUsZ8IEE=
 github.com/davidmz/go-pageant v1.0.1/go.mod h1:WWOKE/93DhgsPq15jaipH4fVY+MLKKWH4Yku5Ei92rE=
+github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835 h1:roDmqJ4Qes7hrDOsWsMCce0vQHz3xiMPjJ9m4c2eeNs=
 github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835/go.mod h1:BjL/N0+C+j9uNX+1xcNuM9vdSIcXCZrQZUYbXOFbgN8=
@@ -25,6 +26,7 @@ github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-bindata/go-bindata v3.1.2+incompatible h1:5vjJMVhowQdPzjE1LdxyFF7YFTXg5IgGVW4gBr5IbvE=
 github.com/go-bindata/go-bindata v3.1.2+incompatible/go.mod h1:xK8Dsgwmeed+BBsSy2XTopBn/8uK2HWuGSnA11C3Joo=
+github.com/go-fsnotify/fsnotify v0.0.0-20180321022601-755488143dae h1:PeVNzgTRtWGm6fVic5i21t+n5ptPGCZuMcSPVMyTWjs=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8 h1:ehVe1P3MbhHjeN/Rn66N2fGLrP85XXO1uxpLhv0jtX8=
 github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8/go.mod h1:cuNKsD1zp2v6XfE/orVX2QE1LC+i254ceGcVeDT3pTU=
@@ -47,6 +49,8 @@ github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrk
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/n0rad/go-erlog v0.0.0-20190510152055-0a033e8086d8 h1:GruldGYGyaJtNT0hMMLkgW3WJjLmt00HXV7IVx8JFSM=
 github.com/n0rad/go-erlog v0.0.0-20190510152055-0a033e8086d8/go.mod h1:JKhdeq8dXTzwV13QQbMU9y8qmh1fnfPdxXnVPwpv6VA=
+github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
+github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.2/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=

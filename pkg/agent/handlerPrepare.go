@@ -7,7 +7,6 @@ type HandlerPrepare struct {
 	CommonHandler
 }
 
-
 func (h *HandlerPrepare) Start() {
 	disk, err := h.server.ScanDisk(h.path)
 	if err != nil {

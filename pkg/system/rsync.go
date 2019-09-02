@@ -22,7 +22,7 @@ type Rsync struct {
 	sourceFullPath string
 	targetFullPath string
 
-	fields         data.Fields
+	fields data.Fields
 }
 
 func (r *Rsync) Init() error {
@@ -112,7 +112,6 @@ func (r *Rsync) Rsyncable() (error, error) {
 	return nil, nil
 }
 
-
 func (r *Rsync) RSync() error {
 	why, err := r.Rsyncable()
 	if err != nil {
@@ -123,7 +122,7 @@ func (r *Rsync) RSync() error {
 		return nil
 	}
 
-	if _, err := r.TargetFilesystem.ExecShell("sudo", "mkdir",  "-p ", shellescape.Quote(r.targetFullPath)); err != nil {
+	if _, err := r.TargetFilesystem.ExecShell("sudo", "mkdir", "-p ", shellescape.Quote(r.targetFullPath)); err != nil {
 		return errs.WithEF(err, r.fields.WithField("path", r.targetFullPath), "Failed to create target backup path")
 	}
 
