@@ -2,11 +2,10 @@ package socket
 
 import (
 	"fmt"
-	"github.com/awnumar/memguard"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/hdm"
+	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"io"
 	"net"
 	"os"
@@ -24,12 +23,18 @@ type Server struct {
 	listener net.Listener
 }
 
-func (s *Server) Init(port int) {
+func (s *Server) Init(port int, passService password.Service) {
 	s.Port = 3636
 	s.SocketPath = "/tmp/hdm.sock"
 	s.Timeout = 10 * time.Second
 	s.commands = make(map[string]func(conn net.Conn) error)
-	s.commands["password"] = passwordSocketCommand
+	s.commands["password"] = func (conn net.Conn) error {
+		if err := passService.FromConnection(conn); err != nil {
+			return nil
+		}
+		logs.Info("Password changed")
+		return nil
+	}
 }
 
 func (s *Server) Start() error {
@@ -107,12 +112,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 		commandFunc(conn)
 	}
-}
-
-func passwordSocketCommand(conn net.Conn) error {
-	buf := memguard.NewBufferFromReaderUntil(conn, '\n')
-	hdm.HDM.SetPassword(buf.Seal())
-	return nil
 }
 
 func readCommand(conn net.Conn) (string, error) {

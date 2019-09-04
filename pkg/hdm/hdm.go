@@ -1,7 +1,6 @@
 package hdm
 
 import (
-	"github.com/awnumar/memguard"
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
@@ -23,7 +22,6 @@ type Hdm struct {
 	}
 
 	dbDisk   DBDisk
-	password *memguard.Enclave
 
 	fields data.Fields
 }
@@ -35,18 +33,7 @@ func (hdm Hdm) DBDisk() *DBDisk {
 	return &hdm.dbDisk
 }
 
-func (hdm *Hdm) SetPassword(p *memguard.Enclave) {
-	logs.Info("Password set")
-	hdm.password = p
-}
-
-func (hdm Hdm) GetPassword() *memguard.Enclave {
-	return hdm.password
-}
-
 func (hdm *Hdm) Init(home string) error {
-	// TODO memguard.CatchInterrupt()
-
 	configPath := home + pathConfig
 	file, err := ioutil.ReadFile(configPath)
 	if err != nil {

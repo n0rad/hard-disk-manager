@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"github.com/awnumar/memguard"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/utils"
+	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/spf13/cobra"
 	"io"
 	"net"
@@ -32,11 +31,11 @@ func passwordCmd() *cobra.Command {
 }
 
 func sendPassword(socketPath string, confirm bool) error {
-	defer memguard.Purge()
+	passService := password.Service{}
+	go passService.Start()
+	defer passService.Stop(nil)
 
-	// read stdin
-	password, err := utils.AskPasswordWithConfirmation(confirm)
-	if err != nil {
+	if err := passService.FromStdin(confirm); err != nil {
 		return errs.WithE(err, "Failed to ask password")
 	}
 
@@ -55,7 +54,7 @@ func sendPassword(socketPath string, confirm bool) error {
 		return errs.WithE(err, "Failed to write command")
 	}
 
-	if err := writeBytes(conn, password); err != nil {
+	if err := passService.Write(conn); err != nil {
 		return errs.WithE(err, "Failed to write key")
 	}
 	return nil

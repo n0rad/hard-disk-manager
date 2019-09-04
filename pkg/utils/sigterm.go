@@ -8,11 +8,11 @@ import (
 )
 
 type SigtermService struct {
-	cancel chan struct{}
+	stop chan struct{}
 }
 
 func (s *SigtermService) Init() {
-	s.cancel = make(chan struct{})
+	s.stop = make(chan struct{})
 }
 
 func (s SigtermService) Start() error {
@@ -22,12 +22,12 @@ func (s SigtermService) Start() error {
 	select {
 	case <-term:
 		logs.Info("Received SIGTERM, exiting gracefully...")
-	case <-s.cancel:
+	case <-s.stop:
 		break
 	}
 	return nil
 }
 
 func (s SigtermService) Stop(e error) {
-	close(s.cancel)
+	close(s.stop)
 }

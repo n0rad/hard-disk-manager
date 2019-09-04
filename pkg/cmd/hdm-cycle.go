@@ -5,12 +5,11 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
-	"github.com/n0rad/hard-disk-manager/pkg/utils"
 )
 
 func Prepare(selector system.DisksSelector) error {
 	fields := data.WithField("selector", selector)
-	label := selector.Label
+	//label := selector.Label
 	selector.Label = ""
 
 	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
@@ -18,12 +17,13 @@ func Prepare(selector system.DisksSelector) error {
 			return errs.WithF(fields, "Cannot prepare, disk has partitions")
 		}
 
-		password, err := utils.AskPasswordWithConfirmation(true)
-		if err != nil {
-			return errs.WithE(err, "Failed to get password")
-		}
-
-		return disk.Prepare(label, string(password))
+		//password, err := utils.AskPasswordWithConfirmation(true)
+		//if err != nil {
+		//	return errs.WithE(err, "Failed to get password")
+		//}
+		//
+		//return disk.Prepare(label, string(password))
+		return nil
 	})
 }
 
@@ -34,13 +34,14 @@ func Erase(selector system.DisksSelector) error {
 }
 
 func Add(selector system.DisksSelector) error {
-	password, err := utils.AskPasswordWithConfirmation(false)
-	if err != nil {
-		return errs.WithE(err, "Failed to get password")
-	}
+	//password, err := utils.AskPasswordWithConfirmation(false)
+	//if err != nil {
+	//	return errs.WithE(err, "Failed to get password")
+	//}
 
 	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		return disk.Add(string(password))
+		//return disk.Add()
+		return nil
 	})
 }
 

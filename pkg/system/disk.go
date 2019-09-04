@@ -2,6 +2,7 @@ package system
 
 import (
 	"encoding/json"
+	"github.com/awnumar/memguard"
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
@@ -45,7 +46,7 @@ func (d *Disk) Location() (string, error) {
 	return d.server.BayLocation(path), nil
 }
 
-func (d *Disk) Add(password string) error {
+func (d *Disk) Add(password *memguard.LockedBuffer) error {
 	for {
 		newDevices, err := d.addAndGiveNewDevices(password)
 		if err != nil {
@@ -134,7 +135,7 @@ func (d *Disk) Scan() error {
 	return nil
 }
 
-func (d *Disk) Prepare(label string, cryptPassword string) error {
+func (d *Disk) Prepare(label string, cryptPassword *memguard.LockedBuffer) error {
 	if len(d.Children) != 0 {
 		return errs.WithF(d.fields, "Cannot prepare disk, some partitions exists")
 	}
@@ -159,7 +160,7 @@ func (d *Disk) Prepare(label string, cryptPassword string) error {
 		return errs.WithF(d.fields, "Number of partitions is not one after prepare")
 	}
 
-	if _, err = d.server.Exec("echo -n '" + cryptPassword + "' | sudo cryptsetup --verbose --hash=sha512 --cipher=aes-xts-benbi:sha512 --key-size=512 luksFormat " + d.Children[0].Path + " -"); err != nil {
+	if _, err = d.server.Exec("echo -n '" + cryptPassword.String() + "' | sudo cryptsetup --verbose --hash=sha512 --cipher=aes-xts-benbi:sha512 --key-size=512 luksFormat " + d.Children[0].Path + " -"); err != nil {
 		return errs.WithEF(err, d.fields, "Fail to crypt partition")
 	}
 

@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/awnumar/memguard"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
@@ -91,7 +92,7 @@ func (b BlockDevice) FindDeepestBlockDevice() BlockDevice {
 	return b
 }
 
-func (b *BlockDevice) addAndGiveNewDevices(password string) (bool, error) {
+func (b *BlockDevice) addAndGiveNewDevices(password *memguard.LockedBuffer) (bool, error) {
 	logs.WithFields(b.fields).Debug("Disk add")
 	if len(b.Children) > 0 {
 		newDevices := false
@@ -164,7 +165,7 @@ func (b *BlockDevice) sleep() error {
 	return nil
 }
 
-func (b *BlockDevice) luksOpen(cryptPassword string) error {
+func (b *BlockDevice) luksOpen(cryptPassword *memguard.LockedBuffer) error {
 	logs.WithFields(b.fields).Info("Disk luksOpen")
 	if b.Fstype != "crypto_LUKS" {
 		return errs.WithF(b.fields, "Cannot luks open, not a crypto block device")
@@ -179,7 +180,7 @@ func (b *BlockDevice) luksOpen(cryptPassword string) error {
 		return errs.WithF(b.fields, "A label on the partition is mandatory")
 	}
 
-	if out, err := b.server.Exec("echo -n '" + cryptPassword + "' | sudo cryptsetup luksOpen " + b.Path + " " + b.Partlabel + " -"); err != nil {
+	if out, err := b.server.Exec("echo -n '" + cryptPassword.String() + "' | sudo cryptsetup luksOpen " + b.Path + " " + b.Partlabel + " -"); err != nil {
 		return errs.WithEF(err, b.fields.WithField("out", out), "Failed to open luks")
 	}
 

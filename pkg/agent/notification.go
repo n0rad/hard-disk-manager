@@ -9,6 +9,7 @@ type NotificationType string
 //const Error		// new pending failed
 //const Critical	// disk lost
 //
+
 //const Action	// plug disk, ask label,
 
 type Notify interface {
