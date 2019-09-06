@@ -8,13 +8,13 @@ type HandlerPrepare struct {
 }
 
 func (h *HandlerPrepare) Start() {
-	disk, err := h.server.ScanDisk(h.path)
-	if err != nil {
-		logs.WithE(err).Error("Failed to scan disk")
-		return
-	}
+	//disk, err := h.server.ScanDisk(h.path)
+	//if err != nil {
+	//	logs.WithE(err).Error("Failed to scan disk")
+	//	return
+	//}
 
-	if len(disk.Children) == 0 {
+	if len(h.disk.Children) == 0 {
 		logs.WithF(h.fields).Warn("Disk has not partitions and should be prepared")
 	}
 }

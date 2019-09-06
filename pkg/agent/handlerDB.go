@@ -12,12 +12,14 @@ type HandlerDb struct {
 
 func (h *HandlerDb) Start() {
 	h.storeInfo()
+
+
 }
 
 ///////////////////////////////////
 
 func (h *HandlerDb) storeInfo() {
-	disk, err := h.server.ScanDisk(h.path)
+	disk, err := h.server.ScanDisk(h.manager.Path)
 	if err != nil {
 		logs.WithE(err).Error("Failed to scan disk")
 		return

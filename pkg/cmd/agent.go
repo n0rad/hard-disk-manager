@@ -19,10 +19,11 @@ func Agent() error {
 
 	// password
 	passService := password.Service{}
+	passService.Init()
 	g.Add(passService.Start, passService.Stop)
 
 	// agent
-	agent := app.Agent{}
+	agent := app.Agent{PassService: passService}
 	g.Add(agent.Start, agent.Stop)
 
 	// socketServer

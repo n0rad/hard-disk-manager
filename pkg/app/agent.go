@@ -4,12 +4,15 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/agent"
+	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/pilebones/go-udev/netlink"
 	"sync"
 )
 
 type Agent struct {
+	PassService password.Service
+
 	server       system.Server
 	udevConn     *netlink.UEventConn
 	stop         chan struct{}
@@ -36,22 +39,26 @@ func (a *Agent) Start() error {
 		return errs.WithE(err, "Cannot add current block devices after watching events")
 	}
 
-	// TODO you can lose events between addCurrent and watch
+	// TODO you can lose events between addCurrent and watch but watch is blocking
 
 	a.watchUdevBlockEvents()
+
+	logs.Info("Stop Agent")
 
 	// cleanup
 	a.disksMutex.Lock()
 	defer a.disksMutex.Unlock()
-	for _, v := range a.diskManagers {
-		v.Stop()
-	}
+	//for _, v := range a.diskManagers {
+	//v.Stop(nil)
+	//}
 
 	return nil
 }
 
 func (a *Agent) Stop(e error) {
+	logs.Info("Stop Agent1")
 	close(a.stop)
+	logs.Info("Stop Agent2")
 }
 
 ///////////////////////
@@ -64,7 +71,17 @@ type BlockDeviceEvent struct {
 
 func (a *Agent) addDisk(path string) {
 	if _, ok := a.diskManagers[path]; !ok {
-		a.diskManagers[path] = agent.NewDiskManager(path)
+		dm := agent.DiskManager{
+			Path:        path,
+			PassService: a.PassService,
+		}
+		dm.Init()
+		a.diskManagers[path] = dm
+		go dm.Start()
+		//if err := start; err != nil {
+		//	logs.WithE(err).Error("Failed to start agent service")
+		//} else {
+		//}
 	} else {
 		logs.WithField("path", path).Warn("Cannot add disk, already exists")
 	}
@@ -72,7 +89,7 @@ func (a *Agent) addDisk(path string) {
 
 func (a *Agent) removeDisk(path string) {
 	if diskManager, ok := a.diskManagers[path]; ok {
-		diskManager.Stop()
+		diskManager.Stop(nil)
 		delete(a.diskManagers, path)
 	} else {
 		logs.WithField("path", path).Warn("Cannot remove disk, not found")

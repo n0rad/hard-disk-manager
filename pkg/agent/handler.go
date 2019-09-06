@@ -7,24 +7,23 @@ import (
 )
 
 type Handler interface {
-	Init(path string)
+	Init(manager *DiskManager)
 	Start()
 	Stop()
 	//Handle(event)
 }
 
 type CommonHandler struct {
-	disk system.Disk
-
-	path   string
-	server system.Server
-	fields data.Fields
+	disk    system.Disk
+	server  system.Server
+	fields  data.Fields
+	manager *DiskManager
 }
 
-func (h *CommonHandler) Init(path string) {
-	h.path = path
-	h.fields = data.WithField("path", path)
+func (h *CommonHandler) Init(manager *DiskManager) {
+	h.fields = data.WithField("path", manager.Path)
 	h.server = system.Server{}
+	h.manager = manager
 
 	if err := h.server.Init(); err != nil {
 		logs.WithE(err).Error("fail")

@@ -15,7 +15,13 @@ import (
 
 type Service struct {
 	password *memguard.Enclave
+	notify   map[chan struct{}]struct{}
 	stop     chan struct{}
+}
+
+func (s *Service) Init() {
+	s.notify = make(map[chan struct{}] struct{})
+	s.stop = make(chan struct{})
 }
 
 func (s *Service) Stop(e error) {
@@ -23,7 +29,6 @@ func (s *Service) Stop(e error) {
 }
 
 func (s *Service) Start() error {
-	s.stop = make(chan struct{})
 	term := make(chan os.Signal, 1)
 	signal.Notify(term, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
@@ -38,19 +43,18 @@ func (s *Service) Start() error {
 }
 
 func (s *Service) FromConnection(conn net.Conn) error {
-	buf := memguard.NewBufferFromReaderUntil(conn, '\n')
-	s.password = buf.Seal()
+	s.setAndNotify(memguard.NewBufferFromReaderUntil(conn, '\n'))
 	return nil
 }
 
 func (s *Service) FromStdin(confirmation bool) error {
 	var password, passwordConfirm []byte
-	var err error
-
 	defer memguard.WipeBytes(password)
 	defer memguard.WipeBytes(passwordConfirm)
 
 	for {
+		var err error
+
 		print("Password: ")
 		password, err = terminal.ReadPassword(int(syscall.Stdin))
 		if err != nil {
@@ -59,7 +63,7 @@ func (s *Service) FromStdin(confirmation bool) error {
 
 		print("\n")
 		if !confirmation {
-			s.password = memguard.NewEnclave(password)
+			s.setAndNotify(memguard.NewBufferFromBytes(password))
 			return nil
 		}
 
@@ -71,7 +75,7 @@ func (s *Service) FromStdin(confirmation bool) error {
 		print("\n")
 
 		if string(password) == string(passwordConfirm) && string(password) != "" {
-			s.password = memguard.NewEnclave(password)
+			s.setAndNotify(memguard.NewBufferFromBytes(password))
 			return nil
 		} else {
 			fmt.Println("\nEmpty password or do not match...\n")
@@ -79,9 +83,19 @@ func (s *Service) FromStdin(confirmation bool) error {
 	}
 }
 
+func (s *Service) Watch() chan struct{} {
+	c := make(chan struct{})
+	s.notify[c] = struct{}{}
+	return c
+}
+
 func (s Service) Write(writer io.Writer) error {
 	var total, written int
 	var err error
+
+	if s.password == nil {
+		return errs.With("Password is not set")
+	}
 
 	lockedBuffer, err := s.password.Open()
 	if err != nil {
@@ -101,7 +115,18 @@ func (s Service) Write(writer io.Writer) error {
 }
 
 func (s Service) Get() (*memguard.LockedBuffer, error) {
+	if s.password == nil {
+		return nil, errs.With("No password set")
+	}
 	return s.password.Open()
 }
 
 /////
+
+func (s *Service) setAndNotify(buffer *memguard.LockedBuffer) {
+	logs.Info("Password set")
+	s.password = buffer.Seal()
+	for e := range s.notify {
+		e <- struct{}{}
+	}
+}

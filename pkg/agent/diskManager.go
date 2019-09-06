@@ -2,52 +2,50 @@ package agent
 
 import (
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/password"
 )
 
 type DiskManager struct {
-	path     string
-	handlers []Handler
+	PassService password.Service
+	Path        string
 
+	handlers []Handler
+	stop     chan struct{}
 	//serialJobs chan
 }
 
-func (d *DiskManager) Stop() {
-	logs.WithField("path", d.path).Info("Stop disk manager")
+func (d *DiskManager) Init() {
+	d.handlers = append(d.handlers, &HandlerDb{})
+	d.handlers = append(d.handlers, &HandlerAdd{})
+
+	for _, v := range d.handlers {
+		v.Init(d)
+	}
+}
+
+func (d *DiskManager) Start() error {
+	logs.WithField("path", d.Path).Info("New disk manager")
+	d.stop = make(chan struct{})
+
+	for _, v := range d.handlers {
+		v.Start()
+	}
+
+	//<-d.stop
+
+	//for _, v := range d.handlers {
+	//	v.Stop()
+	//}
+	return nil
+}
+
+func (d *DiskManager) Stop(e error) {
+	close(d.stop)
 }
 
 //func (d *DiskManager) AddChildrenEvent(event hdm.BlockDeviceEvent) {
 //	logs.WithField("event", event).Info("Children event")
 //}
-
-func NewDiskManager(path string) DiskManager {
-	handlers := []Handler{
-		&HandlerDb{},
-	}
-
-	for _, v := range handlers {
-		v.Init(path)
-	}
-
-	for _, v := range handlers {
-		v.Start()
-	}
-
-	logs.WithField("path", path).Info("New disk manager")
-
-	//disk, err := server.ScanDisk(path)
-	//if err != nil {
-	//	return DiskManager{}, errs.WithEF(err, data.WithField("path", path), "Failed to scan disk")
-	//}
-	//
-	//// store disk in db
-	////
-	manager := DiskManager{
-		path: path,
-		//disk: disk,
-	}
-
-	return manager
-}
 
 // watch disk events -> add/remove disks
 // watch files events -> run sync

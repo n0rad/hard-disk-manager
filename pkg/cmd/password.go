@@ -32,6 +32,7 @@ func passwordCmd() *cobra.Command {
 
 func sendPassword(socketPath string, confirm bool) error {
 	passService := password.Service{}
+	passService.Init()
 	go passService.Start()
 	defer passService.Stop(nil)
 
