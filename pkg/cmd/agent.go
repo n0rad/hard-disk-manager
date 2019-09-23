@@ -23,12 +23,12 @@ func Agent() error {
 	g.Add(passService.Start, passService.Stop)
 
 	// agent
-	agent := app.Agent{PassService: passService}
+	agent := app.Agent{PassService: &passService}
 	g.Add(agent.Start, agent.Stop)
 
 	// socketServer
 	socketServer := socket.Server{}
-	socketServer.Init(6363, passService)
+	socketServer.Init(6363, &passService)
 	g.Add(socketServer.Start, socketServer.Stop)
 
 	// start services

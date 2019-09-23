@@ -1,12 +1,13 @@
 package agent
 
 import (
+	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 )
 
 type DiskManager struct {
-	PassService password.Service
+	PassService *password.Service
 	Path        string
 
 	handlers []Handler
@@ -16,7 +17,8 @@ type DiskManager struct {
 
 func (d *DiskManager) Init() {
 	d.handlers = append(d.handlers, &HandlerDb{})
-	d.handlers = append(d.handlers, &HandlerAdd{})
+	//d.handlers = append(d.handlers, &HandlerAdd{})
+	d.handlers = append(d.handlers, &HandlerHealthCheck{})
 
 	for _, v := range d.handlers {
 		v.Init(d)
@@ -41,6 +43,18 @@ func (d *DiskManager) Start() error {
 
 func (d *DiskManager) Stop(e error) {
 	close(d.stop)
+}
+
+func (d *DiskManager) Notify(level logs.Level, fields data.Fields, message string) {
+	logs.WithFields(fields).Info(message)
+}
+
+func (d *DiskManager) Event() {
+
+	// add
+	// remove
+	// changed
+	// mount
 }
 
 //func (d *DiskManager) AddChildrenEvent(event hdm.BlockDeviceEvent) {

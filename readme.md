@@ -55,10 +55,16 @@ HDM is a single binary file, just download and extract it to any bin directory
 
 ## TODO
 
-- find non backed-up paths
+### Search
 - get disk name for a file in any filesystem (links, overlays)
+
+
+### Action
+- find non backed-up paths
 - sync directories across servers
+
 - remove without selector should find mounted removed devices
+
 - prepare by location
 - periodic set to readonly
 - save last backup time so we know we should do it again

@@ -11,7 +11,7 @@ import (
 )
 
 type Agent struct {
-	PassService password.Service
+	PassService *password.Service
 
 	server       system.Server
 	udevConn     *netlink.UEventConn

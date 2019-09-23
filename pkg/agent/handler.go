@@ -14,16 +14,18 @@ type Handler interface {
 }
 
 type CommonHandler struct {
-	disk    system.Disk
+	disk    *system.Disk
 	server  system.Server
 	fields  data.Fields
 	manager *DiskManager
+	stop     chan struct{}
 }
 
 func (h *CommonHandler) Init(manager *DiskManager) {
 	h.fields = data.WithField("path", manager.Path)
 	h.server = system.Server{}
 	h.manager = manager
+	h.stop = make(chan struct{})
 
 	if err := h.server.Init(); err != nil {
 		logs.WithE(err).Error("fail")
@@ -31,5 +33,5 @@ func (h *CommonHandler) Init(manager *DiskManager) {
 }
 
 func (h *CommonHandler) Stop() {
-
+	close(h.stop)
 }

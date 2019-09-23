@@ -23,7 +23,7 @@ type Server struct {
 	listener net.Listener
 }
 
-func (s *Server) Init(port int, passService password.Service) {
+func (s *Server) Init(port int, passService *password.Service) {
 	s.Port = 3636
 	s.SocketPath = "/tmp/hdm.sock"
 	s.Timeout = 10 * time.Second

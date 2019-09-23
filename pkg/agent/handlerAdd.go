@@ -8,8 +8,8 @@ type HandlerAdd struct {
 
 func (h *HandlerAdd) Start() {
 
-	watch := h.manager.PassService.Watch()
-	<-watch
+	password := h.manager.PassService.Watch()
+	<-password
 
 	buffer, err := h.manager.PassService.Get()
 	if err != nil {
@@ -31,3 +31,4 @@ func (h *HandlerAdd) Start() {
 
 	//h.disk.Add()
 }
+

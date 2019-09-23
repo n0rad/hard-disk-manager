@@ -83,6 +83,10 @@ func (s *Service) FromStdin(confirmation bool) error {
 	}
 }
 
+func (s *Service) Unwatch(c chan struct{}) {
+	delete(s.notify, c)
+}
+
 func (s *Service) Watch() chan struct{} {
 	c := make(chan struct{})
 	s.notify[c] = struct{}{}
@@ -114,8 +118,15 @@ func (s Service) Write(writer io.Writer) error {
 	return nil
 }
 
+func (s Service) IsSet() bool {
+	if s.password != nil {
+		return true
+	}
+	return false
+}
+
 func (s Service) Get() (*memguard.LockedBuffer, error) {
-	if s.password == nil {
+	if !s.IsSet() {
 		return nil, errs.With("No password set")
 	}
 	return s.password.Open()
@@ -124,7 +135,7 @@ func (s Service) Get() (*memguard.LockedBuffer, error) {
 /////
 
 func (s *Service) setAndNotify(buffer *memguard.LockedBuffer) {
-	logs.Info("Password set")
+	logs.Debug("Password set")
 	s.password = buffer.Seal()
 	for e := range s.notify {
 		e <- struct{}{}
