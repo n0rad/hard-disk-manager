@@ -1,4 +1,4 @@
-package agent
+package handlers
 
 import (
 	"github.com/n0rad/go-erlog/logs"
@@ -6,13 +6,21 @@ import (
 	"time"
 )
 
+func init() {
+	handlers[HandlerFilter{
+		Type: "disk",
+	}] = func() Handler {
+		return &HandlerDb{}
+	}
+}
+
 // store disk info in db
 type HandlerDb struct {
 	CommonHandler
 	storeInterval time.Duration
 }
 
-func (h *HandlerDb) Init(manager *DiskManager) {
+func (h *HandlerDb) Init(manager *BlockDeviceManager) {
 	h.CommonHandler.Init(manager)
 
 	if h.storeInterval == 0 {
@@ -27,10 +35,10 @@ func (h *HandlerDb) Start() {
 	ticker := time.NewTicker(h.storeInterval)
 	for {
 		select {
-		case <- ticker.C:
+		case <-ticker.C:
 			logs.WithFields(h.fields).Debug("Time to store info")
 			h.storeInfo()
-		case <- h.stop:
+		case <-h.stop:
 			ticker.Stop()
 			return
 		}

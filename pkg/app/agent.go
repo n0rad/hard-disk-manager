@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/agent"
+	"github.com/n0rad/hard-disk-manager/pkg/handlers"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/pilebones/go-udev/netlink"
@@ -16,12 +16,12 @@ type Agent struct {
 	server       system.Server
 	udevConn     *netlink.UEventConn
 	stop         chan struct{}
-	diskManagers map[string]agent.DiskManager
+	diskManagers map[string]handlers.BlockDeviceManager
 	disksMutex   sync.Mutex
 }
 
 func (a *Agent) Start() error {
-	a.diskManagers = make(map[string]agent.DiskManager)
+	a.diskManagers = make(map[string]handlers.BlockDeviceManager)
 	a.stop = make(chan struct{})
 
 	a.udevConn = new(netlink.UEventConn)
@@ -56,9 +56,7 @@ func (a *Agent) Start() error {
 }
 
 func (a *Agent) Stop(e error) {
-	logs.Info("Stop Agent1")
 	close(a.stop)
-	logs.Info("Stop Agent2")
 }
 
 ///////////////////////
@@ -67,32 +65,38 @@ type BlockDeviceEvent struct {
 	Action netlink.KObjAction
 	Path   string
 	Type   string
+	FSType string
 }
 
-func (a *Agent) addDisk(path string) {
-	if _, ok := a.diskManagers[path]; !ok {
-		dm := agent.DiskManager{
-			Path:        path,
+func (a *Agent) addDisk(event BlockDeviceEvent) {
+	if _, ok := a.diskManagers[event.Path]; !ok {
+		manager := handlers.BlockDeviceManager{
+			Path:        event.Path,
+			Type: event.Type,
+			FStype: event.FSType,
 			PassService: a.PassService,
 		}
-		dm.Init()
-		a.diskManagers[path] = dm
-		go dm.Start()
+
+		if err := manager.Init(); err != nil {
+			logs.Warn("Failed to init blockdevice manager")
+		}
+		a.diskManagers[event.Path] = manager
+		go manager.Start()
 		//if err := start; err != nil {
 		//	logs.WithE(err).Error("Failed to start agent service")
 		//} else {
 		//}
 	} else {
-		logs.WithField("path", path).Warn("Cannot add disk, already exists")
+		logs.WithField("path", event.Path).Warn("Cannot add disk, already exists")
 	}
 }
 
-func (a *Agent) removeDisk(path string) {
-	if diskManager, ok := a.diskManagers[path]; ok {
+func (a *Agent) removeDisk(event BlockDeviceEvent) {
+	if diskManager, ok := a.diskManagers[event.Path]; ok {
 		diskManager.Stop(nil)
-		delete(a.diskManagers, path)
+		delete(a.diskManagers, event.Path)
 	} else {
-		logs.WithField("path", path).Warn("Cannot remove disk, not found")
+		logs.WithField("path", event.Path).Warn("Cannot remove disk, not found")
 	}
 }
 
@@ -106,6 +110,7 @@ func (a *Agent) addCurrentBlockDevices() error {
 			Action: netlink.ADD,
 			Type:   v.Type,
 			Path:   v.Path,
+			FSType: v.Fstype,
 		})
 	}
 	return nil
@@ -115,42 +120,39 @@ func (a *Agent) handleEvent(event BlockDeviceEvent) {
 	a.disksMutex.Lock()
 	defer a.disksMutex.Unlock()
 
-	switch event.Type {
-	case "disk":
-		switch event.Action {
-		case "add":
-			a.addDisk(event.Path)
-		case "remove":
-			a.removeDisk(event.Path)
-		case "change":
-			a.removeDisk(event.Path)
-			a.addDisk(event.Path)
-		default:
-			logs.WithField("event", event).Warn("Unknown udev event type")
-		}
-	case "part", "partition":
-		logs.WithField("event", event).Info("Children event")
-		//if manager, ok := a.diskManagers[event.Path]; ok {
-		//	manager.AddChildrenEvent(event)
-		//} else {
-		//	logs.WithField("event", event).Warn("Disk not found to add event")
-		//	// disk not found to add partition
-		//}
+	switch event.Action {
+	case "add":
+		a.addDisk(event)
+	case "remove":
+		a.removeDisk(event)
+	case "change":
+		a.removeDisk(event)
+		a.addDisk(event)
 	default:
-		logs.WithField("event", event).Warn("Unknown event type")
+		logs.WithField("event", event).Warn("Unknown udev event action")
 	}
 }
+
+//switch event.Type {
+//case "disk":
+//case "part", "partition":
+//	logs.WithField("event", event).Info("Children event")
+//if manager, ok := a.diskManagers[event.Path]; ok {
+//	manager.AddChildrenEvent(event)
+//} else {
+//	logs.WithField("event", event).Warn("Disk not found to add event")
+//	// disk not found to add partition
+//}
+//default:
+//	logs.WithField("event", event).Warn("Unknown event type")
+//}
 
 func (a *Agent) watchUdevBlockEvents() {
 	matcher := netlink.RuleDefinitions{
 		Rules: []netlink.RuleDefinition{
 			{
-				//Action: "",
 				Env: map[string]string{
 					"SUBSYSTEM": "block",
-					//"DEVTYPE":   "disk",
-					//  ID_BUS=ata
-					//	ID_TYPE=disk
 				},
 			},
 		},
@@ -169,6 +171,7 @@ func (a *Agent) watchUdevBlockEvents() {
 				Action: uevent.Action,
 				Path:   uevent.Env["DEVNAME"],
 				Type:   uevent.Env["DEVTYPE"],
+				FSType: uevent.Env["ID_FS_TYPE"],
 			})
 		case err := <-errors:
 			logs.WithE(err).Warn("Received error for udev watcher")

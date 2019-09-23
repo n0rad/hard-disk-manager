@@ -1,4 +1,4 @@
-package agent
+package handlers
 
 import (
 	"github.com/n0rad/go-erlog/logs"
@@ -11,7 +11,7 @@ type HandlerHealthCheck struct {
 	CheckInterval time.Duration
 }
 
-func (h *HandlerHealthCheck) Init(manager *DiskManager) {
+func (h *HandlerHealthCheck) Init(manager *BlockDeviceManager) {
 	h.CommonHandler.Init(manager)
 
 	if h.CheckInterval == 0 {

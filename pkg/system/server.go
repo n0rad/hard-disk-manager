@@ -108,12 +108,12 @@ func (s Server) ScanDisk(path string) (Disk, error) {
 }
 
 func (s Server) ListFlatBlockDevices() ([]BlockDevice, error) {
-	logs.WithField("server", s.Name).Debug("List disks")
+	logs.WithField("server", s.Name).Debug("List block devices")
 	lsblk := struct {
 		Blockdevices []BlockDevice `json:"blockdevices"`
 	}{}
 
-	output, err := s.Exec("lsblk", "-J", "-o", "path,type")
+	output, err := s.Exec("lsblk", "-J", "-l", "-O")
 	if err != nil {
 		return lsblk.Blockdevices, errs.WithE(err, "Fail to get disks from lsblk")
 	}

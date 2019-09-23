@@ -1,4 +1,4 @@
-package agent
+package handlers
 
 import "github.com/n0rad/go-erlog/logs"
 
