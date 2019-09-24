@@ -7,24 +7,29 @@ import (
 )
 
 func init() {
-	handlers[HandlerFilter{
-		Type: "disk",
-	}] = func() Handler {
-		return &HandlerDb{}
-	}
+	handlers = append(handlers, handler{
+		HandlerFilter{Type: "disk"},
+		func() Handler {
+			return &HandlerDb{
+				CommonHandler: CommonHandler{
+					handlerName: "db",
+				},
+			}
+		},
+	})
 }
 
 // store disk info in db
 type HandlerDb struct {
 	CommonHandler
-	storeInterval time.Duration
+	StoreInterval time.Duration
 }
 
 func (h *HandlerDb) Init(manager *BlockDeviceManager) {
 	h.CommonHandler.Init(manager)
 
-	if h.storeInterval == 0 {
-		h.storeInterval = 10 * time.Second
+	if h.StoreInterval == 0 {
+		h.StoreInterval = 10 * time.Second
 	}
 }
 
@@ -32,7 +37,7 @@ func (h *HandlerDb) Start() {
 	h.storeInfo()
 
 	// TODO handle partitions changes
-	ticker := time.NewTicker(h.storeInterval)
+	ticker := time.NewTicker(h.StoreInterval)
 	for {
 		select {
 		case <-ticker.C:

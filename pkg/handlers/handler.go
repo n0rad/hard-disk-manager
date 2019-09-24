@@ -6,15 +6,23 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 )
 
-var handlers = make(map[HandlerFilter]func() Handler)
+type handler struct {
+	filter HandlerFilter
+	new func() Handler
+}
+
+var handlers []handler
+
 
 type Handler interface {
 	Init(manager *BlockDeviceManager)
 	Start()
 	Stop()
+	Name() string
 }
 
-//
+/////////////////////////
+
 type HandlerFilter struct {
 	Type   string
 	FSType string
@@ -44,11 +52,12 @@ func (h HandlerFilter) Match(filter HandlerFilter) bool {
 ///////////////////////////
 
 type CommonHandler struct {
-	disk    *system.Disk
-	server  system.Server
-	fields  data.Fields
-	manager *BlockDeviceManager
-	stop    chan struct{}
+	handlerName string
+	disk        *system.Disk
+	server      system.Server
+	fields      data.Fields
+	manager     *BlockDeviceManager
+	stop        chan struct{}
 }
 
 func (h *CommonHandler) Init(manager *BlockDeviceManager) {
@@ -64,4 +73,8 @@ func (h *CommonHandler) Init(manager *BlockDeviceManager) {
 
 func (h *CommonHandler) Stop() {
 	close(h.stop)
+}
+
+func (h *CommonHandler) Name() string {
+	return h.handlerName
 }

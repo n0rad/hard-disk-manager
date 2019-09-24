@@ -34,19 +34,16 @@ type BlockDeviceManager struct {
 }
 
 func (d *BlockDeviceManager) Init() error {
+	logs.WithField("path", d.Path).Info("New block device manager")
 	if err := d.server.Init(); err != nil {
 		return errs.WithE(err, "Failed to init empty server")
 	}
 
-	//d.server.GetBlockDeviceTypes()
-
-	// get type & fstype
-	// add handler matchin type & fstype
-
-	for filter, newHandler := range handlers {
-		if filter.Match(HandlerFilter{Type: d.Type, FSType: d.FStype}) {
-			logs.Trace("Register handler")
-			d.handlers = append(d.handlers, newHandler())
+	for _, handler := range handlers {
+		if handler.filter.Match(HandlerFilter{Type: d.Type, FSType: d.FStype}) {
+			handler := handler.new()
+			logs.WithField("handler", handler.Name()).WithField("path", d.Path).Debug("Register handler")
+			d.handlers = append(d.handlers, handler)
 
 			// TODO load configuration for handler
 			// TODO if disabled, remove
@@ -60,7 +57,6 @@ func (d *BlockDeviceManager) Init() error {
 }
 
 func (d *BlockDeviceManager) Start() error {
-	logs.WithField("path", d.Path).Info("New disk manager")
 	d.stop = make(chan struct{})
 
 	for _, v := range d.handlers {

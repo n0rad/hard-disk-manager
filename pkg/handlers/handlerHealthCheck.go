@@ -5,6 +5,19 @@ import (
 	"time"
 )
 
+func init() {
+	handlers = append(handlers, handler{
+		HandlerFilter{Type: "disk"},
+		func() Handler {
+			return &HandlerDb{
+				CommonHandler: CommonHandler{
+					handlerName: "healthCheck",
+				},
+			}
+		},
+	})
+}
+
 // store disk info in db
 type HandlerHealthCheck struct {
 	CommonHandler
