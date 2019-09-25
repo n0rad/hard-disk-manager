@@ -83,6 +83,6 @@ func TestRsyncSync(t *testing.T) {
 //}
 //
 //if ko.MaxServerConnectionAge != keepalive.Infinity {
-//t.Errorf("%s maximum connection age %v", t.Name(), ko.MaxServerConnectionAge)
+//t.Errorf("%s maximum connection age %v", t.HandlerName(), ko.MaxServerConnectionAge)
 //}
-//t.Errorf("should fail if no mountpoints %s %s", t.Name(), err.Error())
+//t.Errorf("should fail if no mountpoints %s %s", t.HandlerName(), err.Error())

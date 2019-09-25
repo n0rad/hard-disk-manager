@@ -42,7 +42,7 @@ func (d *BlockDeviceManager) Init() error {
 	for _, handler := range handlers {
 		if handler.filter.Match(HandlerFilter{Type: d.Type, FSType: d.FStype}) {
 			handler := handler.new()
-			logs.WithField("handler", handler.Name()).WithField("path", d.Path).Debug("Register handler")
+			logs.WithField("handler", handler.HandlerName()).WithField("path", d.Path).Debug("Register handler")
 			d.handlers = append(d.handlers, handler)
 
 			// TODO load configuration for handler
@@ -60,7 +60,7 @@ func (d *BlockDeviceManager) Start() error {
 	d.stop = make(chan struct{})
 
 	for _, v := range d.handlers {
-		v.Start()
+		go v.Start()
 	}
 
 	//<-d.stop

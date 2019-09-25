@@ -18,7 +18,7 @@ type Handler interface {
 	Init(manager *BlockDeviceManager)
 	Start()
 	Stop()
-	Name() string
+	HandlerName() string
 }
 
 /////////////////////////
@@ -53,7 +53,7 @@ func (h HandlerFilter) Match(filter HandlerFilter) bool {
 
 type CommonHandler struct {
 	handlerName string
-	disk        *system.Disk
+	//disk        *system.Disk
 	server      system.Server
 	fields      data.Fields
 	manager     *BlockDeviceManager
@@ -75,6 +75,6 @@ func (h *CommonHandler) Stop() {
 	close(h.stop)
 }
 
-func (h *CommonHandler) Name() string {
+func (h *CommonHandler) HandlerName() string {
 	return h.handlerName
 }

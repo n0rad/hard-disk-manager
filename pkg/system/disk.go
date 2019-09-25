@@ -7,7 +7,6 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/tools"
 	"strings"
 )
 
@@ -17,7 +16,7 @@ import (
 
 type Disk struct {
 	*BlockDevice
-	SmartResult *tools.SmartResult
+	SmartResult *SmartResult
 
 	ServerName string `json:"server"`
 }
@@ -105,7 +104,7 @@ func (d *Disk) FillFromSmartctl() error {
 	}
 	logs.WithField("output", string(output)).Trace("smart output")
 
-	smartResult := tools.SmartResult{}
+	smartResult := SmartResult{}
 	if err = json.Unmarshal([]byte(output), &smartResult); err != nil {
 		return errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal smartctl result")
 	}

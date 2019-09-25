@@ -48,7 +48,7 @@ func Index(selector system.DisksSelector) error {
 
 func Location(selector system.DisksSelector) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	if _, err := fmt.Fprintln(w, "Name\tLocation\tLabel\tPath,Mount"); err != nil {
+	if _, err := fmt.Fprintln(w, "HandlerName\tLocation\tLabel\tPath,Mount"); err != nil {
 		logs.WithE(err).Fatal("fail")
 	}
 
