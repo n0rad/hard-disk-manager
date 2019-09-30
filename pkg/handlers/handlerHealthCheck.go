@@ -19,7 +19,6 @@ func init() {
 	})
 }
 
-// store disk info in db
 type HandlerHealthCheck struct {
 	CommonHandler
 	CheckInterval time.Duration

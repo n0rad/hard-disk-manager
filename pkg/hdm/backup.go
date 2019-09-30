@@ -25,7 +25,7 @@ type Backup struct {
 	LastBackup time.Time
 }
 
-func (b *BackupConfig) Init(filesystem system.BlockDevice, configPath string) error {
+func (b *BackupConfig) Init(configPath string) error {
 	if b.TargetLabel == "" {
 		return errs.With("TargetLabel cannot be empty")
 	}

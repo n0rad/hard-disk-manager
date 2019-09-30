@@ -30,7 +30,7 @@ type BlockDeviceManager struct {
 
 	handlers []Handler
 	stop     chan struct{}
-	//serialJobs chan
+	serialJobs chan func()
 }
 
 func (d *BlockDeviceManager) Init() error {
@@ -60,14 +60,14 @@ func (d *BlockDeviceManager) Start() error {
 	d.stop = make(chan struct{})
 
 	for _, v := range d.handlers {
+		logs.WithField("path", d.Path).WithField("handler", v.HandlerName()).Trace("Starting handler")
 		go v.Start()
 	}
 
-	//<-d.stop
-
-	//for _, v := range d.handlers {
-	//	v.Stop()
-	//}
+	<-d.stop
+	for _, v := range d.handlers {
+		v.Stop()
+	}
 	return nil
 }
 

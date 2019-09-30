@@ -31,21 +31,22 @@ func Backups() error {
 }
 
 func BackupCmd(selector system.DisksSelector) error {
-	fields := data.WithField("selector", selector)
-
-	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		configs, err := hdm.HDM.FindConfigs(*disk.BlockDevice)
-		if err != nil {
-			return errs.WithEF(err, fields, "Cannot backup, Failed to load hdm configs files")
-		}
-
-		for _, config := range configs {
-			if err := config.RunBackups(disks); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	return nil
+	//fields := data.WithField("selector", selector)
+	//
+	//return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
+	//	configs, err := hdm.HDM.FindConfigs(*disk.BlockDevice)
+	//	if err != nil {
+	//		return errs.WithEF(err, fields, "Cannot backup, Failed to load hdm configs files")
+	//	}
+	//
+	//	for _, config := range configs {
+	//		if err := config.RunBackups(disks); err != nil {
+	//			return err
+	//		}
+	//	}
+	//	return nil
+	//})
 }
 
 func FindNotBackedUp(b system.BlockDevice) ([]string, error) {
