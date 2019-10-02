@@ -24,7 +24,7 @@ type HandlerConfig struct {
 	CheckInterval time.Duration
 }
 
-func (h *HandlerConfig) Init(manager *BlockDeviceManager) {
+func (h *HandlerConfig) Init(manager *BlockManager) {
 	h.CommonHandler.Init(manager)
 
 	if h.CheckInterval == 0 {
@@ -68,6 +68,16 @@ func (h *HandlerConfig) scan() error {
 		return err
 	}
 
-	logs.WithF(h.fields).WithField("configs", configs).Warn("Configs")
+	for _, e := range configs {
+		m := BlockManager{
+			Type: "path",
+			Path: e.GetConfigPath(),
+		}
+		if err := m.Init(); err != nil {
+			return err
+		}
+		h.manager.ManagerService.Register(&m)
+	}
+
 	return err
 }

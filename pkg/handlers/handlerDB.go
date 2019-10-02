@@ -25,7 +25,7 @@ type HandlerDb struct {
 	StoreInterval time.Duration
 }
 
-func (h *HandlerDb) Init(manager *BlockDeviceManager) {
+func (h *HandlerDb) Init(manager *BlockManager) {
 	h.CommonHandler.Init(manager)
 
 	if h.StoreInterval == 0 {

@@ -40,7 +40,7 @@ func Add(selector system.DisksSelector) error {
 	//}
 
 	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		//return disk.Add()
+		//return disk.AddBlockDevice()
 		return nil
 	})
 }

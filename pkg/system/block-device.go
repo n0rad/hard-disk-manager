@@ -151,14 +151,14 @@ func (b *BlockDevice) Remove() error {
 			return err
 		}
 	case "disk":
-		if err := b.sleep(); err != nil {
+		if err := b.putInSleepNow(); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (b *BlockDevice) sleep() error {
+func (b *BlockDevice) putInSleepNow() error {
 	if out, err := b.server.Exec("sudo", "hdparm", "-y ", b.Path); err != nil {
 		return errs.WithEF(err, b.fields.WithField("out", out), "Failed to put disk in sleep")
 	}

@@ -8,32 +8,22 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 )
 
-// disk
-// part
-// loop
-// crypt
-// lvm
-// raid1
-// md
-// rom
-// dmraid
-
-// part, lvm, crypt, dmraid, mpath, path, dm, loop, md, linear, raid0, raid1, raid4, raid5, raid10, multipath, disk, tape, printer, processor, worm, rom, scanner, mo-disk, changer, comm, raid, enclosure, rbc, osd, and no-lun
-
-type BlockDeviceManager struct {
+// hold handlers for a block system (disk, fs or path)
+type BlockManager struct {
 	PassService *password.Service
+	ManagerService *ManagersService
 	Path        string
 	FStype      string
 	Type        string
 
 	server system.Server
 
-	handlers []Handler
-	stop     chan struct{}
-	serialJobs chan func()
+	handlers   []Handler
+	stop       chan struct{}
+	serialJobs chan func()		// reduce pressure on disk
 }
 
-func (d *BlockDeviceManager) Init() error {
+func (d *BlockManager) Init() error {
 	logs.WithField("path", d.Path).Info("New block device manager")
 	if err := d.server.Init(); err != nil {
 		return errs.WithE(err, "Failed to init empty server")
@@ -56,7 +46,7 @@ func (d *BlockDeviceManager) Init() error {
 	return nil
 }
 
-func (d *BlockDeviceManager) Start() error {
+func (d *BlockManager) Start() error {
 	d.stop = make(chan struct{})
 
 	for _, v := range d.handlers {
@@ -64,22 +54,34 @@ func (d *BlockDeviceManager) Start() error {
 		go v.Start()
 	}
 
-	<-d.stop
+	d.handleSerialJobs()
+
 	for _, v := range d.handlers {
 		v.Stop()
 	}
 	return nil
 }
 
-func (d *BlockDeviceManager) Stop(e error) {
+func (d *BlockManager) handleSerialJobs() {
+	for {
+		select {
+		case job := <-d.serialJobs:
+			job()
+		case <-d.stop:
+			return
+		}
+	}
+}
+
+func (d *BlockManager) Stop(e error) {
 	close(d.stop)
 }
 
-func (d *BlockDeviceManager) Notify(level logs.Level, fields data.Fields, message string) {
+func (d *BlockManager) Notify(level logs.Level, fields data.Fields, message string) {
 	logs.WithFields(fields).Info(message)
 }
 
-func (d *BlockDeviceManager) Event() {
+func (d *BlockManager) Event() {
 
 	// add
 	// remove
@@ -87,7 +89,7 @@ func (d *BlockDeviceManager) Event() {
 	// mount
 }
 
-//func (d *BlockDeviceManager) AddChildrenEvent(event hdm.BlockDeviceEvent) {
+//func (d *BlockManager) AddChildrenEvent(event hdm.BlockDeviceEvent) {
 //	logs.WithField("event", event).Info("Children event")
 //}
 

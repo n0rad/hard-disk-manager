@@ -15,7 +15,7 @@ func (h *HandlerAdd) Start() {
 	//	return
 	//}
 
-	//if err := h.disk.Add(buffer); err != nil {
+	//if err := h.disk.AddBlockDevice(buffer); err != nil {
 	//	logs.WithEF(err, h.fields).Error("Failed to add disk")
 	//}
 
@@ -27,6 +27,6 @@ func (h *HandlerAdd) Start() {
 	//	return
 	//}
 
-	//h.disk.Add()
+	//h.disk.AddBlockDevice()
 }
 

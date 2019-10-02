@@ -15,7 +15,7 @@ var handlers []handler
 
 
 type Handler interface {
-	Init(manager *BlockDeviceManager)
+	Init(manager *BlockManager)
 	Start()
 	Stop()
 	HandlerName() string
@@ -56,11 +56,11 @@ type CommonHandler struct {
 	//disk        *system.Disk
 	server      system.Server
 	fields      data.Fields
-	manager     *BlockDeviceManager
+	manager     *BlockManager
 	stop        chan struct{}
 }
 
-func (h *CommonHandler) Init(manager *BlockDeviceManager) {
+func (h *CommonHandler) Init(manager *BlockManager) {
 	h.fields = data.WithField("path", manager.Path)
 	h.server = system.Server{}
 	h.manager = manager

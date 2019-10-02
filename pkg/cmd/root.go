@@ -96,7 +96,7 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 	// cycle
 	cmd.AddCommand(
 		commandWithDiskSelector("add", []string{}, Add,
-			"Add disks as usable (mdadm,crypt,mount,restart)"),
+			"AddBlockDevice disks as usable (mdadm,crypt,mount,restart)"),
 		commandWithRequiredDiskSelector("remove", []string{}, Remove,
 			"Remove or cleanup removed disk (kill,umount,restart,mdadm,crypt)"),
 		commandWithRequiredServerDiskAndLabel("prepare", []string{}, Prepare,

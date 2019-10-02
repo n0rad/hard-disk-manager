@@ -24,7 +24,7 @@ type HandlerHealthCheck struct {
 	CheckInterval time.Duration
 }
 
-func (h *HandlerHealthCheck) Init(manager *BlockDeviceManager) {
+func (h *HandlerHealthCheck) Init(manager *BlockManager) {
 	h.CommonHandler.Init(manager)
 
 	if h.CheckInterval == 0 {

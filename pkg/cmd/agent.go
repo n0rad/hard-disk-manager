@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/app"
+	"github.com/n0rad/hard-disk-manager/pkg/handlers"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/n0rad/hard-disk-manager/pkg/socket"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
 	"github.com/oklog/run"
 )
@@ -22,9 +23,17 @@ func Agent() error {
 	passService.Init()
 	g.Add(passService.Start, passService.Stop)
 
-	// agent
-	agent := app.Agent{PassService: &passService}
-	g.Add(agent.Start, agent.Stop)
+	// managers
+	managers := handlers.ManagersService{PassService: &passService}
+	managers.Init()
+	g.Add(managers.Start, managers.Stop)
+
+	// udevService
+	udevService := system.UdevService{
+		EventChan: managers.GetBlockDeviceEventChan(),
+	}
+	udevService.Init()
+	g.Add(udevService.Start, udevService.Stop)
 
 	// socketServer
 	socketServer := socket.Server{}

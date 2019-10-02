@@ -44,6 +44,10 @@ func NewConfig(hdmConfigPath string) (Config, error) {
 	return cfg, nil
 }
 
+func (h Config) GetConfigPath() string {
+	return h.configPath
+}
+
 func (h *Config) Init(configPath string) error {
 	for i := range h.Backups {
 		if err := h.Backups[i].Init(configPath); err != nil {

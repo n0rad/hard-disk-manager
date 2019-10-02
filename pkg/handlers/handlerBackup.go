@@ -2,7 +2,7 @@ package handlers
 
 func init() {
 	handlers = append(handlers, handler{
-		HandlerFilter{Type: "part"},
+		HandlerFilter{Type: "path"},
 		func() Handler {
 			return &HandlerBackup{
 				CommonHandler: CommonHandler{
@@ -17,7 +17,7 @@ type HandlerBackup struct {
 	CommonHandler
 }
 
-//func (h *HandlerBackup) Init(manager *BlockDeviceManager) {
+//func (h *HandlerBackup) Init(manager *BlockManager) {
 //	h.CommonHandler.Init(manager)
 //}
 
