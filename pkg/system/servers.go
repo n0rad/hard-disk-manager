@@ -33,7 +33,7 @@ func (d DisksSelector) MatchDisk(disk Disk) bool {
 	return false
 }
 
-func (d DisksSelector) MatchPartition(disk Disk, device BlockDevice) bool {
+func (d DisksSelector) MatchPartition(disk Disk, device BlockDeviceOLD) bool {
 	if d.Server != disk.ServerName {
 		return false
 	}

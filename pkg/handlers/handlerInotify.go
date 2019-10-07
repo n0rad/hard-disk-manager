@@ -7,6 +7,32 @@ import (
 	"path/filepath"
 )
 
+func init() {
+	handlers = append(handlers, handler{
+		HandlerFilter{Type: "path"},
+		func() Handler {
+			return &HandlerBackup{
+				CommonHandler: CommonHandler{
+					handlerName: "handlerInotify",
+				},
+			}
+		},
+	})
+}
+
+type HandlerInotify struct {
+	CommonHandler
+}
+
+func (h *HandlerInotify) Init() {
+
+}
+
+func (h *HandlerInotify) Start() {
+
+}
+
+
 var watcher *fsnotify.Watcher
 
 // main

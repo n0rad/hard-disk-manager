@@ -29,7 +29,7 @@ func (h *HandlerDb) Init(manager *BlockManager) {
 	h.CommonHandler.Init(manager)
 
 	if h.StoreInterval == 0 {
-		h.StoreInterval = 10 * time.Second
+		h.StoreInterval = 10 * time.Minute
 	}
 }
 
@@ -56,6 +56,11 @@ func (h *HandlerDb) storeInfo() {
 	disk, err := h.server.ScanDisk(h.manager.Path)
 	if err != nil {
 		logs.WithE(err).Error("Failed to scan disk")
+		return
+	}
+
+	if disk.Serial == "" {
+		logs.WithF(h.fields).Debug("Disk has no serial, not saving")
 		return
 	}
 

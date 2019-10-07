@@ -49,6 +49,7 @@ func (m *ManagersService) handleEvents() {
 	for {
 		select {
 		case e := <- m.blockDeviceEvents:
+			logs.WithField("event", e).Debug("Received block event")
 			m.handleBlockDeviceEvent(e)
 		case <-m.stop:
 			return

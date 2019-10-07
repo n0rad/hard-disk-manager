@@ -11,10 +11,10 @@ import (
 )
 
 type Rsync struct {
-	SourceFilesystem       BlockDevice
+	SourceFilesystem       BlockDeviceOLD
 	SourceInFilesystemPath string
 
-	TargetFilesystem       BlockDevice
+	TargetFilesystem       BlockDeviceOLD
 	TargetInFilesystemPath string
 
 	Delete bool

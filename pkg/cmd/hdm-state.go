@@ -36,7 +36,7 @@ import (
 
 func Index(selector system.DisksSelector) error {
 	return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-		//res, err := findDeepestBlockDevice(disk.BlockDevice).Index()
+		//res, err := findDeepestBlockDevice(disk.BlockDeviceOLD).Index()
 		//if err != nil {
 		//	return err
 		//}

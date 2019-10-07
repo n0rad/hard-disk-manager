@@ -60,7 +60,7 @@ func (h *Config) Init(configPath string) error {
 	return nil
 }
 
-func (h *Config) FillFromFile(filesystem system.BlockDevice, file string) error {
+func (h *Config) FillFromFile(filesystem system.BlockDeviceOLD, file string) error {
 	bytes, err := filesystem.ExecShell("cat " + shellescape.Quote(file))
 	if err != nil {
 		return errs.WithEF(err, data.WithField("file", file), "Failed to cat file")
@@ -101,7 +101,7 @@ func FindConfigs(path string, server system.Server) ([]Config, error) {
 	var hdmConfigs []Config
 
 	if path == "" {
-		return hdmConfigs, errs.WithF(data.WithField("path", path), "BlockDevice is not mounted")
+		return hdmConfigs, errs.WithF(data.WithField("path", path), "BlockDeviceOLD is not mounted")
 	}
 
 	hdmRootFilePath := path + PathHdmYaml

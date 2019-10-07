@@ -11,7 +11,7 @@ func (d Disks) findDiskBySelector(selector DisksSelector) *Disk {
 	return nil
 }
 
-func (d Disks) FindDeepestBlockDeviceByLabel(label string) *BlockDevice {
+func (d Disks) FindDeepestBlockDeviceByLabel(label string) *BlockDeviceOLD {
 	if label == "" {
 		return nil
 	}

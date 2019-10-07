@@ -15,7 +15,7 @@ import (
 //sudo lsblk -o name,size,type,fstype,label,partlabel,mountpoint,path
 
 type Disk struct {
-	*BlockDevice
+	*BlockDeviceOLD
 	SmartResult *SmartResult
 
 	ServerName string `json:"server"`
@@ -26,7 +26,7 @@ func (b *Disk) String() string {
 }
 
 func (d *Disk) Init(server *Server) {
-	d.BlockDevice.Init(server, d)
+	d.BlockDeviceOLD.Init(server, d)
 }
 
 func (d *Disk) LocationPath() (string, error) {
@@ -85,7 +85,7 @@ func (d *Disk) ReplaceFromLsblk() error {
 		return errs.WithE(err, "Fail to get disk from lsblk")
 	}
 
-	lsblk := Lsblk{}
+	lsblk := LsblkOLD{}
 	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
 		return errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
 	}

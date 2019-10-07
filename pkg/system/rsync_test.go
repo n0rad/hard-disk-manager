@@ -38,11 +38,11 @@ func TestRsyncSync(t *testing.T) {
 
 	server := Server{runner: tools.LocalRunner{UnSudo: true}}
 	r := Rsync{
-		SourceFilesystem: BlockDevice{
+		SourceFilesystem: BlockDeviceOLD{
 			Mountpoint: source,
 			server:     &server,
 		},
-		TargetFilesystem: BlockDevice{
+		TargetFilesystem: BlockDeviceOLD{
 			Mountpoint: target,
 			server:     &server,
 		},

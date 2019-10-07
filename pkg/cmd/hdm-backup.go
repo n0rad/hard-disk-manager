@@ -35,7 +35,7 @@ func BackupCmd(selector system.DisksSelector) error {
 	//fields := data.WithField("selector", selector)
 	//
 	//return hdm.HDM.Servers.RunForDisks(selector, func(disks system.Disks, disk system.Disk) error {
-	//	configs, err := hdm.HDM.FindConfigs(*disk.BlockDevice)
+	//	configs, err := hdm.HDM.FindConfigs(*disk.BlockDeviceOLD)
 	//	if err != nil {
 	//		return errs.WithEF(err, fields, "Cannot backup, Failed to load hdm configs files")
 	//	}
@@ -49,7 +49,7 @@ func BackupCmd(selector system.DisksSelector) error {
 	//})
 }
 
-func FindNotBackedUp(b system.BlockDevice) ([]string, error) {
+func FindNotBackedUp(b system.BlockDeviceOLD) ([]string, error) {
 	if b.Mountpoint == "" {
 		return []string{}, errs.With("Cannot Find Not backed-up, disk is not mounted")
 	}

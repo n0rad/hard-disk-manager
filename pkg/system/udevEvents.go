@@ -68,7 +68,7 @@ func (k *UdevService) addCurrentBlockDevices() error {
 		k.EventChan <- BlockDeviceEvent{
 			Action: netlink.ADD,
 			Type:   v.Type,
-			Path:   v.Path,
+			Path:   "/dev/"+v.Kname,
 			FSType: v.Fstype,
 		}
 	}
@@ -95,6 +95,11 @@ func (k *UdevService) watchUdevBlockEvents(udevConn *netlink.UEventConn) {
 		select {
 		case uevent := <-queue:
 			logs.WithField("uevent", uevent).Trace("Received udev event")
+
+			if uevent.Env["DEVTYPE"] == "partition" {
+				uevent.Env["DEVTYPE"] = "part"
+			}
+
 			k.EventChan <- BlockDeviceEvent{
 				Action: uevent.Action,
 				Path:   uevent.Env["DEVNAME"],

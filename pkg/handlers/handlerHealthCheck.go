@@ -57,7 +57,7 @@ func (h *HandlerHealthCheck) check() {
 
 	result, err := smartctl.All()
 	if err != nil {
-		logs.WithE(err).Error("Failed to get smartctl info")
+		logs.WithEF(err, h.fields).Error("Failed to get smartctl info")
 		return
 	}
 

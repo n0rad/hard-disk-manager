@@ -1,5 +1,10 @@
 package handlers
 
+import (
+	"github.com/n0rad/go-erlog/errs"
+	"github.com/n0rad/go-erlog/logs"
+)
+
 func init() {
 	handlers = append(handlers, handler{
 		HandlerFilter{FSType: "crypto_LUKS"},
@@ -18,9 +23,44 @@ type HandlerCrypto struct {
 }
 
 func (h *HandlerCrypto) Start() {
-	//disk, err := h.server.ScanDisk(h.manager.Path)
+	passwordSet := h.manager.PassService.Watch()
+	defer h.manager.PassService.Unwatch(passwordSet)
 
+	if err := h.open(); err != nil {
+		logs.WithE(err).Error("Failed to open crypto")
+	}
 
-	// start or event of password change
+	for {
+		select {
+		case <-passwordSet:
+			if err := h.open(); err != nil {
+				logs.WithE(err).Error("Failed to open crypto")
+			}
+		case <-h.stop:
+			return
+		}
+	}
+}
 
+func (h *HandlerCrypto) open() error {
+	b, err := h.server.GetBlockDevice(h.manager.Path)
+	if err != nil {
+		return errs.WithEF(err, h.fields, "Failed to get blockDevice")
+	}
+
+	if !h.manager.PassService.IsSet() {
+		logs.WithF(h.fields).Debug("Password is not set, cannot open")
+		return nil
+	}
+
+	buffer, err := h.manager.PassService.Get()
+	if err != nil {
+		return errs.WithEF(err, h.fields, "Failed to get password from password service")
+	}
+	defer buffer.Destroy()
+
+	if err := b.LuksOpen(buffer); err != nil {
+		return errs.WithEF(err, h.fields, "Failed to Open")
+	}
+	return nil
 }

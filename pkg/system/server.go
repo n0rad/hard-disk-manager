@@ -57,7 +57,7 @@ func (s Server) ScanDisks() (Disks, error) {
 		return disks, errs.WithE(err, "Fail to get disks from lsblk")
 	}
 
-	lsblk := Lsblk{}
+	lsblk := LsblkOLD{}
 	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
 		return disks, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
 	}
@@ -93,7 +93,7 @@ func (s Server) ScanDisk(path string) (Disk, error) {
 		return Disk{}, errs.WithE(err, "Fail to get disk from lsblk")
 	}
 
-	lsblk := Lsblk{}
+	lsblk := LsblkOLD{}
 	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
 		return Disk{}, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
 	}
@@ -107,10 +107,35 @@ func (s Server) ScanDisk(path string) (Disk, error) {
 	return lsblk.Blockdevices[0], nil
 }
 
-func (s Server) ListFlatBlockDevices() ([]BlockDevice, error) {
+func (s Server) GetBlockDevice(path string) (BlockDevice, error) {
+	if path == "" {
+		return BlockDevice{}, errs.With("Path is required to get blockDevice")
+	}
+
+	output, err := s.Exec("lsblk", "-J", "-O", path)
+	if err != nil {
+		return BlockDevice{}, errs.WithE(err, "Fail to get disk from lsblk")
+	}
+
+	lsblk := Lsblk{}
+	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
+		return BlockDevice{}, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
+	}
+
+	if len(lsblk.Blockdevices) != 1 {
+		return BlockDevice{}, errs.WithF(data.WithField("output", output), "Scan disk give more than disk")
+	}
+
+	lsblk.Blockdevices[0].Init(&s)
+
+	return lsblk.Blockdevices[0], nil
+
+}
+
+func (s Server) ListFlatBlockDevices() ([]BlockDeviceOLD, error) {
 	logs.WithField("server", s.Name).Debug("List block devices")
 	lsblk := struct {
-		Blockdevices []BlockDevice `json:"blockdevices"`
+		Blockdevices []BlockDeviceOLD `json:"blockdevices"`
 	}{}
 
 	output, err := s.Exec("lsblk", "-J", "-l", "-O")

@@ -8,7 +8,7 @@ import (
 
 var filesystems = []string{"ext4", "xfs"}
 
-func (b *BlockDevice) Index() (string, error) {
+func (b *BlockDeviceOLD) Index() (string, error) {
 	if b.Mountpoint == "" {
 		return "", errs.WithF(b.fields, "Cannot index, disk is not mounted")
 	}
@@ -20,7 +20,7 @@ func (b *BlockDevice) Index() (string, error) {
 	return string(output), nil
 }
 
-func (b *BlockDevice) SpaceAvailable() (int, error) {
+func (b *BlockDeviceOLD) SpaceAvailable() (int, error) {
 	output, err := b.server.Exec("df " + b.Path + " --output=avail | tail -n +2")
 	if err != nil {
 		return 0, errs.WithEF(err, b.fields, "Failed to run 'df' on blockDevice")
@@ -33,7 +33,7 @@ func (b *BlockDevice) SpaceAvailable() (int, error) {
 	return size, nil
 }
 
-func (b *BlockDevice) ExecShell(head string, args ...string) (string, error) {
+func (b *BlockDeviceOLD) ExecShell(head string, args ...string) (string, error) {
 	return b.server.Exec("sh", "-c", strings.Join([]string{head, " ", strings.Join(args, " ")}, " "))
 	//return b.server.Exec(head, args...)
 }
