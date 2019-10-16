@@ -1,5 +1,10 @@
 package handlers
 
+import (
+	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
+)
+
 func init() {
 	handlers = append(handlers, handler{
 		HandlerFilter{Type: "path"},
@@ -23,9 +28,30 @@ type HandlerBackup struct {
 
 func (h *HandlerBackup) Start() {
 
-	//for k, v := range h.manager.config.Backups {
-	//	v.
+
+
+	//func (h *Config) RunBackups(disks system.Disks) error {
+	//	for _, backup := range h.Backups {
+	//		if err := backup.Backup(disks); err != nil {
+	//			return err
+	//		}
+	//	}
+	//	return nil
 	//}
+
+	for _, v := range h.manager.config.Backups {
+		b := system.Backup{
+			BackupConfig: v,
+		}
+		if err := b.Init(h.manager.config.GetConfigPath(), h.manager.BlockDevice, h.manager.server); err != nil {
+			logs.WithE(err).Error("Failed to init backup")
+			continue
+		}
+
+		if err := b.Backup(h.manager.server); err !=nil {
+			logs.WithE(err).Error("Failed to backup")
+		}
+	}
 
 	// TODO
 	// check latest backup date

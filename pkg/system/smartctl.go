@@ -31,7 +31,7 @@ func NewSmartCtl(path string, server Server) (Smartctl, error) {
 
 func (s Smartctl) All() (SmartResult, error) {
 	smartResult := SmartResult{}
-	output, err := s.server.Exec("smartctl", "--xall", "-j", s.path)
+	output, err := s.server.Exec("smartctl", "--all", "-j", s.path)
 	if err != nil {
 		return smartResult, errs.WithEF(err, s.fields, "Fail to run smartctl")
 	}

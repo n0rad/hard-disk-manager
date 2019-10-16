@@ -17,6 +17,9 @@ type BlockManager struct {
 	FStype         string
 	Type           string
 
+	// TODO
+	BlockDevice system.BlockDevice
+
 	server system.Server
 	config hdm.Config // TODO that sux and blockManager should be specialized
 

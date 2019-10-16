@@ -68,10 +68,17 @@ func (h *HandlerConfig) scan() error {
 		return err
 	}
 
+	blockDevice, err := h.server.GetBlockDevice(h.manager.Path)
+	if err != nil {
+		return err
+	}
+
+
 	for _, e := range configs {
 		m := BlockManager{
 			Type: "path",
 			Path: e.GetConfigPath(),
+			BlockDevice: blockDevice,
 			config: e,
 		}
 		if err := m.Init(); err != nil {

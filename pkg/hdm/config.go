@@ -15,7 +15,7 @@ const HdmYamlFilename = "hdm.yaml"
 const PathHdmYaml = "/" + HdmYamlFilename
 
 type Config struct {
-	Backups []BackupConfig
+	Backups []system.BackupConfig
 	Syncs   []SyncConfig
 
 	RecursiveConfig bool
@@ -48,25 +48,10 @@ func (h Config) GetConfigPath() string {
 }
 
 func (h *Config) Init(configPath string) error {
-	for i := range h.Backups {
-		if err := h.Backups[i].Init(configPath); err != nil {
-			return err
-		}
-	}
-
 	h.configPath = configPath
 	h.fields = data.WithField("hdm", h.configPath)
 	return nil
 }
-
-//func (h *Config) RunBackups(disks system.Disks) error {
-//	for _, backup := range h.Backups {
-//		if err := backup.Backup(disks); err != nil {
-//			return err
-//		}
-//	}
-//	return nil
-//}
 
 //if len(b.Children) > 0 {
 //	for _, child := range b.Children {
@@ -104,7 +89,7 @@ func FindConfigs(path string, server system.Server) ([]Config, error) {
 		return hdmConfigs, nil
 	}
 
-	configs, err := server.Exec("find", path, "-type", "f", "-not", "-path", path+pathBackups+"/*", "-name", HdmYamlFilename)
+	configs, err := server.Exec("find", path, "-type", "f", "-not", "-path", path+system.PathBackups+"/*", "-name", HdmYamlFilename)
 	if err != nil {
 		return hdmConfigs, errs.WithE(err, "Failed to find hdm.yaml files")
 	}

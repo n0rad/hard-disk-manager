@@ -5,7 +5,7 @@ import (
 	"github.com/n0rad/go-erlog/logs"
 	_ "github.com/n0rad/go-erlog/register"
 	"github.com/n0rad/hard-disk-manager/pkg/cmd"
-	_ "go.uber.org/automaxprocs"
+	"go.uber.org/automaxprocs/maxprocs"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -34,6 +34,9 @@ func sigQuitThreadDump() {
 }
 
 func main() {
+	if _, err := maxprocs.Set(); err != nil{
+		logs.WithE(err).Warn("Failed to set maxprocs")
+	}
 	rand.Seed(time.Now().UTC().UnixNano())
 	sigQuitThreadDump()
 

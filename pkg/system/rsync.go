@@ -113,6 +113,7 @@ func (r *Rsync) Rsyncable() (error, error) {
 }
 
 func (r *Rsync) RSync() error {
+	logs.WithFields(r.fields).Debug("rsync")
 	why, err := r.Rsyncable()
 	if err != nil {
 		return errs.WithEF(err, r.fields, "Failed to see if directory is backupable")

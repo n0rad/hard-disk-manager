@@ -61,7 +61,7 @@ func (s Server) GetBlockDevice(path string) (BlockDevice, error) {
 
 	output, err := s.Exec("lsblk", "-J", "-O", path)
 	if err != nil {
-		return BlockDevice{}, errs.WithE(err, "Fail to get disk from lsblk")
+		return BlockDevice{}, errs.WithEF(err, data.WithField("path", path), "Fail to get disk from lsblk")
 	}
 
 	lsblk := Lsblk{}
@@ -84,7 +84,7 @@ func (s Server) ListFlatBlockDevices() ([]BlockDevice, error) {
 		Blockdevices []BlockDevice `json:"blockdevices"`
 	}{}
 
-	output, err := s.Exec("lsblk", "-J", "-l", "-O")
+	output, err := s.Exec("lsblk", "-J", "-l", "-O", "-e", "2")
 	if err != nil {
 		return lsblk.Blockdevices, errs.WithE(err, "Fail to get disks from lsblk")
 	}
@@ -96,8 +96,15 @@ func (s Server) ListFlatBlockDevices() ([]BlockDevice, error) {
 	return lsblk.Blockdevices, nil
 }
 
-
-
-//func (s Server) GetBlockDeviceByLabel(label string) (BlockDevice, error) {
-//
-//}
+func (s Server) GetBlockDeviceByLabel(label string) (BlockDevice, error) {
+	devices, err := s.ListFlatBlockDevices()
+	if err != nil {
+		return BlockDevice{}, err
+	}
+	for _, device := range devices {
+		if device.Label == label {
+			return device, nil
+		}
+	}
+	return BlockDevice{}, errs.WithF(data.WithField("label", label),"No block device found with label")
+}
