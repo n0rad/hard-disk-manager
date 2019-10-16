@@ -11,10 +11,10 @@ import (
 )
 
 type Rsync struct {
-	SourceFilesystem       BlockDeviceOLD
+	SourceFilesystem       BlockDevice
 	SourceInFilesystemPath string
 
-	TargetFilesystem       BlockDeviceOLD
+	TargetFilesystem       BlockDevice
 	TargetInFilesystemPath string
 
 	Delete bool
@@ -55,7 +55,7 @@ func (r *Rsync) Init() error {
 }
 
 func (r *Rsync) SourceSize() (int, error) {
-	out, err := r.SourceFilesystem.ExecShell("du -s " + shellescape.Quote(r.sourceFullPath) + " | cut -f1")
+	out, err := r.SourceFilesystem.server.ExecShell("du -s " + shellescape.Quote(r.sourceFullPath) + " | cut -f1")
 	if err != nil {
 		return 0, errs.WithEF(err, r.fields, "Failed to get directory size")
 	}
@@ -68,12 +68,12 @@ func (r *Rsync) SourceSize() (int, error) {
 
 func (r *Rsync) TargetSize() (int, error) {
 	targetPath := r.targetFullPath + "/" + path.Base(r.sourceFullPath)
-	_, err := r.TargetFilesystem.ExecShell("sudo test -d " + shellescape.Quote(targetPath))
+	_, err := r.TargetFilesystem.server.ExecShell("sudo test -d " + shellescape.Quote(targetPath))
 	if err != nil {
 		return 0, nil
 	}
 
-	bytes, err := r.TargetFilesystem.ExecShell("sudo du -s " + shellescape.Quote(targetPath) + " | cut -f1")
+	bytes, err := r.TargetFilesystem.server.ExecShell("sudo du -s " + shellescape.Quote(targetPath) + " | cut -f1")
 	if err != nil {
 		return 0, errs.WithEF(err, r.fields, "Failed to get directory size")
 	}
@@ -122,7 +122,7 @@ func (r *Rsync) RSync() error {
 		return nil
 	}
 
-	if _, err := r.TargetFilesystem.ExecShell("sudo", "mkdir", "-p ", shellescape.Quote(r.targetFullPath)); err != nil {
+	if _, err := r.TargetFilesystem.server.Exec("sudo", "mkdir", "-p ", shellescape.Quote(r.targetFullPath)); err != nil {
 		return errs.WithEF(err, r.fields.WithField("path", r.targetFullPath), "Failed to create target backup path")
 	}
 
@@ -132,7 +132,7 @@ func (r *Rsync) RSync() error {
 	}
 
 	logs.WithFields(r.fields).Info("Running backup")
-	_, err = r.SourceFilesystem.ExecShell("sudo Rsync -avP " + deleteIfSourceRemoved + " --itemize-changes " + shellescape.Quote(r.sourceFullPath) + " " + shellescape.Quote(r.targetFullPath)) // TODO support sync to other server
+	_, err = r.SourceFilesystem.server.ExecShell("sudo Rsync -avP " + deleteIfSourceRemoved + " --itemize-changes " + shellescape.Quote(r.sourceFullPath) + " " + shellescape.Quote(r.targetFullPath)) // TODO support sync to other server
 	if err != nil {
 		return errs.WithEF(err, r.fields, "Backup failed")
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/n0rad/go-erlog/logs"
 	_ "github.com/n0rad/go-erlog/register"
 	"github.com/n0rad/hard-disk-manager/pkg/cmd"
+	_ "go.uber.org/automaxprocs"
 	"io/ioutil"
 	"math/rand"
 	"os"

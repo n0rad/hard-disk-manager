@@ -53,7 +53,7 @@ func (h *HandlerDb) Start() {
 ///////////////////////////////////
 
 func (h *HandlerDb) storeInfo() {
-	disk, err := h.server.ScanDisk(h.manager.Path)
+	disk, err := h.server.GetBlockDevice(h.manager.Path)
 	if err != nil {
 		logs.WithE(err).Error("Failed to scan disk")
 		return

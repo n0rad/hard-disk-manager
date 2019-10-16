@@ -5,6 +5,8 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"strconv"
+	"strings"
 )
 
 type BlockDevice struct {
@@ -96,9 +98,22 @@ func (b *BlockDevice) LuksOpen(cryptPassword *memguard.LockedBuffer) error {
 		volumeName = b.Name
 	}
 
-	if out, err := b.server.Exec("bash", "-c", "echo -n '" + cryptPassword.String() + "' | sudo cryptsetup luksOpen " + b.Path + " " + volumeName + " -"); err != nil {
+	if out, err := b.server.ExecShell("echo -n '" + cryptPassword.String() + "' | sudo cryptsetup luksOpen " + b.Path + " " + volumeName + " -"); err != nil {
 		return errs.WithEF(err, b.fields.WithField("out", out), "Failed to open luks")
 	}
 
 	return nil
+}
+
+func (b *BlockDevice) SpaceAvailable() (int, error) {
+	output, err := b.server.ExecShell("df " + b.Path + " --output=avail | tail -n +2")
+	if err != nil {
+		return 0, errs.WithEF(err, b.fields, "Failed to run 'df' on blockDevice")
+	}
+
+	size, err := strconv.Atoi(strings.TrimSpace(string(output)))
+	if err != nil {
+		return 0, errs.WithEF(err, b.fields.WithField("output", string(output)), "Failed to parse 'df' result")
+	}
+	return size, nil
 }

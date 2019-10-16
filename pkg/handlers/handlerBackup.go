@@ -22,6 +22,16 @@ type HandlerBackup struct {
 //}
 
 func (h *HandlerBackup) Start() {
+
+	//for k, v := range h.manager.config.Backups {
+	//	v.
+	//}
+
+	// TODO
+	// check latest backup date
+
+
+
 	//logs.WithFields(h.fields).Warn("handle backup")
 	<-h.stop
 	//ticker := time.NewTicker(h.CheckInterval)

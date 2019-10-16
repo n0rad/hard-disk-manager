@@ -53,7 +53,7 @@ func (h *HandlerConfig) Start() {
 }
 
 func (h *HandlerConfig) scan() error {
-	disk, err := h.server.ScanDisk(h.manager.Path)
+	disk, err := h.server.GetBlockDevice(h.manager.Path)
 	if err != nil {
 		return err
 	}
@@ -72,6 +72,7 @@ func (h *HandlerConfig) scan() error {
 		m := BlockManager{
 			Type: "path",
 			Path: e.GetConfigPath(),
+			config: e,
 		}
 		if err := m.Init(); err != nil {
 			return err

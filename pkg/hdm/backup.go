@@ -15,7 +15,8 @@ type BackupConfig struct {
 	Path   string
 	Delete bool
 
-	configPath string
+	//configPath string
+	rsync system.Rsync
 }
 
 type Backup struct {
@@ -26,13 +27,20 @@ type Backup struct {
 }
 
 func (b *BackupConfig) Init(configPath string) error {
+	b.rsync = system.Rsync{
+		SourceInFilesystemPath: "",
+		//SourceFilesystem: ,
+		TargetInFilesystemPath: "",
+		//TargetFilesystem: "",
+		Delete: b.Delete,
+	}
 	if b.TargetLabel == "" {
 		return errs.With("TargetLabel cannot be empty")
 	}
 	if len(b.Path) > 0 && b.Path[0] != '/' {
 		b.Path = "/" + b.Path
 	}
-	b.configPath = configPath
+	//b.configPath = configPath
 	//b.fullPath = filepath.Dir(configPath) + b.Path // TODO remove ../
 	//b.inBlockDevicePath = strings.Replace(b.fullPath, filesystem.Mountpoint, "", 1)
 	//b.filesystem = filesystem
@@ -40,10 +48,10 @@ func (b *BackupConfig) Init(configPath string) error {
 	return nil
 }
 
-func (b *BackupConfig) Backupable(disks system.Disks) (error, error) {
+func (b *BackupConfig) Backupable(server system.Server) (error, error) {
 	return nil, nil
 }
 
-func (b *BackupConfig) Backup(disks system.Disks) error {
+func (b *BackupConfig) Backup(server system.Server) error {
 	return nil
 }

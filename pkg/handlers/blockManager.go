@@ -4,23 +4,25 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 )
 
 // hold handlers for a block system (disk, fs or path)
 type BlockManager struct {
-	PassService *password.Service
+	PassService    *password.Service
 	ManagerService *ManagersService
-	Path        string
-	FStype      string
-	Type        string
+	Path           string
+	FStype         string
+	Type           string
 
 	server system.Server
+	config hdm.Config // TODO that sux and blockManager should be specialized
 
 	handlers   []Handler
 	stop       chan struct{}
-	serialJobs chan func()		// reduce pressure on disk
+	serialJobs chan func() // reduce pressure on disk
 }
 
 func (d *BlockManager) Init() error {

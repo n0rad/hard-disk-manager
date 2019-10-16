@@ -4,7 +4,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"io/ioutil"
 	"time"
 )
@@ -12,8 +11,6 @@ import (
 var HDM Hdm
 
 type Hdm struct {
-	Servers system.Servers
-
 	LuksFormat []struct {
 		Hash    string
 		Cipher  string
@@ -42,10 +39,6 @@ func (hdm *Hdm) Init(home string) error {
 
 	if err = yaml.Unmarshal(file, hdm); err != nil {
 		return errs.WithEF(err, data.WithField("file", configPath), "Invalid configuration format")
-	}
-
-	if err := hdm.Servers.Init(); err != nil {
-		return errs.WithE(err, "Failed to init servers")
 	}
 
 	if err := hdm.dbDisk.Init(home + pathDBDisk); err != nil {
