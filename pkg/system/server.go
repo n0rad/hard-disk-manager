@@ -50,9 +50,8 @@ func (s Server) Exec(head string, args ...string) (string, error) {
 }
 
 func (s *Server) ExecShell(command string) (string, error) {
-	return s.Exec("sh", "-c", command)
+	return s.Exec("bash", "-o", "pipefail", "-c", command)
 }
-
 
 func (s Server) GetBlockDevice(path string) (BlockDevice, error) {
 	if path == "" {
@@ -106,5 +105,5 @@ func (s Server) GetBlockDeviceByLabel(label string) (BlockDevice, error) {
 			return device, nil
 		}
 	}
-	return BlockDevice{}, errs.WithF(data.WithField("label", label),"No block device found with label")
+	return BlockDevice{}, errs.WithF(data.WithField("label", label), "No block device found with label")
 }

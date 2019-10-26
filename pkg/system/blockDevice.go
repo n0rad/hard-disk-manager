@@ -105,6 +105,56 @@ func (b *BlockDevice) LuksOpen(cryptPassword *memguard.LockedBuffer) error {
 	return nil
 }
 
+func (b *BlockDevice) Mount(mountPath string) error {
+	logs.WithFields(b.fields.WithField("mountPath", mountPath)).Debug("Mount")
+	if mountPath == "" {
+		return errs.WithF(b.fields, "mountPath cannot be empty")
+	}
+
+	if _, err := b.server.ExecShell("cat /proc/mounts | cut -f1,2 -d' ' | grep '" + b.Path + " " + mountPath + "$'"); err == nil {
+		logs.WithF(b.fields).Debug("Directory is already mounted")
+		return nil
+	}
+
+	if out, err := b.server.Exec("mkdir", "-p", mountPath); err != nil {
+		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Failed to create mount directory")
+	}
+
+	out, err := b.server.Exec("ls",  "-A", mountPath)
+	if err != nil {
+		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Failed to ls on mount path")
+	}
+	if string(out) != "" {
+		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Directory is not empty")
+	}
+
+	if out, err := b.server.ExecShell("! cat /proc/mounts | cut -f2 -d' ' | grep " + mountPath + "$"); err != nil {
+		logs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out))).Trace("Already mounted")
+		return nil
+	}
+
+	if out, err := b.server.Exec("mount", b.Path, mountPath); err != nil {
+		return errs.WithEF(err, b.fields.WithField("out", string(out)).WithField("target", mountPath), "Failed to mount")
+	}
+	return nil
+}
+
+func (b *BlockDevice) Umount(mountPath string) error {
+	logs.WithFields(b.fields).Debug("Umount")
+
+	if b.Mountpoint != "" {
+		if out, err := b.server.Exec("umount", b.Mountpoint); err != nil {
+			return errs.WithEF(err, b.fields.WithField("out", out), "Failed to unmount")
+		}
+	}
+
+	if out, err := b.server.Exec("rmdir", mountPath); err != nil {
+		logs.WithEF(err, b.fields.WithField("out", out)).Warn("Failed to cleanup mount path")
+	}
+
+	return nil
+}
+
 func (b *BlockDevice) SpaceAvailable() (int, error) {
 	output, err := b.server.ExecShell("df " + b.Path + " --output=avail | tail -n +2")
 	if err != nil {

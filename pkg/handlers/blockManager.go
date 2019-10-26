@@ -13,15 +13,17 @@ import (
 type BlockManager struct {
 	PassService    *password.Service
 	ManagerService *ManagersService
-	Path           string
-	FStype         string
-	Type           string
+
+	Path   string
+	FStype string
+	Type   string
 
 	// TODO
 	BlockDevice system.BlockDevice
 
-	server system.Server
-	config hdm.Config // TODO that sux and blockManager should be specialized
+	server     system.Server
+	configPath string
+	config     hdm.Config // TODO that sux and blockManager should be specialized
 
 	handlers   []Handler
 	stop       chan struct{}

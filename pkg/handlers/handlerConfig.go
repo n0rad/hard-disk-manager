@@ -8,7 +8,7 @@ import (
 
 func init() {
 	handlers = append(handlers, handler{
-		HandlerFilter{Type: "part"},
+		HandlerFilter{},
 		func() Handler {
 			return &HandlerConfig{
 				CommonHandler: CommonHandler{
@@ -77,8 +77,8 @@ func (h *HandlerConfig) scan() error {
 	for _, e := range configs {
 		m := BlockManager{
 			Type: "path",
-			Path: e.GetConfigPath(),
 			BlockDevice: blockDevice,
+			configPath: e.GetConfigPath(),
 			config: e,
 		}
 		if err := m.Init(); err != nil {

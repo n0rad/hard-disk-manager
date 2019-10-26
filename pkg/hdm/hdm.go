@@ -18,12 +18,15 @@ type Hdm struct {
 		keySize string
 	}
 
+	DefaultMountPath string
+
 	dbDisk   DBDisk
 
 	fields data.Fields
 	CheckInterval time.Duration
 }
 
+const pathMnt = "/mnt"
 const pathDBDisk = "/db-disk"
 const pathConfig = "/config.yaml"
 
@@ -34,6 +37,9 @@ func (hdm Hdm) DBDisk() *DBDisk {
 func (hdm *Hdm) Init(home string) error {
 	configPath := home + pathConfig
 
+	if hdm.DefaultMountPath == "" {
+		hdm.DefaultMountPath = pathMnt
+	}
 
 	if _, err := os.Stat(configPath); err == nil {
 		file, err := ioutil.ReadFile(configPath)
