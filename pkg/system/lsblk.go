@@ -19,6 +19,9 @@ type Lsblk struct {
 }
 
 func (l *Lsblk) Init(exec runner.Exec) error {
+	if exec == nil {
+		return errs.With("Exec cannot be null")
+	}
 	l.exec = exec
 
 	lsblkVersion, err := l.Version()

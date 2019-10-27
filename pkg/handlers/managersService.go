@@ -13,16 +13,16 @@ type ManagersService struct {
 	PassService *password.Service
 
 	blockDeviceEvents chan system.BlockDeviceEvent
-	stop          chan struct{}
-	managers      map[string]*BlockManager
-	managersMutex sync.RWMutex
+	stop              chan struct{}
+	managers          map[string]*BlockManager
+	managersMutex     sync.RWMutex
 }
 
 func (m *ManagersService) Init() {
 	m.blockDeviceEvents = make(chan system.BlockDeviceEvent)
 }
 
-func (m *ManagersService) GetBlockDeviceEventChan() chan <-system.BlockDeviceEvent {
+func (m *ManagersService) GetBlockDeviceEventChan() chan<- system.BlockDeviceEvent {
 	return m.blockDeviceEvents
 }
 
@@ -50,7 +50,7 @@ func (m *ManagersService) Stop(e error) {
 func (m *ManagersService) handleEvents() {
 	for {
 		select {
-		case e := <- m.blockDeviceEvents:
+		case e := <-m.blockDeviceEvents:
 			logs.WithField("event", e).Debug("Received block event")
 			m.handleBlockDeviceEvent(e)
 		case <-m.stop:
@@ -110,12 +110,15 @@ func (m *ManagersService) handleBlockDeviceEvent(event system.BlockDeviceEvent) 
 }
 
 func (m *ManagersService) AddBlockDevice(event system.BlockDeviceEvent) {
+	m.managersMutex.RLock()
 	if _, ok := m.managers[event.Path]; !ok {
+		m.managersMutex.RUnlock()
+
 		manager := BlockManager{
-			Path:        event.Path,
-			Type:        event.Type,
-			FStype:      event.FSType,
-			PassService: m.PassService,
+			Path:           event.Path,
+			Type:           event.Type,
+			FStype:         event.FSType,
+			PassService:    m.PassService,
 			ManagerService: m,
 		}
 

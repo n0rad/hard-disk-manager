@@ -15,8 +15,13 @@ type SshExec struct {
 	sshClient *simplessh.Client
 }
 
+func (s SshExec) String() string {
+	return s.Hostname
+}
+
 func (s SshExec) ExecGetStdoutStderr(head string, args ...string) (string, string, error) {
 	if s.sshClient == nil {
+		//, "/root/.ssh/id_rsa"
 		client, err := simplessh.ConnectWithAgent(s.Hostname, s.Username)
 		if err != nil {
 			return "", "", errs.WithEF(err, data.WithField("hostname", s.Hostname).WithField("username", s.Username), "Fail to ssh to server")
@@ -28,7 +33,7 @@ func (s SshExec) ExecGetStdoutStderr(head string, args ...string) (string, strin
 	logs.WithField("host", s.Hostname).WithField("cmd", cmd).Debug("Running command on server")
 
 	stdout, err := s.sshClient.Exec(cmd)
-	logs.WithField("stdout", string(stdout)).WithField("command", cmd).Trace("command output")
+	logs.WithField("host", s.Hostname).WithField("stdout", string(stdout)).WithField("command", cmd).Trace("command output")
 	if err != nil {
 		return string(stdout), "", errs.WithEF(err, data.WithField("host", s.Hostname).
 			WithField("cmd", cmd), "Exec command failed")
@@ -51,7 +56,8 @@ func (s SshExec) ExecGetStd(head string, args ...string) (string, error) {
 /////////////////
 
 func (s SshExec) ExecShellGetStdout(cmd string) (string, error) {
-	stdout, stderr, err := s.ExecGetStdoutStderr("bash", "-o", "pipefail", "-c", cmd)
+	cmd = strings.Replace(cmd, "'", `\'`, -1)
+	stdout, stderr, err := s.ExecGetStdoutStderr("bash", "-o", "pipefail", "-c", "'" + cmd + "'")
 	stdout += stderr
 	return stdout, err
 }

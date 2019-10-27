@@ -19,8 +19,10 @@ type Server struct {
 	Username      string
 	Bays          []Bay
 
-	fields data.Fields
-	Lsblk  system.Lsblk // TODO public ?
+
+	isLocal bool
+	fields  data.Fields
+	Lsblk   system.Lsblk // TODO public ?
 }
 
 func (s *Server) Init(localHostname string) error {
@@ -28,6 +30,7 @@ func (s *Server) Init(localHostname string) error {
 
 	var exec runner.Exec
 	if localHostname == s.Name || localHostname == "" || localHostname == "localhost" {
+		s.isLocal = true
 		exec = &runner.LocalExec{}
 	} else {
 		exec = &runner.SshExec{
@@ -41,6 +44,10 @@ func (s *Server) Init(localHostname string) error {
 	}
 
 	return nil
+}
+
+func (s Server) IsLocal() bool {
+	return s.isLocal
 }
 
 func (s *Server) BayLocation(path string) string {

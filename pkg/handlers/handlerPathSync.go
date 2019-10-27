@@ -35,7 +35,7 @@ func (h *HandlerSync) Start() {
 			continue
 		}
 
-		if err := s.Backup(); err !=nil {
+		if err := s.Sync(); err !=nil {
 			logs.WithE(err).Error("Failed to sync")
 		}
 	}

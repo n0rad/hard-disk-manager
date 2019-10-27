@@ -35,8 +35,9 @@ const TestShort TestType = "short"
 //	}, nil
 //}
 
-func (s *Smartctl) Init(exec runner.Exec) error {
+func (s *Smartctl) Init(exec runner.Exec, device BlockDevice) error {
 	s.exec = exec
+	s.path = device.Path
 
 	smartctlVersion, err := s.SmartctlVersion()
 	if err != nil {
@@ -49,10 +50,9 @@ func (s *Smartctl) Init(exec runner.Exec) error {
 }
 
 func (s Smartctl) SmartctlVersion() (semver.Version, error) {
-	cmd := `smartctl -j --version`
-	output, err := s.exec.ExecGetStdout(cmd)
+	output, err := s.exec.ExecGetStdout("smartctl", "-j", "--version")
 	if err != nil {
-		return semver.Version{}, errs.WithEF(err, data.WithField("cmd", cmd), "Failed to call smartctl version")
+		return semver.Version{}, errs.WithE(err, "Failed to call smartctl -j --version")
 	}
 
 	smartResult := SmartResult{}

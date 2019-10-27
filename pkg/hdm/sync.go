@@ -78,10 +78,10 @@ func (s *Sync) Init(configPath string, sourceBlockDevice system.BlockDevice, ser
 	return nil
 }
 
-func (s *Sync) Backupable() (error, error) {
+func (s *Sync) Syncable() (error, error) {
 	return s.rsync.Rsyncable()
 }
 
-func (s *Sync) Backup() error {
+func (s *Sync) Sync() error {
 	return s.rsync.RSync()
 }

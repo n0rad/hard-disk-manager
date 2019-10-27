@@ -51,7 +51,7 @@ func (h *HandlerHealthCheck) Start() {
 func (h *HandlerHealthCheck) check() {
 	//TODO init elsewhere
 	smartctl := system.Smartctl{}
-	if err := smartctl.Init(h.manager.BlockDevice.GetExec()); err != nil {
+	if err := smartctl.Init(h.manager.BlockDevice.GetExec(), h.manager.BlockDevice); err != nil {
 		logs.WithE(err).Error("Failed to create smartctl")
 		return
 	}

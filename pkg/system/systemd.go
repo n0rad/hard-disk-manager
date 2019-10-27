@@ -21,5 +21,8 @@ func (s *Systemd) Init(exec runner.Exec) {
 
 func (s *Systemd) SystemdMountPath(what string) (string, error) {
 	what = strings.Replace(what, `/`, `\/`, -1)
-	return s.exec.ExecShellGetStdout("systemctl show -a -p What,Where,Id '*.mount' --no-pager | awk '/What=" + what + "/' RS= | grep Where | cut -f2 -d=")
+	cmd := "systemctl show -a -p What,Where,Id '*.mount' --no-pager | awk '/What=" + what + "/' RS= | grep Where | cut -f2 -d="
+	stdout, e := s.exec.ExecShellGetStdout(cmd)
+	//logs.WithField("stdout", stdout).WithField("cmd", cmd).Warn("there")
+	return stdout, e
 }

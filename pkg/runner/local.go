@@ -13,6 +13,10 @@ type LocalExec struct {
 	//UnSudo bool
 }
 
+func (s LocalExec) String() string {
+	return "local"
+}
+
 func (s LocalExec) Close() {}
 
 func (s LocalExec) ExecGetStd(head string, args ...string) (string, error) {
