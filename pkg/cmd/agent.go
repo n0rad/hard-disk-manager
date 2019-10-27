@@ -4,6 +4,7 @@ import (
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/handlers"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
+	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"github.com/n0rad/hard-disk-manager/pkg/socket"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
@@ -32,7 +33,13 @@ func Agent() error {
 	udevService := system.UdevService{
 		EventChan: managers.GetBlockDeviceEventChan(),
 	}
-	udevService.Init()
+
+	lsblk := system.Lsblk{}
+	if err := lsblk.Init(runner.Local); err != nil {
+		return err
+	}
+
+	udevService.Init(&lsblk)
 	g.Add(udevService.Start, udevService.Stop)
 
 	// socketServer

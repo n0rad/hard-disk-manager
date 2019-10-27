@@ -28,7 +28,7 @@ type Backup struct {
 	rsync system.Rsync
 }
 
-func (b *Backup) Init(configPath string, sourceBlockDevice system.BlockDevice, server system.Server) error {
+func (b *Backup) Init(configPath string, sourceBlockDevice system.BlockDevice, servers Servers) error {
 
 	if b.TargetLabel == "" {
 		return errs.With("TargetLabel cannot be empty")
@@ -44,7 +44,7 @@ func (b *Backup) Init(configPath string, sourceBlockDevice system.BlockDevice, s
 	}
 
 	// target
-	targetBlockDevice, err := server.GetBlockDeviceByLabel(b.TargetLabel)
+	targetBlockDevice, err := servers.GetBlockDeviceByLabel(b.TargetLabel)
 	if err != nil {
 		return errs.WithE(err, "Cannot start backup, target device not found")
 	}
@@ -72,10 +72,10 @@ func (b *Backup) Init(configPath string, sourceBlockDevice system.BlockDevice, s
 	return nil
 }
 
-func (b *Backup) Backupable(server system.Server) (error, error) {
+func (b *Backup) Backupable() (error, error) {
 	return b.rsync.Rsyncable()
 }
 
-func (b *Backup) Backup(server system.Server) error {
+func (b *Backup) Backup() error {
 	return b.rsync.RSync()
 }

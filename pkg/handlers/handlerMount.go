@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/n0rad/go-erlog/data"
-	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
@@ -41,22 +40,20 @@ func (h *HandlerMount) Start() {
 }
 
 func (h *HandlerMount) tryMount() error {
-	b, err := h.server.GetBlockDevice(h.manager.Path)
+	//TODO init elsewhere
+	systemd := system.Systemd{}
+	systemd.Init(h.manager.BlockDevice.GetExec())
+	mountPath, err := systemd.SystemdMountPath(h.manager.BlockDevice.Path)
 	if err != nil {
-		return errs.WithEF(err, h.fields, "Failed to get blockDevice")
-	}
-
-	mountPath, err := system.SystemdMountPath(b.Path)
-	if err != nil {
-		logs.WithEF(err, data.WithField("path", b.Path)).Trace("Failed to get systemd mount path")
-		mountPath = h.DefaultMountPath + "/" + b.Name
-		if b.Label != "" {
-			mountPath = h.DefaultMountPath + "/" + b.Label
+		logs.WithEF(err, data.WithField("path", h.manager.BlockDevice.Path)).Trace("Failed to get systemd mount path")
+		mountPath = h.DefaultMountPath + "/" + h.manager.BlockDevice.Name
+		if h.manager.BlockDevice.Label != "" {
+			mountPath = h.DefaultMountPath + "/" + h.manager.BlockDevice.Label
 		}
 	}
 
-	if err := b.Mount(mountPath); err != nil {
-		if err := b.Umount(mountPath); err != nil {
+	if err := h.manager.BlockDevice.Mount(mountPath); err != nil {
+		if err := h.manager.BlockDevice.Umount(mountPath); err != nil {
 			logs.WithE(err).Warn("Failed to cleanup failed mount")
 		}
 		return err

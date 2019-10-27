@@ -5,6 +5,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"strconv"
 	"strings"
 )
@@ -65,20 +66,19 @@ type BlockDevice struct {
 	Children   []BlockDevice `json:"children"`
 
 	fields data.Fields
-	server *Server
+	exec   runner.Exec
 }
 
-// server can be nil
-func (b *BlockDevice) Init(server *Server) {
-	if server == nil {
-		server = &Server{
-		}
-		_ = server.Init()
-	}
-	b.server = server
-	b.fields = data.WithField("path", b.Path).WithField("server", b.server.Name)
+func (b BlockDevice) GetExec() runner.Exec {
+	return b.exec
+}
+
+func (b *BlockDevice) Init(exec runner.Exec) {
+	b.exec = exec
+	b.fields = data.WithField("path", b.Path).WithField("exec", b.exec)
+
 	for i := range b.Children {
-		b.Children[i].Init(server)
+		b.Children[i].Init(exec)
 	}
 }
 
@@ -98,8 +98,8 @@ func (b *BlockDevice) LuksOpen(cryptPassword *memguard.LockedBuffer) error {
 		volumeName = b.Name
 	}
 
-	if out, err := b.server.ExecShell("echo -n '" + cryptPassword.String() + "' | sudo cryptsetup luksOpen " + b.Path + " " + volumeName + " -"); err != nil {
-		return errs.WithEF(err, b.fields.WithField("out", out), "Failed to open luks")
+	if std, err := b.exec.ExecShellGetStd("echo -n '" + cryptPassword.String() + "' | sudo cryptsetup luksOpen " + b.Path + " " + volumeName + " -"); err != nil {
+		return errs.WithEF(err, b.fields.WithField("std", std), "Failed to open luks")
 	}
 
 	return nil
@@ -111,30 +111,30 @@ func (b *BlockDevice) Mount(mountPath string) error {
 		return errs.WithF(b.fields, "mountPath cannot be empty")
 	}
 
-	if _, err := b.server.ExecShell("cat /proc/mounts | cut -f1,2 -d' ' | grep '" + b.Path + " " + mountPath + "$'"); err == nil {
+	if _, err := b.exec.ExecShellGetStd("cat /proc/mounts | cut -f1,2 -d' ' | grep '" + b.Path + " " + mountPath + "$'"); err == nil {
 		logs.WithF(b.fields).Debug("Directory is already mounted")
 		return nil
 	}
 
-	if out, err := b.server.Exec("mkdir", "-p", mountPath); err != nil {
-		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Failed to create mount directory")
+	if std, err := b.exec.ExecGetStd("mkdir", "-p", mountPath); err != nil {
+		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("std", std), "Failed to create mount directory")
 	}
 
-	out, err := b.server.Exec("ls",  "-A", mountPath)
+	out, err := b.exec.ExecGetStdout("ls", "-A", mountPath)
 	if err != nil {
-		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Failed to ls on mount path")
+		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", out), "Failed to ls on mount path")
 	}
 	if string(out) != "" {
-		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out)), "Directory is not empty")
+		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", out), "Directory is not empty")
 	}
 
-	if out, err := b.server.ExecShell("! cat /proc/mounts | cut -f2 -d' ' | grep " + mountPath + "$"); err != nil {
-		logs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", string(out))).Trace("Already mounted")
+	if std, err := b.exec.ExecShellGetStd("! cat /proc/mounts | cut -f2 -d' ' | grep " + mountPath + "$"); err != nil {
+		logs.WithEF(err, b.fields.WithField("path", mountPath).WithField("std", std)).Trace("Already mounted")
 		return nil
 	}
 
-	if out, err := b.server.Exec("mount", b.Path, mountPath); err != nil {
-		return errs.WithEF(err, b.fields.WithField("out", string(out)).WithField("target", mountPath), "Failed to mount")
+	if std, err := b.exec.ExecGetStd("mount", b.Path, mountPath); err != nil {
+		return errs.WithEF(err, b.fields.WithField("std", std).WithField("target", mountPath), "Failed to mount")
 	}
 	return nil
 }
@@ -143,20 +143,20 @@ func (b *BlockDevice) Umount(mountPath string) error {
 	logs.WithFields(b.fields).Debug("Umount")
 
 	if b.Mountpoint != "" {
-		if out, err := b.server.Exec("umount", b.Mountpoint); err != nil {
-			return errs.WithEF(err, b.fields.WithField("out", out), "Failed to unmount")
+		if std, err := b.exec.ExecGetStd("umount", b.Mountpoint); err != nil {
+			return errs.WithEF(err, b.fields.WithField("std", std), "Failed to unmount")
 		}
 	}
 
-	if out, err := b.server.Exec("rmdir", mountPath); err != nil {
-		logs.WithEF(err, b.fields.WithField("out", out).WithField("path", mountPath)).Warn("Failed to cleanup mount path")
+	if std, err := b.exec.ExecGetStd("rmdir", mountPath); err != nil {
+		logs.WithEF(err, b.fields.WithField("std", std).WithField("path", mountPath)).Warn("Failed to cleanup mount path")
 	}
 
 	return nil
 }
 
 func (b *BlockDevice) SpaceAvailable() (int, error) {
-	output, err := b.server.ExecShell("df " + b.Path + " --output=avail | tail -n +2")
+	output, err := b.exec.ExecShellGetStdout("df " + b.Path + " --output=avail | tail -n +2")
 	if err != nil {
 		return 0, errs.WithEF(err, b.fields, "Failed to run 'df' on blockDevice")
 	}

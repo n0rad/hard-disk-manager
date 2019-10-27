@@ -43,12 +43,12 @@ func (h *HandlerBackup) Start() {
 		b := hdm.Backup{
 			BackupConfig: v,
 		}
-		if err := b.Init(h.manager.config.GetConfigPath(), h.manager.BlockDevice, h.manager.server); err != nil {
+		if err := b.Init(h.manager.config.GetConfigPath(), h.manager.BlockDevice, hdm.HDM.Servers); err != nil {
 			logs.WithE(err).Error("Failed to init backup")
 			continue
 		}
 
-		if err := b.Backup(h.manager.server); err !=nil {
+		if err := b.Backup(); err !=nil {
 			logs.WithE(err).Error("Failed to backup")
 		}
 	}

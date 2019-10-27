@@ -53,31 +53,20 @@ func (h *HandlerConfig) Start() {
 }
 
 func (h *HandlerConfig) scan() error {
-	disk, err := h.server.GetBlockDevice(h.manager.Path)
-	if err != nil {
-		return err
-	}
-
-	if disk.Mountpoint == "" {
+	if h.manager.BlockDevice.Mountpoint == "" {
 		logs.WithF(h.fields).Debug("cannot scan for config, block device is not mounted")
 		return nil
 	}
 
-	configs, err := hdm.FindConfigs(disk.Mountpoint, h.server)
+	configs, err := hdm.FindConfigs(h.manager.BlockDevice, h.server)
 	if err != nil {
 		return err
 	}
-
-	blockDevice, err := h.server.GetBlockDevice(h.manager.Path)
-	if err != nil {
-		return err
-	}
-
 
 	for _, e := range configs {
 		m := BlockManager{
 			Type: "path",
-			BlockDevice: blockDevice,
+			BlockDevice: h.manager.BlockDevice,
 			configPath: e.GetConfigPath(),
 			config: e,
 		}

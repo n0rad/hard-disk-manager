@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"sync"
@@ -116,6 +118,12 @@ func (m *ManagersService) AddBlockDevice(event system.BlockDeviceEvent) {
 			PassService: m.PassService,
 			ManagerService: m,
 		}
+
+		device, err := hdm.HDM.Servers.GetLocal().Lsblk.GetBlockDevice(event.Path)
+		if err != nil {
+			logs.WithEF(err, data.WithField("path", event.Path)).Error("Failed to get blockDevice from event")
+		}
+		manager.BlockDevice = device
 
 		if err := manager.Init(); err != nil {
 			logs.Warn("Failed to init blockdevice manager")

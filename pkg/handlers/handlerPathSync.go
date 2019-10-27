@@ -30,12 +30,12 @@ func (h *HandlerSync) Start() {
 		s := hdm.Sync{
 			SyncConfig: v,
 		}
-		if err := s.Init(h.manager.config.GetConfigPath(), h.manager.BlockDevice, h.manager.server); err != nil {
+		if err := s.Init(h.manager.config.GetConfigPath(), h.manager.BlockDevice, hdm.HDM.Servers); err != nil {
 			logs.WithE(err).Error("Failed to init sync")
 			continue
 		}
 
-		if err := s.Backup(h.manager.server); err !=nil {
+		if err := s.Backup(); err !=nil {
 			logs.WithE(err).Error("Failed to sync")
 		}
 	}

@@ -32,7 +32,7 @@ type Sync struct {
 	rsync system.Rsync
 }
 
-func (s *Sync) Init(configPath string, sourceBlockDevice system.BlockDevice, server system.Server) error {
+func (s *Sync) Init(configPath string, sourceBlockDevice system.BlockDevice, servers Servers) error {
 
 	if s.TargetLabel == "" {
 		return errs.With("TargetLabel cannot be empty")
@@ -50,7 +50,7 @@ func (s *Sync) Init(configPath string, sourceBlockDevice system.BlockDevice, ser
 	// target
 	//TODO find target
 
-	targetBlockDevice, err := server.GetBlockDeviceByLabel(s.TargetLabel)
+	targetBlockDevice, err := servers.GetBlockDeviceByLabel(s.TargetLabel)
 	if err != nil {
 		return errs.WithE(err, "Cannot start sync, target device not found")
 	}
@@ -78,10 +78,10 @@ func (s *Sync) Init(configPath string, sourceBlockDevice system.BlockDevice, ser
 	return nil
 }
 
-func (s *Sync) Backupable(server system.Server) (error, error) {
+func (s *Sync) Backupable() (error, error) {
 	return s.rsync.Rsyncable()
 }
 
-func (s *Sync) Backup(server system.Server) error {
+func (s *Sync) Backup() error {
 	return s.rsync.RSync()
 }

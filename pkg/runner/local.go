@@ -7,36 +7,26 @@ import (
 	"strings"
 )
 
-var Local Runner = LocalRunner{}
+var Local Exec = LocalExec{}
 
-type LocalRunner struct {
+type LocalExec struct {
 	//UnSudo bool
 }
 
-func (s LocalRunner) ExecShellGetStd(cmd string) (string, error) {
-	stdout, stderr, err := s.ExecGetStdoutStderr("bash", "-o", "pipefail", "-c", cmd)
-	stdout += stderr
-	return stdout, err
-}
+func (s LocalExec) Close() {}
 
-func (s LocalRunner) ExecShellGetStdout(cmd string) (string, error) {
-	return s.ExecGetStdout("bash", "-o", "pipefail", "-c", cmd)
-}
-
-//
-
-func (s LocalRunner) ExecGetStd(head string, args ...string) (string, error) {
+func (s LocalExec) ExecGetStd(head string, args ...string) (string, error) {
 	stdout, stderr, err := s.ExecGetStdoutStderr(head, args...)
 	stdout += stderr
 	return stdout, err
 }
 
-func (s LocalRunner) ExecGetStdout(head string, args ...string) (string, error) {
+func (s LocalExec) ExecGetStdout(head string, args ...string) (string, error) {
 	stdout, _, err := s.ExecGetStdoutStderr(head, args...)
 	return stdout, err
 }
 
-func (s LocalRunner) ExecGetStdoutStderr(head string, args ...string) (string, string, error) {
+func (s LocalExec) ExecGetStdoutStderr(head string, args ...string) (string, string, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	//if !s.UnSudo {
@@ -55,3 +45,16 @@ func (s LocalRunner) ExecGetStdoutStderr(head string, args ...string) (string, s
 	err := cmd.Wait()
 	return strings.TrimSpace(stdout.String()), stderr.String(), err
 }
+
+/////
+
+func (s LocalExec) ExecShellGetStd(cmd string) (string, error) {
+	stdout, stderr, err := s.ExecGetStdoutStderr("bash", "-o", "pipefail", "-c", cmd)
+	stdout += stderr
+	return stdout, err
+}
+
+func (s LocalExec) ExecShellGetStdout(cmd string) (string, error) {
+	return s.ExecGetStdout("bash", "-o", "pipefail", "-c", cmd)
+}
+

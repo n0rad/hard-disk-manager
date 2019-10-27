@@ -11,30 +11,46 @@ import (
 )
 
 type Smartctl struct {
-	path   string
-	server Server
+	path string
+
+	exec   runner.Exec
 	fields data.Fields
 }
+
+var smartCtlMinVersion = semver.MustParse("7.0")
 
 type TestType string
 
 const TestLong TestType = "long"
 const TestShort TestType = "short"
 
-func NewSmartCtl(path string, server Server) (Smartctl, error) {
-	if path == "" {
-		return Smartctl{}, errs.With("Path cannot be empty")
+//func NewSmartCtl(path string, server hdm.Server) (Smartctl, error) {
+//	if path == "" {
+//		return Smartctl{}, errs.With("Path cannot be empty")
+//	}
+//	return Smartctl{
+//		path:   path,
+//		server: server,
+//		fields: data.WithField("path", path),
+//	}, nil
+//}
+
+func (s *Smartctl) Init(exec runner.Exec) error {
+	s.exec = exec
+
+	smartctlVersion, err := s.SmartctlVersion()
+	if err != nil {
+		return errs.WithE(err, "Failed to get smartctl version to check compatibility")
 	}
-	return Smartctl{
-		path:   path,
-		server: server,
-		fields: data.WithField("path", path),
-	}, nil
+	if smartctlVersion.LessThan(smartCtlMinVersion) {
+		return errs.WithF(data.WithField("current", smartctlVersion.String()).WithField("required", smartCtlMinVersion.String()), "smartctl version is not compatible with hdm")
+	}
+	return nil
 }
 
-func SmartctlVersion() (semver.Version, error) {
+func (s Smartctl) SmartctlVersion() (semver.Version, error) {
 	cmd := `smartctl -j --version`
-	output, err := runner.Local.ExecShellGetStdout(cmd)
+	output, err := s.exec.ExecGetStdout(cmd)
 	if err != nil {
 		return semver.Version{}, errs.WithEF(err, data.WithField("cmd", cmd), "Failed to call smartctl version")
 	}
@@ -61,7 +77,7 @@ func SmartctlVersion() (semver.Version, error) {
 
 func (s Smartctl) All() (SmartResult, error) {
 	smartResult := SmartResult{}
-	output, err := s.server.Exec("smartctl", "--all", "-j", s.path)
+	output, err := s.exec.ExecGetStdout("smartctl", "--all", "-j", s.path)
 	if err != nil {
 		return smartResult, errs.WithEF(err, s.fields, "Fail to run smartctl")
 	}
@@ -74,7 +90,7 @@ func (s Smartctl) All() (SmartResult, error) {
 }
 
 func (s Smartctl) RunTest(testType TestType) error {
-	output, err := s.server.Exec("sudo smartctl -t  " + s.path + " || true")
+	output, err := s.exec.ExecShellGetStdout("sudo smartctl -t  " + s.path + " || true")
 	if err != nil {
 		return errs.WithEF(err, s.fields, "Fail to run smartctl")
 	}

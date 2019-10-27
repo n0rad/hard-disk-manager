@@ -43,10 +43,6 @@ func (h *HandlerCrypto) Start() {
 }
 
 func (h *HandlerCrypto) open() error {
-	b, err := h.server.GetBlockDevice(h.manager.Path)
-	if err != nil {
-		return errs.WithEF(err, h.fields, "Failed to get blockDevice")
-	}
 
 	if !h.manager.PassService.IsSet() {
 		logs.WithF(h.fields).Debug("Password is not set, cannot open")
@@ -59,7 +55,7 @@ func (h *HandlerCrypto) open() error {
 	}
 	defer buffer.Destroy()
 
-	if err := b.LuksOpen(buffer); err != nil {
+	if err := h.manager.BlockDevice.LuksOpen(buffer); err != nil {
 		return errs.WithEF(err, h.fields, "Failed to Open")
 	}
 	return nil

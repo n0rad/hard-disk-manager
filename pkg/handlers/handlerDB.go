@@ -53,18 +53,13 @@ func (h *HandlerDb) Start() {
 ///////////////////////////////////
 
 func (h *HandlerDb) storeInfo() {
-	disk, err := h.server.GetBlockDevice(h.manager.Path)
-	if err != nil {
-		logs.WithE(err).Error("Failed to scan disk")
-		return
-	}
 
-	if disk.Serial == "" {
+	if h.manager.BlockDevice.Serial == "" {
 		logs.WithF(h.fields).Debug("Disk has no serial, not saving")
 		return
 	}
 
-	if err := hdm.HDM.DBDisk().Save(disk); err != nil {
+	if err := hdm.HDM.DBDisk().Save(h.manager.BlockDevice); err != nil {
 		logs.WithE(err).Error("Failed to save disk in db")
 	}
 }

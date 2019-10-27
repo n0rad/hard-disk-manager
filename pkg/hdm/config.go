@@ -64,17 +64,17 @@ func (h *Config) Init(configPath string) error {
 //	return hdmConfigs, nil
 //}
 
-func FindConfigs(path string, server system.Server) ([]Config, error) {
+func FindConfigs(blockdevice system.BlockDevice, server Server) ([]Config, error) {
 	var hdmConfigs []Config
 
-	if path == "" {
-		return hdmConfigs, errs.WithF(data.WithField("path", path), "BlockDeviceOLD is not mounted")
+	if blockdevice.Mountpoint == "" {
+		return hdmConfigs, errs.WithF(data.WithField("path", blockdevice.Mountpoint), "BlockDevice is not mounted")
 	}
 
-	hdmRootFilePath := path + PathHdmYaml
+	hdmRootFilePath := blockdevice.Mountpoint + PathHdmYaml
 
 	if _, err := os.Stat(hdmRootFilePath); err != nil {
-		logs.WithEF(err, data.WithField("path", path)).Debug("hdm root file does not exists or cannot be read")
+		logs.WithEF(err, data.WithField("path", blockdevice.Mountpoint)).Debug("hdm root file does not exists or cannot be read")
 		return hdmConfigs, nil
 	}
 
@@ -89,7 +89,7 @@ func FindConfigs(path string, server system.Server) ([]Config, error) {
 		return hdmConfigs, nil
 	}
 
-	configs, err := server.Exec("find", path, "-type", "f", "-not", "-path", path+PathBackups+"/*", "-name", HdmYamlFilename)
+	configs, err := blockdevice.GetExec().ExecGetStdout("find", blockdevice.Mountpoint, "-type", "f", "-not", "-path", blockdevice.Mountpoint+PathBackups+"/*", "-name", HdmYamlFilename)
 	if err != nil {
 		return hdmConfigs, errs.WithE(err, "Failed to find hdm.yaml files")
 	}

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/n0rad/go-erlog/data"
-	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
@@ -21,7 +20,6 @@ type BlockManager struct {
 	// TODO
 	BlockDevice system.BlockDevice
 
-	server     system.Server
 	configPath string
 	config     hdm.Config // TODO that sux and blockManager should be specialized
 
@@ -32,9 +30,6 @@ type BlockManager struct {
 
 func (d *BlockManager) Init() error {
 	logs.WithField("path", d.Path).Info("New block device manager")
-	if err := d.server.Init(); err != nil {
-		return errs.WithE(err, "Failed to init empty server")
-	}
 
 	for _, handler := range handlers {
 		if handler.filter.Match(HandlerFilter{Type: d.Type, FSType: d.FStype}) {

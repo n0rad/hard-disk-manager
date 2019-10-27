@@ -6,7 +6,6 @@ import (
 	"github.com/pilebones/go-udev/netlink"
 )
 
-
 // Types: part, lvm, crypt, dmraid, mpath, path, dm, loop, md, linear, raid0, raid1, raid4, raid5, raid10, multipath, disk, tape, printer, processor, worm, rom, scanner, mo-disk, changer, comm, raid, enclosure, rbc, osd, and no-lun
 
 type BlockDeviceEvent struct {
@@ -17,18 +16,14 @@ type BlockDeviceEvent struct {
 }
 
 type UdevService struct {
-	EventChan chan <-BlockDeviceEvent
+	EventChan chan<- BlockDeviceEvent
 
-	stop   chan struct{}
-	server Server
+	stop  chan struct{}
+	lsblk *Lsblk
 }
 
-func (k *UdevService) Init() error {
-	if err := k.server.Init(); err != nil {
-		return errs.WithE(err, "Failed to init empty server")
-	}
-
-	return nil
+func (k *UdevService) Init(lsblk *Lsblk) {
+	k.lsblk = lsblk
 }
 
 func (k *UdevService) Start() error {
@@ -60,7 +55,7 @@ func (k *UdevService) Stop(e error) {
 ///////////////////////////////
 
 func (k *UdevService) addCurrentBlockDevices() error {
-	blockDevices, err := k.server.ListFlatBlockDevices()
+	blockDevices, err := k.lsblk.ListFlatBlockDevices()
 	if err != nil {
 		return errs.WithE(err, "Failed to list current block devices")
 	}
@@ -68,7 +63,7 @@ func (k *UdevService) addCurrentBlockDevices() error {
 		k.EventChan <- BlockDeviceEvent{
 			Action: netlink.ADD,
 			Type:   v.Type,
-			Path:   "/dev/"+v.Kname,
+			Path:   "/dev/" + v.Kname,
 			FSType: v.Fstype,
 		}
 	}

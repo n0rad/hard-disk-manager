@@ -8,21 +8,14 @@ import (
 	"strings"
 )
 
-type SshRunner struct {
+type SshExec struct {
 	Hostname string
 	Username string
 
 	sshClient *simplessh.Client
 }
 
-func (s *SshRunner) Close() {
-	if s.sshClient != nil {
-		s.sshClient.Close()
-		s.sshClient = nil
-	}
-}
-
-func (s *SshRunner) ExecGetOutputError(head string, args ...string) (string, string, error) {
+func (s SshExec) ExecGetStdoutStderr(head string, args ...string) (string, string, error) {
 	if s.sshClient == nil {
 		client, err := simplessh.ConnectWithAgent(s.Hostname, s.Username)
 		if err != nil {
@@ -42,4 +35,34 @@ func (s *SshRunner) ExecGetOutputError(head string, args ...string) (string, str
 	}
 
 	return strings.TrimSpace(string(stdout)), "", nil
+}
+
+func (s SshExec) ExecGetStdout(head string, args ...string) (string, error) {
+	stdout, _, err := s.ExecGetStdoutStderr(head, args...)
+	return stdout, err
+}
+
+func (s SshExec) ExecGetStd(head string, args ...string) (string, error) {
+	stdout, stderr, err := s.ExecGetStdoutStderr(head, args...)
+	stdout += stderr
+	return stdout, err
+}
+
+/////////////////
+
+func (s SshExec) ExecShellGetStdout(cmd string) (string, error) {
+	stdout, stderr, err := s.ExecGetStdoutStderr("bash", "-o", "pipefail", "-c", cmd)
+	stdout += stderr
+	return stdout, err
+}
+
+func (s SshExec) ExecShellGetStd(cmd string) (string, error) {
+	return s.ExecGetStdout("bash", "-o", "pipefail", "-c", cmd)
+}
+
+func (s *SshExec) Close() {
+	if s.sshClient != nil {
+		s.sshClient.Close()
+		s.sshClient = nil
+	}
 }
