@@ -100,6 +100,14 @@ func (k *UdevService) watchUdevBlockEvents(udevConn *netlink.UEventConn) {
 				uevent.Env["DEVTYPE"] = "part"
 			}
 
+			//path := uevent.Env["DEVNAME"]
+			//if device, err := k.server.GetBlockDevice(path); err != nil {
+			//	logs.WithE(err).Warn("Failed to get blockdevice from kernel event")
+			//} else {
+			//	// replace kernel path with lsblk path (/dev/dmX -> /dev/mapper/XX)
+			//	path = device.Path
+			//}
+
 			k.EventChan <- BlockDeviceEvent{
 				Action: uevent.Action,
 				Path:   uevent.Env["DEVNAME"],

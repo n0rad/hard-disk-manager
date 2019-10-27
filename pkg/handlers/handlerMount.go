@@ -34,7 +34,7 @@ func (h *HandlerMount) Init(manager *BlockManager) {
 func (h *HandlerMount) Start() {
 
 	if err := h.tryMount(); err != nil {
-		logs.WithEF(err, h.fields).Warn("Failed to mount")
+		logs.WithEF(err, h.fields).Debug("Failed to mount")
 	}
 
 	<-h.stop
@@ -47,7 +47,6 @@ func (h *HandlerMount) tryMount() error {
 	}
 
 	mountPath, err := system.SystemdMountPath(b.Path)
-	logs.WithField("path", mountPath).Error("path")
 	if err != nil {
 		logs.WithEF(err, data.WithField("path", b.Path)).Trace("Failed to get systemd mount path")
 		mountPath = h.DefaultMountPath + "/" + b.Name

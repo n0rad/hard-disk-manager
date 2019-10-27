@@ -1,18 +1,12 @@
-package tools
+package runner
 
 import (
-	"bytes"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/sfreiberg/simplessh"
-	"os/exec"
 	"strings"
 )
-
-type Runner interface {
-	ExecGetOutputError(head string, args ...string) (string, string, error)
-}
 
 type SshRunner struct {
 	Hostname string
@@ -48,30 +42,4 @@ func (s *SshRunner) ExecGetOutputError(head string, args ...string) (string, str
 	}
 
 	return strings.TrimSpace(string(stdout)), "", nil
-}
-
-//
-
-type LocalRunner struct {
-	UnSudo bool
-}
-
-func (s LocalRunner) ExecGetOutputError(head string, args ...string) (string, string, error) {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	if !s.UnSudo {
-		a := append([]string{}, head)
-		args = append(a, args...)
-		head = "sudo"
-	}
-
-	if logs.IsDebugEnabled() {
-		logs.WithField("command", strings.Join([]string{head, " ", strings.Join(args, " ")}, " ")).Debug("Running command")
-	}
-	cmd := exec.Command(head, args...)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	cmd.Start()
-	err := cmd.Wait()
-	return strings.TrimSpace(stdout.String()), stderr.String(), err
 }

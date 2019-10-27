@@ -1,15 +1,20 @@
 package hdm
 
 import (
+	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
+	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"io/ioutil"
 	"os"
 	"time"
 )
 
 var HDM Hdm
+var lsblkMinVersion = semver.MustParse("2.33")
+var smartCtlMinVersion = semver.MustParse("7.0")
 
 type Hdm struct {
 	LuksFormat []struct {
@@ -20,9 +25,9 @@ type Hdm struct {
 
 	DefaultMountPath string
 
-	dbDisk   DBDisk
+	dbDisk DBDisk
 
-	fields data.Fields
+	fields        data.Fields
 	CheckInterval time.Duration
 }
 
@@ -34,7 +39,32 @@ func (hdm Hdm) DBDisk() *DBDisk {
 	return &hdm.dbDisk
 }
 
+func (hdm *Hdm) CheckVersions() error {
+	lsblkVersion, err := system.LsblkVersion()
+	if err != nil {
+		return errs.WithE(err, "Failed to get lsblk version to check compatibility")
+	}
+	if lsblkVersion.LessThan(lsblkMinVersion) {
+		return errs.WithF(data.WithField("current", lsblkVersion.String()).WithField("required", lsblkMinVersion.String()), "lsblk version is not compatible with hdm")
+	}
+
+	// smartctl
+	smartctlVersion, err := system.SmartctlVersion()
+	if err != nil {
+		return errs.WithE(err, "Failed to get smartctl version to check compatibility")
+	}
+	if smartctlVersion.LessThan(smartCtlMinVersion) {
+		logs.WithF(data.WithField("current", smartctlVersion.String()).WithField("required", smartCtlMinVersion.String())).Error("smartctl version is not compatible with hdm")
+	}
+
+	return nil
+}
+
 func (hdm *Hdm) Init(home string) error {
+	if err := hdm.CheckVersions(); err != nil {
+		return err
+	}
+
 	configPath := home + pathConfig
 
 	if hdm.DefaultMountPath == "" {
@@ -57,4 +87,3 @@ func (hdm *Hdm) Init(home string) error {
 	}
 	return nil
 }
-

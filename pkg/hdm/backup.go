@@ -1,9 +1,10 @@
-package system
+package hdm
 
 import (
 	"github.com/cyphar/filepath-securejoin"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"path/filepath"
 )
 
@@ -24,10 +25,10 @@ type Backup struct {
 	//LastBackup time.Time
 
 	//configPath string
-	rsync Rsync
+	rsync system.Rsync
 }
 
-func (b *Backup) Init(configPath string, sourceBlockDevice BlockDevice, server Server) error {
+func (b *Backup) Init(configPath string, sourceBlockDevice system.BlockDevice, server system.Server) error {
 
 	if b.TargetLabel == "" {
 		return errs.With("TargetLabel cannot be empty")
@@ -57,7 +58,7 @@ func (b *Backup) Init(configPath string, sourceBlockDevice BlockDevice, server S
 
 	//b.fields = data.WithField("hdm", b.configPath).WithField("TargetLabel", b.TargetLabel)
 
-	b.rsync = Rsync{
+	b.rsync = system.Rsync{
 		SourceInFilesystemPath: sourcePath,
 		SourceFilesystem:       sourceBlockDevice,
 		TargetInFilesystemPath: targetPath,
@@ -71,10 +72,10 @@ func (b *Backup) Init(configPath string, sourceBlockDevice BlockDevice, server S
 	return nil
 }
 
-func (b *Backup) Backupable(server Server) (error, error) {
+func (b *Backup) Backupable(server system.Server) (error, error) {
 	return b.rsync.Rsyncable()
 }
 
-func (b *Backup) Backup(server Server) error {
+func (b *Backup) Backup(server system.Server) error {
 	return b.rsync.RSync()
 }

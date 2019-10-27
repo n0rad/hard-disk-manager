@@ -2,9 +2,12 @@ package system
 
 import (
 	"encoding/json"
+	"github.com/Masterminds/semver"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/runner"
+	"strconv"
 )
 
 type Smartctl struct {
@@ -27,6 +30,33 @@ func NewSmartCtl(path string, server Server) (Smartctl, error) {
 		server: server,
 		fields: data.WithField("path", path),
 	}, nil
+}
+
+func SmartctlVersion() (semver.Version, error) {
+	cmd := `smartctl -j --version`
+	output, err := runner.Local.ExecShellGetStdout(cmd)
+	if err != nil {
+		return semver.Version{}, errs.WithEF(err, data.WithField("cmd", cmd), "Failed to call smartctl version")
+	}
+
+	smartResult := SmartResult{}
+	if err = json.Unmarshal([]byte(output), &smartResult); err != nil {
+		return semver.Version{}, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal smartctl response")
+	}
+
+	versionString := ""
+	for i, v := range smartResult.Smartctl.Version {
+		if i > 0 {
+			versionString += "."
+		}
+		versionString += strconv.Itoa(v)
+	}
+
+	version, err := semver.NewVersion(versionString)
+	if err != nil {
+		return semver.Version{}, errs.WithEF(err, data.WithField("versionString", versionString), "Failed to parse smartctl version")
+	}
+	return *version, nil
 }
 
 func (s Smartctl) All() (SmartResult, error) {

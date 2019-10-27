@@ -149,7 +149,7 @@ func (b *BlockDevice) Umount(mountPath string) error {
 	}
 
 	if out, err := b.server.Exec("rmdir", mountPath); err != nil {
-		logs.WithEF(err, b.fields.WithField("out", out)).Warn("Failed to cleanup mount path")
+		logs.WithEF(err, b.fields.WithField("out", out).WithField("path", mountPath)).Warn("Failed to cleanup mount path")
 	}
 
 	return nil

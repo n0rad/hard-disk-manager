@@ -10,17 +10,19 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 )
 
 type Service struct {
-	password *memguard.Enclave
-	notify   map[chan struct{}]struct{}
-	stop     chan struct{}
+	password   *memguard.Enclave
+	notify     map[chan struct{}]struct{}
+	notifyLock sync.RWMutex
+	stop       chan struct{}
 }
 
 func (s *Service) Init() {
-	s.notify = make(map[chan struct{}] struct{})
+	s.notify = make(map[chan struct{}]struct{})
 	s.stop = make(chan struct{})
 }
 
@@ -84,10 +86,16 @@ func (s *Service) FromStdin(confirmation bool) error {
 }
 
 func (s *Service) Unwatch(c chan struct{}) {
+	s.notifyLock.Lock()
+	defer s.notifyLock.Unlock()
+
 	delete(s.notify, c)
 }
 
 func (s *Service) Watch() chan struct{} {
+	s.notifyLock.Lock()
+	defer s.notifyLock.Unlock()
+
 	c := make(chan struct{})
 	s.notify[c] = struct{}{}
 	return c
@@ -135,6 +143,9 @@ func (s Service) Get() (*memguard.LockedBuffer, error) {
 /////
 
 func (s *Service) setAndNotify(buffer *memguard.LockedBuffer) {
+	s.notifyLock.RLock()
+	defer s.notifyLock.RUnlock()
+
 	logs.Debug("Password set")
 	s.password = buffer.Seal()
 	for e := range s.notify {

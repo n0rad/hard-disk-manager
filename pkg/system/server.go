@@ -5,7 +5,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/tools"
+	"github.com/n0rad/hard-disk-manager/pkg/runner"
 )
 
 type Bay struct {
@@ -21,13 +21,13 @@ type Server struct {
 	Bays          []Bay
 
 	fields data.Fields
-	runner tools.Runner
+	runner runner.Runner
 }
 
 // TODO use it and move runner
 func (s *Server) Init() error {
 	s.fields = data.WithField("server", s.Name)
-	s.runner = &tools.LocalRunner{}
+	s.runner = &runner.LocalRunner{}
 	//s.runner = &tools.SshRunner{
 	//	Hostname: s.Hostname,
 	//	Username: s.Username,
@@ -45,8 +45,8 @@ func (s *Server) BayLocation(path string) string {
 }
 
 func (s Server) Exec(head string, args ...string) (string, error) {
-	stdout, _, err := s.runner.ExecGetOutputError(head, args...)
-	return stdout, err
+	std, err := s.runner.ExecGetStd(head, args...)
+	return std, err
 }
 
 func (s *Server) ExecShell(command string) (string, error) {
@@ -60,7 +60,7 @@ func (s Server) GetBlockDevice(path string) (BlockDevice, error) {
 
 	output, err := s.Exec("lsblk", "-J", "-O", path)
 	if err != nil {
-		return BlockDevice{}, errs.WithEF(err, data.WithField("path", path), "Fail to get disk from lsblk")
+		return BlockDevice{}, errs.WithEF(err, data.WithField("path", path).WithField("out", output), "Fail to get disk from lsblk")
 	}
 
 	lsblk := Lsblk{}

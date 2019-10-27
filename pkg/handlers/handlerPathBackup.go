@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
+	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 )
 
 func init() {
@@ -40,7 +40,7 @@ func (h *HandlerBackup) Start() {
 	//}
 
 	for _, v := range h.manager.config.Backups {
-		b := system.Backup{
+		b := hdm.Backup{
 			BackupConfig: v,
 		}
 		if err := b.Init(h.manager.config.GetConfigPath(), h.manager.BlockDevice, h.manager.server); err != nil {

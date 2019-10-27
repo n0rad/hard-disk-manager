@@ -3,8 +3,10 @@ module github.com/n0rad/hard-disk-manager
 go 1.12
 
 require (
+	github.com/Masterminds/semver v1.5.0
 	github.com/alessio/shellescape v0.0.0-20190409004728-b115ca0f9053
 	github.com/awnumar/memguard v0.19.1
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/client9/misspell v0.3.4
 	github.com/cyphar/filepath-securejoin v0.2.2
 	github.com/davidmz/go-pageant v1.0.1 // indirect

@@ -15,7 +15,7 @@ const HdmYamlFilename = "hdm.yaml"
 const PathHdmYaml = "/" + HdmYamlFilename
 
 type Config struct {
-	Backups []system.BackupConfig
+	Backups []BackupConfig
 	Syncs   []SyncConfig
 
 	RecursiveConfig bool
@@ -89,7 +89,7 @@ func FindConfigs(path string, server system.Server) ([]Config, error) {
 		return hdmConfigs, nil
 	}
 
-	configs, err := server.Exec("find", path, "-type", "f", "-not", "-path", path+system.PathBackups+"/*", "-name", HdmYamlFilename)
+	configs, err := server.Exec("find", path, "-type", "f", "-not", "-path", path+PathBackups+"/*", "-name", HdmYamlFilename)
 	if err != nil {
 		return hdmConfigs, errs.WithE(err, "Failed to find hdm.yaml files")
 	}

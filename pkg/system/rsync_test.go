@@ -3,7 +3,7 @@ package system
 import (
 	"github.com/n0rad/go-erlog/logs"
 	_ "github.com/n0rad/go-erlog/register"
-	"github.com/n0rad/hard-disk-manager/pkg/tools"
+	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -36,13 +36,13 @@ func TestRsyncSync(t *testing.T) {
 	_ = os.Mkdir(target+"/tt tt", 0777)
 	_ = ioutil.WriteFile(source+"/ss ss/file", []byte("yopla"), 0644)
 
-	server := Server{runner: tools.LocalRunner{UnSudo: true}}
+	server := Server{runner: runner.LocalRunner{/*UnSudo: true*/}}
 	r := Rsync{
-		SourceFilesystem: BlockDeviceOLD{
+		SourceFilesystem: BlockDevice{
 			Mountpoint: source,
 			server:     &server,
 		},
-		TargetFilesystem: BlockDeviceOLD{
+		TargetFilesystem: BlockDevice{
 			Mountpoint: target,
 			server:     &server,
 		},

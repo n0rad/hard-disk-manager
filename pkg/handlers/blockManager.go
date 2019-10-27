@@ -82,6 +82,7 @@ func (d *BlockManager) handleSerialJobs() {
 
 func (d *BlockManager) Stop(e error) {
 	close(d.stop)
+	// TODO waitgroup
 }
 
 func (d *BlockManager) Notify(level logs.Level, fields data.Fields, message string) {

@@ -23,7 +23,7 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 			}
 
 			if err := hdm.HDM.Init(hdmHome); err != nil {
-				logs.WithE(err).Fatal("Cannot start, failed to load configuration")
+				logs.WithE(err).Fatal("Failed to init hdm")
 			}
 		},
 	}
