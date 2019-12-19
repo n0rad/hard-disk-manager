@@ -82,6 +82,14 @@ func (b *BlockDevice) Init(exec runner.Exec) {
 	}
 }
 
+func (b BlockDevice) LocationPath() (string, error) {
+	output, err := b.exec.ExecGetStdout("find", "-L", "/dev/disk/by-path/", "-samefile", b.Path, "-printf", "%f")
+	if err != nil {
+		return "", errs.WithEF(err, b.fields, "Failed to get disk location")
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
 func (b *BlockDevice) LuksOpen(cryptPassword *memguard.LockedBuffer) error {
 	logs.WithFields(b.fields).Info("Disk luksOpen")
 	if b.Fstype != "crypto_LUKS" {

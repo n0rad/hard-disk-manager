@@ -18,13 +18,13 @@ func (s *Servers) Init() error {
 
 	var localServer *Server
 	for i := range *s {
-		current := (*s)[i]
+		current := &(*s)[i]
 		if err := current.Init(localHostname); err != nil {
 			return err
 		}
 
 		if localHostname == current.Name {
-			localServer = &current
+			localServer = current
 		}
 	}
 
@@ -32,6 +32,7 @@ func (s *Servers) Init() error {
 		logs.WithField("hostname", localHostname).Warn("Local server not found in hdm configuration, creating empty")
 
 		localServer = &Server{}
+		localServer.Name = localHostname
 		if err := localServer.Init(""); err != nil {
 			return errs.WithE(err, "Failed to init empty server")
 		}
@@ -45,9 +46,6 @@ func (s *Servers) Init() error {
 func (s Servers) GetLocal() Server {
 	for _, v := range s {
 		if v.isLocal {
-			return v
-		}
-		if v.Name == "srv1" {
 			return v
 		}
 	}
@@ -65,4 +63,28 @@ func (s Servers) GetBlockDeviceByLabel(label string) (system.BlockDevice, error)
 		}
 	}
 	return system.BlockDevice{}, errs.WithF(data.WithField("label", label), "Block device with label not found")
+}
+
+func (s Servers) RunForDisks(selector DisksSelector, toRun func(srv Server, disk system.BlockDevice) error) error {
+	for _, srv := range s {
+		if selector.Server != "" && selector.Server != srv.Name {
+			continue
+		}
+
+		disks, err := srv.Lsblk.ListFlatBlockDevices()
+		if err != nil {
+			return err
+		}
+
+		for _, disk := range disks {
+			if !selector.MatchDisk(srv, disk) {
+				continue
+			}
+			if err := toRun(srv, disk); err != nil {
+				logs.WithE(err).Error("Run for disk Command failed")
+				//return errs.WithEF(err, disk.fields,)
+			}
+		}
+	}
+	return nil
 }

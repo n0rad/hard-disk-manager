@@ -34,11 +34,6 @@ func sigQuitThreadDump() {
 }
 
 func main() {
-	if os.Getuid() != 0 {
-		println("hdm must be run as root")
-		os.Exit(1)
-	}
-
 	if _, err := maxprocs.Set(); err != nil{
 		logs.WithE(err).Warn("Failed to set maxprocs")
 	}

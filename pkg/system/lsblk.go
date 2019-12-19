@@ -86,8 +86,8 @@ func (l Lsblk) ListFlatBlockDevices() ([]BlockDevice, error) {
 		return lsblk.Blockdevices, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
 	}
 
-	for _, b := range lsblk.Blockdevices {
-		b.Init(l.exec)
+	for i := range lsblk.Blockdevices {
+		lsblk.Blockdevices[i].Init(l.exec)
 	}
 
 	return lsblk.Blockdevices, nil

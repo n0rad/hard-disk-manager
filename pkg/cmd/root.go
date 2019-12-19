@@ -1,14 +1,13 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
 )
 
-func RootCommand(Version string, BuildTime string) *cobra.Command {
+func RootCommand(version string, buildTime string) *cobra.Command {
 	var logLevel string
 	var hdmHome string
 
@@ -27,31 +26,13 @@ func RootCommand(Version string, BuildTime string) *cobra.Command {
 			}
 		},
 	}
-
-	cmd.AddCommand(&cobra.Command{
-		Use:   "version",
-		Short: "Display HDM version",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("hdm")
-			fmt.Println("version : ", Version)
-			fmt.Println("Build Time : ", BuildTime)
-		},
-	})
-
-	cmd.AddCommand(passwordCmd())
-
-	cmd.AddCommand(&cobra.Command{
-		Use:   "agent",
-		Short: "Run an agent that self handle disks",
-		Run: func(cmd *cobra.Command, args []string) {
-			if err := Agent(); err != nil {
-				logs.WithE(err).Fatal("Command failed")
-			}
-		},
-	})
-
 	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "L", "", "Set log level")
 	cmd.PersistentFlags().StringVarP(&hdmHome, "home", "H", homeDotConfigPath()+"/hdm", "configFile")
+
+	versionCommand(cmd, version, buildTime)
+	passwordCommand(cmd)
+	agentCommand(cmd)
+	locationCommand(cmd)
 	return cmd
 }
 

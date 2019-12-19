@@ -19,7 +19,6 @@ type Server struct {
 	Username      string
 	Bays          []Bay
 
-
 	isLocal bool
 	fields  data.Fields
 	Lsblk   system.Lsblk // TODO public ?

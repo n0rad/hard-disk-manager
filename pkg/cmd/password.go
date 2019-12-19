@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
-	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/spf13/cobra"
 	"io"
@@ -11,23 +10,23 @@ import (
 	"time"
 )
 
-func passwordCmd() *cobra.Command {
+func passwordCommand(parent *cobra.Command) {
 	var socket string
 	var confirm bool
 	cmd := &cobra.Command{
 		Use:   "password",
 		Short: "Send decryption password to local agent using unix socket",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: errorLoggerWrap(func(cmd *cobra.Command, args []string) error {
 			if err := sendPassword(socket, confirm); err != nil {
-				logs.WithE(err).Error("Failed to send password")
+				return errs.WithE(err, "Failed to send password")
 			}
-
-		},
+			return nil
+		}),
 	}
 
 	cmd.Flags().StringVarP(&socket, "socket", "s", "/tmp/hdm.sock", "Socket")
 	cmd.Flags().BoolVarP(&confirm, "confirm", "c", false, "Confirm password")
-	return cmd
+	parent.AddCommand(cmd)
 }
 
 func sendPassword(socketPath string, confirm bool) error {
