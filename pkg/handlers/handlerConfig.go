@@ -66,8 +66,9 @@ func (h *HandlerConfig) scan() error {
 	for _, e := range configs {
 		m := BlockManager{
 			Type: "path",
+			Path: e.GetConfigPath(),
 			ManagerService: h.manager.ManagerService,
-			BlockDevice: h.manager.BlockDevice,
+			//BlockDevice: h.manager.BlockDevice,
 			configPath: e.GetConfigPath(),
 			config: e,
 		}
@@ -76,6 +77,9 @@ func (h *HandlerConfig) scan() error {
 		}
 		h.manager.ManagerService.Register(&m)
 	}
+
+	logs.WithField("confs", configs).Warn("there")
+	//os.Exit(1)
 
 	return err
 }

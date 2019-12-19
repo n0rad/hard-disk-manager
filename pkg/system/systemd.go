@@ -19,6 +19,7 @@ func (s *Systemd) Init(exec runner.Exec) {
 	s.exec = exec
 }
 
+// This is not working because overlay mounts are create with the same 'What' as the hosted filesystem
 func (s *Systemd) SystemdMountPath(what string) (string, error) {
 	what = strings.Replace(what, `/`, `\/`, -1)
 	cmd := "systemctl show -a -p What,Where,Id '*.mount' --no-pager | awk '/What=" + what + "/' RS= | grep Where | cut -f2 -d="
