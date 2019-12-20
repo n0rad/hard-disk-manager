@@ -32,7 +32,8 @@ func RootCommand(version string, buildTime string) *cobra.Command {
 	versionCommand(cmd, version, buildTime)
 	passwordCommand(cmd)
 	agentCommand(cmd)
-	locationCommand(cmd)
+	listCommand(cmd)
+	prepareCommand(cmd)
 	return cmd
 }
 

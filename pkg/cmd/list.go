@@ -11,16 +11,18 @@ import (
 	"text/tabwriter"
 )
 
-func locationCommand(parent *cobra.Command) {
+func listCommand(parent *cobra.Command) {
 	selector := hdm.DisksSelector{}
 	cmd := &cobra.Command{
-		Use:   "location",
-		Short: "Get disk location",
+		Use:   "list",
+		Aliases: []string{"ls", "get"},
+		Short: "list disks info",
 		Run: errorLoggerWrap(func(cmd *cobra.Command, args []string) error {
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			if _, err := fmt.Fprintln(w, "server\tDisk\tLocation\tsize\tLabels"); err != nil { // \tPath,Mount
 				logs.WithE(err).Fatal("fail")
 			}
+
 
 			err := hdm.HDM.Servers.RunForDisks(selector, func(srv hdm.Server, disk system.BlockDevice) error {
 				locationPath, err := disk.LocationPath()
@@ -44,7 +46,7 @@ func locationCommand(parent *cobra.Command) {
 						disk.Size+"\t"+
 						strings.Join(labels, ",")+"\t"+
 						""); err != nil {
-					logs.WithE(err).Fatal("Fail tp print")
+					logs.WithE(err).Fatal("Fail to print")
 				}
 				return nil
 			})
