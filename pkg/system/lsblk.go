@@ -53,44 +53,24 @@ func (l Lsblk) GetBlockDevice(path string) (BlockDevice, error) {
 		return BlockDevice{}, errs.With("Path is required to get blockDevice")
 	}
 
-	output, err := l.exec.ExecGetStdout("lsblk", "-J", "-O", path)
+	blockDevices, err := l.callLsblk("-J", "-O", path)
 	if err != nil {
-		return BlockDevice{}, errs.WithEF(err, data.WithField("path", path).WithField("out", output), "Fail to get disk from lsblk")
+		return BlockDevice{}, errs.WithEF(err, data.WithField("path", path), "Fail to get disk from lsblk")
+	}
+	if len(blockDevices) != 1 {
+		return BlockDevice{}, errs.WithF(data.WithField("path", path), "disk not found")
 	}
 
-	lsblk := LsblkResult{}
-	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
-		return BlockDevice{}, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
-	}
+	blockDevices[0].Init(l.exec)
+	return blockDevices[0], nil
+}
 
-	if len(lsblk.Blockdevices) != 1 {
-		return BlockDevice{}, errs.WithF(data.WithField("output", output), "Scan disk give more than disk")
-	}
-
-	lsblk.Blockdevices[0].Init(l.exec)
-
-	return lsblk.Blockdevices[0], nil
+func (l Lsblk) ListBlockDevices() ([]BlockDevice, error) {
+	return l.callLsblk("-J", "-O", "-e", "2")
 }
 
 func (l Lsblk) ListFlatBlockDevices() ([]BlockDevice, error) {
-	lsblk := struct {
-		Blockdevices []BlockDevice `json:"blockdevices"`
-	}{}
-
-	output, err := l.exec.ExecGetStdout("lsblk", "-J", "-l", "-O", "-e", "2")
-	if err != nil {
-		return lsblk.Blockdevices, errs.WithE(err, "Fail to get disks from lsblk")
-	}
-
-	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
-		return lsblk.Blockdevices, errs.WithEF(err, data.WithField("payload", string(output)), "Fail to unmarshal lsblk result")
-	}
-
-	for i := range lsblk.Blockdevices {
-		lsblk.Blockdevices[i].Init(l.exec)
-	}
-
-	return lsblk.Blockdevices, nil
+	return l.callLsblk("-J", "-l", "-O", "-e", "2")
 }
 
 func (l Lsblk) GetBlockDeviceByLabel(label string) (BlockDevice, error) {
@@ -105,4 +85,28 @@ func (l Lsblk) GetBlockDeviceByLabel(label string) (BlockDevice, error) {
 		}
 	}
 	return BlockDevice{}, errs.WithF(data.WithField("label", label), "No block device found with label")
+}
+
+///////////////////////
+
+func (l Lsblk) callLsblk(args ...string) ([]BlockDevice, error) {
+	lsblk := struct {
+		Blockdevices []BlockDevice `json:"blockdevices"`
+	}{}
+
+	output, err := l.exec.ExecGetStdout("lsblk", args...)
+	if err != nil {
+		return lsblk.Blockdevices, errs.WithEF(err, data.WithField("args", args), "Fail to get disks from lsblk")
+	}
+
+	if err = json.Unmarshal([]byte(output), &lsblk); err != nil {
+		return lsblk.Blockdevices, errs.WithEF(err, data.WithField("args", args).
+			WithField("payload", string(output)), "Fail to unmarshal lsblk result")
+	}
+
+	for i := range lsblk.Blockdevices {
+		lsblk.Blockdevices[i].Init(l.exec)
+	}
+
+	return lsblk.Blockdevices, nil
 }

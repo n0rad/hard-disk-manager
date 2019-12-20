@@ -18,19 +18,17 @@ func locationCommand(parent *cobra.Command) {
 		Short: "Get disk location",
 		Run: errorLoggerWrap(func(cmd *cobra.Command, args []string) error {
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			if _, err := fmt.Fprintln(w, "server\tHandlerName\tLocation\tLabel"); err != nil { // \tPath,Mount
+			if _, err := fmt.Fprintln(w, "server\tDisk\tLocation\tsize\tLabels"); err != nil { // \tPath,Mount
 				logs.WithE(err).Fatal("fail")
 			}
 
 			err := hdm.HDM.Servers.RunForDisks(selector, func(srv hdm.Server, disk system.BlockDevice) error {
-				//location, err := disk.LocationPath()
-				//if err != nil {
-				//	return err
-				//}
-				path, err := disk.LocationPath()
+				locationPath, err := disk.LocationPath()
 				if err != nil {
 					return err
 				}
+
+				location := srv.BayLocation(locationPath)
 
 				var labels []string
 				for _, partitions := range disk.Children {
@@ -42,10 +40,9 @@ func locationCommand(parent *cobra.Command) {
 				if _, err := fmt.Fprintln(w,
 					srv.Name+"\t"+
 					disk.Name+"\t"+
-						"xxxxx"+"\t"+
+						location+"\t"+
+						disk.Size+"\t"+
 						strings.Join(labels, ",")+"\t"+
-						path+"\t"+
-					//disk.FindDeepestBlockDevice().Mountpoint+"\t"+
 						""); err != nil {
 					logs.WithE(err).Fatal("Fail tp print")
 				}
@@ -58,6 +55,8 @@ func locationCommand(parent *cobra.Command) {
 			return nil
 		}),
 	}
+
+	withDiskSelector(&selector, cmd)
 
 	parent.AddCommand(cmd)
 }

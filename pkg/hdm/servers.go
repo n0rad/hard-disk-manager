@@ -71,7 +71,7 @@ func (s Servers) RunForDisks(selector DisksSelector, toRun func(srv Server, disk
 			continue
 		}
 
-		disks, err := srv.Lsblk.ListFlatBlockDevices()
+		disks, err := srv.Lsblk.ListBlockDevices()
 		if err != nil {
 			return err
 		}
