@@ -5,15 +5,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func versionCommand(root *cobra.Command, version string, buildTime string) {
-	root.AddCommand(&cobra.Command{
+func versionCommand(version string, buildTime string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display HDM version",
-		Run: errorLoggerWrap(func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("hdm")
 			fmt.Println("version : ", version)
 			fmt.Println("build time : ", buildTime)
 			return nil
-		}),
-	})
+		},
+	}
+	return cmd
 }

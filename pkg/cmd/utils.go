@@ -1,18 +1,9 @@
 package cmd
 
 import (
-	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
 )
-
-func errorLoggerWrap(f func(cmd *cobra.Command, args []string) error) func(*cobra.Command, []string) {
-	return func(cmd *cobra.Command, args []string) {
-		if err := f(cmd, args); err != nil {
-			logs.WithE(err).Fatal("Command failed")
-		}
-	}
-}
 
 func withDiskSelector(selector *hdm.DisksSelector, cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&selector.Server, "server", "s", "", "Server")

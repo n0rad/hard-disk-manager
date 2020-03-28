@@ -24,6 +24,10 @@ type Server struct {
 	Lsblk   system.Lsblk // TODO public ?
 }
 
+func (s Server) String() string {
+	return s.Name
+}
+
 func (s *Server) Init(localHostname string) error {
 	s.fields = data.WithField("server", s.Name)
 

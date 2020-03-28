@@ -10,23 +10,22 @@ import (
 	"time"
 )
 
-func passwordCommand(parent *cobra.Command) {
+func passwordCommand() *cobra.Command {
 	var socket string
 	var confirm bool
 	cmd := &cobra.Command{
 		Use:   "password",
 		Short: "Send decryption password to local agent using unix socket",
-		Run: errorLoggerWrap(func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := sendPassword(socket, confirm); err != nil {
 				return errs.WithE(err, "Failed to send password")
 			}
 			return nil
-		}),
+		},
 	}
-
 	cmd.Flags().StringVarP(&socket, "socket", "s", "/tmp/hdm.sock", "Socket")
 	cmd.Flags().BoolVarP(&confirm, "confirm", "c", false, "Confirm password")
-	parent.AddCommand(cmd)
+	return cmd
 }
 
 func sendPassword(socketPath string, confirm bool) error {

@@ -41,7 +41,7 @@ func main() {
 	sigQuitThreadDump()
 
 	if err := cmd.RootCommand(Version, BuildTime).Execute(); err != nil {
-		logs.WithE(err).Fatal("Failed to process args")
+		logs.WithE(err).Fatal("Command failed")
 	}
 	os.Exit(0)
 }

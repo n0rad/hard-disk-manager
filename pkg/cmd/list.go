@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
@@ -11,18 +12,17 @@ import (
 	"text/tabwriter"
 )
 
-func listCommand(parent *cobra.Command) {
+func listCommand() *cobra.Command {
 	selector := hdm.DisksSelector{}
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:     "list",
 		Aliases: []string{"ls", "get"},
-		Short: "list disks info",
-		Run: errorLoggerWrap(func(cmd *cobra.Command, args []string) error {
+		Short:   "list disks info",
+		RunE: func(cmd *cobra.Command, args []string) error {
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			if _, err := fmt.Fprintln(w, "server\tDisk\tLocation\tsize\tLabels"); err != nil { // \tPath,Mount
-				logs.WithE(err).Fatal("fail")
+			if _, err := fmt.Fprintln(w, "Server\tSeen\tDisk\tLocation\tSize\tAvailable\tLabels\tHealth"); err != nil { // \tPath,Mount
+				return errs.WithE(err, "Fail to prepare writer header")
 			}
-
 
 			err := hdm.HDM.Servers.RunForDisks(selector, func(srv hdm.Server, disk system.BlockDevice) error {
 				locationPath, err := disk.LocationPath()
@@ -41,10 +41,13 @@ func listCommand(parent *cobra.Command) {
 
 				if _, err := fmt.Fprintln(w,
 					srv.Name+"\t"+
-					disk.Name+"\t"+
+						"12h"+"\t"+
+						disk.Name+"\t"+
 						location+"\t"+
 						disk.Size+"\t"+
+						"12G"+"\t"+
 						strings.Join(labels, ",")+"\t"+
+						"ok"+"\t"+
 						""); err != nil {
 					logs.WithE(err).Fatal("Fail to print")
 				}
@@ -55,10 +58,10 @@ func listCommand(parent *cobra.Command) {
 			}
 			_ = w.Flush()
 			return nil
-		}),
+		},
 	}
 
 	withDiskSelector(&selector, cmd)
 
-	parent.AddCommand(cmd)
+	return cmd
 }

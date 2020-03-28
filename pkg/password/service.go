@@ -44,6 +44,12 @@ func (s *Service) Start() error {
 	return nil
 }
 
+func (s *Service) FromBytes(password *[]byte) error {
+	defer memguard.WipeBytes(*password)
+	s.setAndNotify(memguard.NewBufferFromBytes(*password))
+	return nil
+}
+
 func (s *Service) FromConnection(conn net.Conn) error {
 	s.setAndNotify(memguard.NewBufferFromReaderUntil(conn, '\n'))
 	return nil

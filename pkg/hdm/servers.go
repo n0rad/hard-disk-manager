@@ -16,41 +16,47 @@ func (s *Servers) Init() error {
 		return errs.WithE(err, "Failed to get hostname")
 	}
 
-	var localServer *Server
+	var inited []Server
 	for i := range *s {
-		current := &(*s)[i]
+		current := (*s)[i]
 		if err := current.Init(localHostname); err != nil {
-			return err
+			logs.WithEF(err, data.WithField("server", current)).Warn("Failed to init server")
+			continue
 		}
-
-		if localHostname == current.Name {
-			localServer = current
-		}
+		inited = append(inited, current)
 	}
 
-	if localServer == nil {
-		logs.WithField("hostname", localHostname).Warn("Local server not found in hdm configuration, creating empty")
-
-		localServer = &Server{}
-		localServer.Name = localHostname
-		if err := localServer.Init(""); err != nil {
-			return errs.WithE(err, "Failed to init empty server")
-		}
-		servers := append(*s, *localServer)
-		*s = servers
-	}
-
+	*s = inited
 	return nil
 }
 
-func (s Servers) GetLocal() Server {
-	for _, v := range s {
+func (s *Servers) GetLocal() Server {
+	var localServer *Server
+	if localServer == nil {
+	}
+
+	for _, v := range *s {
 		if v.isLocal {
 			return v
 		}
 	}
-	logs.Error("Illegal state: Get local server found no server")
-	return Server{}
+
+	localHostname, err := os.Hostname()
+	if err != nil {
+		logs.WithE(err).Warn("Failed to get local hostname to setup local server")
+	}
+
+	logs.WithField("hostname", localHostname).Warn("Local server not found in hdm configuration, creating empty")
+
+	localServer = &Server{}
+	localServer.Name = localHostname
+	if err := localServer.Init(""); err != nil {
+		logs.WithE(err).Error("Failed to init local server properly")
+	}
+	servers := append(*s, *localServer)
+	*s = servers
+
+	return *localServer
 }
 
 func (s Servers) GetBlockDeviceByLabel(label string) (system.BlockDevice, error) {

@@ -6,13 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func prepareCommand(parent *cobra.Command) {
+func prepareCommand() *cobra.Command {
 	selector := hdm.DisksSelector{}
 	cmd := &cobra.Command{
 		Use:   "prepare",
 		Short: "Prepare new disk with partitions, crypt, mount, ...",
-		Run: errorLoggerWrap(func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+
 			return hdm.HDM.Servers.RunForDisks(selector, func(srv hdm.Server, d system.BlockDevice) error {
+
 				//if len(d.Children) != 0 {
 				//	return errs.WithF(d.fields, "Cannot prepare disk, some partitions exists")
 				//}
@@ -67,10 +70,14 @@ func prepareCommand(parent *cobra.Command) {
 				//
 				return nil
 			})
-		}),
+		},
 	}
 
-	withRequiredServerDiskAndLabelSelector(&selector, cmd)
+	cmd.Flags().StringVarP(&selector.Disk, "disk", "d", "", "Disk")
+	cmd.Flags().StringVarP(&selector.Label, "label", "l", "", "Label")
 
-	parent.AddCommand(cmd)
+	_ = cmd.MarkFlagRequired("disk")
+	_ = cmd.MarkFlagRequired("label")
+
+	return cmd
 }
