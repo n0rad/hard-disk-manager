@@ -18,7 +18,6 @@ func withRequiredServerDiskAndLabelSelector(selector *hdm.DisksSelector, cmd *co
 	_ = cmd.MarkFlagRequired("label")
 }
 
-//
 //func commandWithRequiredDiskSelector(use string, aliases []string, hdmCommand func(selector hdm.DisksSelector) error, short string) *cobra.Command {
 //	cmd, selector := withDiskSelector(use, aliases, hdmCommand, short)
 //	realRun := cmd.Run

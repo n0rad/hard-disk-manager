@@ -3,8 +3,11 @@ package cmd
 import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/handlers"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/n0rad/hard-disk-manager/pkg/rpc"
+	"github.com/n0rad/hard-disk-manager/pkg/runner"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
 	"github.com/oklog/run"
 	"github.com/spf13/cobra"
@@ -32,21 +35,21 @@ func agentCommand() *cobra.Command {
 			passService.Init()
 			g.Add(passService.Start, passService.Stop)
 
-			// managers
-			//managers := handlers.ManagersService{PassService: &passService}
-			//managers.Init()
-			//g.Add(managers.Start, managers.Stop)
+			//managers
+			managers := handlers.ManagersService{PassService: &passService}
+			managers.Init()
+			g.Add(managers.Start, managers.Stop)
 
 			//udevService
-			//udevService := system.UdevService{
-			//	EventChan: managers.GetBlockDeviceEventChan(),
-			//}
-			//lsblk := system.Lsblk{}
-			//if err := lsblk.Init(runner.Local); err != nil {
-			//	return err
-			//}
-			//udevService.Init(&lsblk)
-			//g.Add(udevService.Start, udevService.Stop)
+			udevService := system.UdevService{
+				EventChan: managers.GetBlockDeviceEventChan(),
+			}
+			lsblk := system.Lsblk{}
+			if err := lsblk.Init(runner.Local); err != nil {
+				return err
+			}
+			udevService.Init(&lsblk)
+			g.Add(udevService.Start, udevService.Stop)
 
 			///
 			hdm := rpc.HdmServer{}

@@ -77,9 +77,9 @@ func (b BlockDevice) HasChildren() bool {
 	return len(b.Children) != 0
 }
 
-//func (b BlockDevice) GetFields() data.Fields {
-//	return b.fields
-//}
+func (b BlockDevice) GetFields() data.Fields {
+	return b.fields
+}
 
 func (b BlockDevice) GetExec() runner.Exec {
 	return b.exec
@@ -94,6 +94,16 @@ func (b *BlockDevice) Init(exec runner.Exec) {
 	}
 }
 
+func (b BlockDevice) GetUsableLabel() string {
+	if b.Label != "" {
+		return b.Label
+	}
+	if b.Partlabel != "" {
+		return b.Partlabel
+	}
+	return b.Name
+}
+
 func (b BlockDevice) LocationPath() (string, error) {
 	output, err := b.exec.ExecGetStdout("find", "-L", "/dev/disk/by-path/", "-samefile", b.Path, "-printf", "%f")
 	if err != nil {
@@ -103,7 +113,7 @@ func (b BlockDevice) LocationPath() (string, error) {
 }
 
 func (b *BlockDevice) Reload() error {
-	time.Sleep(1000 * time.Millisecond) // TODO info are mising when lsblk is run just after change
+	time.Sleep(1000 * time.Millisecond) // TODO info are missing when lsblk is run just after change
 
 	lsblk := Lsblk{}
 	if err := lsblk.Init(b.exec); err != nil {

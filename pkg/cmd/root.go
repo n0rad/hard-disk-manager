@@ -77,6 +77,8 @@ func RootCommand(version string, buildTime string) (*cobra.Command, error) {
 	cmd.AddCommand(passwordCommand())
 	cmd.AddCommand(agentCommand())
 	cmd.AddCommand(listCommand())
+	cmd.AddCommand(addCommand())
+	cmd.AddCommand(removeCommand())
 	return cmd, nil
 }
 

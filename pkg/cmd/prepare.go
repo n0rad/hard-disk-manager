@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
@@ -26,31 +25,31 @@ func prepareCommand() *cobra.Command {
 			}
 
 			if d.HasChildren() {
-				return errs.WithF(data.WithField("block", d), "Cannot prepare disk, some children exists")
+				return errs.WithF(d.GetFields(), "Cannot prepare disk, some children exists")
 			}
 
-			logs.WithFields(data.WithField("block", d)).Info("Prepare disk")
+			logs.WithFields(d.GetFields()).Info("Prepare disk")
 
-			logs.WithFields(data.WithField("block", d)).Info("Clear partition table disk")
+			logs.WithFields(d.GetFields()).Info("Clear partition table disk")
 			if err := d.ClearPartitionTable(); err != nil {
 				return err
 			}
 
 			if err := d.Reload(); err != nil {
-				return errs.WithEF(err, data.WithField("block", d), "Fail to reload disk info")
+				return errs.WithEF(err, d.GetFields(), "Fail to reload disk info")
 			}
 
-			logs.WithFields(data.WithField("block", d)).Info("Create partition")
+			logs.WithFields(d.GetFields()).Info("Create partition")
 			if err := d.CreateSinglePartition(selector.Label); err != nil {
 				return err
 			}
 
 			if err := d.Reload(); err != nil {
-				return errs.WithEF(err, data.WithField("block", d), "Fail to reload disk info")
+				return errs.WithEF(err, d.GetFields(), "Fail to reload disk info")
 			}
 
 			if len(d.Children) != 1 {
-				return errs.WithF(data.WithField("block", d), "Number of partitions is not one after creation")
+				return errs.WithF(d.GetFields(), "Number of partitions is not one after creation")
 			}
 
 			passService := password.Service{}
@@ -67,34 +66,34 @@ func prepareCommand() *cobra.Command {
 				return errs.WithE(err, "Failed to get password from lock storage")
 			}
 
-			logs.WithFields(data.WithField("block", d.Children[0])).Info("Encrypt partition")
+			logs.WithFields(d.Children[0].GetFields()).Info("Encrypt partition")
 			if err := d.Children[0].LuksFormat(pass); err != nil {
 				return err
 			}
 
 			if err := d.Reload(); err != nil {
-				return errs.WithEF(err, data.WithField("block", d), "Fail to reload disk info")
+				return errs.WithEF(err, d.GetFields(), "Fail to reload disk info")
 			}
 
-			logs.WithFields(data.WithField("block", d.Children[0])).Info("Open Encrypted partition")
+			logs.WithFields(d.Children[0].GetFields()).Info("Open Encrypted partition")
 			if err := d.Children[0].LuksOpen(pass); err != nil {
 				return err
 			}
 
 			if err := d.Reload(); err != nil {
-				return errs.WithEF(err, data.WithField("block", d), "Fail to reload disk info")
+				return errs.WithEF(err, d.GetFields(), "Fail to reload disk info")
 			}
 
 			if len(d.Children[0].Children) != 1 {
-				return errs.WithF(data.WithField("block", d.Children[0]), "Number of children block device after open is not one")
+				return errs.WithF(d.Children[0].GetFields(), "Number of children block device after open is not one")
 			}
 
-			logs.WithFields(data.WithField("block", d.Children[0].Children[0])).Info("Create filesystem")
+			logs.WithFields(d.Children[0].Children[0].GetFields()).Info("Create filesystem")
 			if err := d.Children[0].Children[0].Format("xfs", selector.Label); err != nil {
 				return err
 			}
 
-			logs.WithFields(data.WithField("block", d.Children[0].Children[0])).Info("Close encrypted partition")
+			logs.WithFields(d.Children[0].Children[0].GetFields()).Info("Close encrypted partition")
 			if err := d.Children[0].Children[0].LuksClose(); err != nil {
 				return err
 			}

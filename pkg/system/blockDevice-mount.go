@@ -5,12 +5,17 @@ import (
 	"github.com/n0rad/go-erlog/logs"
 )
 
+func (b *BlockDevice) IsMounted() bool {
+	return b.Mountpoint != ""
+}
+
 func (b *BlockDevice) Mount(mountPath string) error {
 	logs.WithFields(b.fields.WithField("mountPath", mountPath)).Debug("Mount")
 	if mountPath == "" {
 		return errs.WithF(b.fields, "mountPath cannot be empty")
 	}
 
+	// TODO cannot differentiate exec fail from not mounted
 	if _, err := b.exec.ExecShellGetStd("cat /proc/mounts | cut -f1,2 -d' ' | grep '" + b.Path + " " + mountPath + "$'"); err == nil {
 		logs.WithF(b.fields).Debug("Directory is already mounted")
 		return nil
@@ -39,11 +44,15 @@ func (b *BlockDevice) Mount(mountPath string) error {
 	return nil
 }
 
+// mountPath is required to cleanup directory in case it's not mounted, but directory was created
 func (b *BlockDevice) Umount(mountPath string) error {
 	logs.WithFields(b.fields).Debug("Umount")
+	if mountPath == "" {
+		mountPath = b.Mountpoint
+	}
 
-	if b.Mountpoint != "" {
-		if std, err := b.exec.ExecGetStd("umount", b.Mountpoint); err != nil {
+	if mountPath != "" {
+		if std, err := b.exec.ExecGetStd("umount", mountPath); err != nil {
 			return errs.WithEF(err, b.fields.WithField("std", std), "Failed to unmount")
 		}
 	}
