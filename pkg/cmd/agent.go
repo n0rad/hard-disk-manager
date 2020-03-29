@@ -5,6 +5,7 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/handlers"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
+	"github.com/n0rad/hard-disk-manager/pkg/rpc"
 	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
@@ -33,8 +34,8 @@ func agentCommand() *cobra.Command {
 			passService := password.Service{}
 			passService.Init()
 			//TODO remove
-			pass := []byte("ss")
-			passService.FromBytes(&pass)
+			//pass := []byte("ss")
+			//passService.FromBytes(&pass)
 			g.Add(passService.Start, passService.Stop)
 
 			//managers
@@ -54,22 +55,25 @@ func agentCommand() *cobra.Command {
 			udevService.Init(&lsblk)
 			g.Add(udevService.Start, udevService.Stop)
 
-			/////
+			//
 			//hdm := rpc.HdmServer{}
 			//rpcServer := rpc2.NewServer()
 			//if err := rpcServer.Register(&hdm); err != nil {
 			//	return errs.WithE(err, "Failed to register hdm rpc server")
 			//}
-			//
 			//// http
 			//httpServer := rpc.HttpServer{}
 			//httpServer.Init(rpcServer)
 			//g.Add(httpServer.Start, httpServer.Stop)
 			//
-			// socket
+			//// socket
 			//socketServer := rpc.SocketServer{}
 			//socketServer.Init(rpcServer)
 			//g.Add(socketServer.Start, socketServer.Stop)
+
+			rpcServer := rpc.Server{}
+			rpcServer.Init(3636, &passService)
+			g.Add(rpcServer.Start, rpcServer.Stop)
 
 			// start services
 			if err := g.Run(); err != nil {

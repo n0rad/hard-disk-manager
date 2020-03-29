@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type ServerOld struct {
+type Server struct {
 	Port       int
 	Timeout    time.Duration
 	SocketPath string
@@ -23,7 +23,7 @@ type ServerOld struct {
 	listener net.Listener
 }
 
-func (s *ServerOld) Init(port int, passService *password.Service) {
+func (s *Server) Init(port int, passService *password.Service) {
 	s.Port = 3636
 	s.SocketPath = "/tmp/hdm.sock"
 	s.Timeout = 10 * time.Second
@@ -37,7 +37,7 @@ func (s *ServerOld) Init(port int, passService *password.Service) {
 	}
 }
 
-func (s *ServerOld) Start() error {
+func (s *Server) Start() error {
 	s.cleanupSocket()
 	s.stop = make(chan struct{}, 1)
 	defer close(s.stop)
@@ -64,7 +64,7 @@ func (s *ServerOld) Start() error {
 	}
 }
 
-func (s *ServerOld) Stop(e error) {
+func (s *Server) Stop(e error) {
 	s.stop <- struct{}{}
 	if s.listener != nil {
 		_ = s.listener.Close()
@@ -73,7 +73,7 @@ func (s *ServerOld) Stop(e error) {
 
 //////////////////////////////
 
-func (s *ServerOld) cleanupSocket() {
+func (s *Server) cleanupSocket() {
 	_, err := os.Stat(s.SocketPath)
 	if os.IsNotExist(err) {
 		return
@@ -84,7 +84,7 @@ func (s *ServerOld) cleanupSocket() {
 	}
 }
 
-func (s *ServerOld) handleConnection(conn net.Conn) {
+func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := conn.Close(); err != nil {
 			logs.WithE(err).Warn("Socket Connection closed with error")

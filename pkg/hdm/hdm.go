@@ -4,7 +4,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
-	"github.com/n0rad/hard-disk-manager/pkg/rpc"
 	"io/ioutil"
 	"os"
 	"time"
@@ -23,7 +22,7 @@ type Hdm struct {
 	}
 	DefaultMountPath string
 	Servers Servers
-	rpc.SocketServer
+	//rpc.SocketServer
 
 	dbDisk DBDisk
 
