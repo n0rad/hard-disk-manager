@@ -6,7 +6,6 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func prepareCommand() *cobra.Command {
@@ -20,8 +19,8 @@ func prepareCommand() *cobra.Command {
 				return err
 			}
 
-			if os.Getuid() != 0 {
-				return errs.With("Being root required")
+			if err := runningAsRoot(); err != nil {
+				return err
 			}
 
 			if d.HasChildren() {
@@ -65,8 +64,6 @@ func prepareCommand() *cobra.Command {
 			if err != nil {
 				return errs.WithE(err, "Failed to get password from lock storage")
 			}
-
-			logs.WithFields(d.Children[0].GetFields()).Info("Encrypt partition")
 			if err := d.Children[0].LuksFormat(pass); err != nil {
 				return err
 			}

@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func removeCommand() *cobra.Command {
@@ -20,8 +18,8 @@ func removeCommand() *cobra.Command {
 				return err
 			}
 
-			if os.Getuid() != 0 {
-				return errs.With("Being root required")
+			if err := runningAsRoot(); err != nil {
+				return err
 			}
 
 			return hdm.HDM.Servers.RunForDisks(selector, func(srv hdm.Server, disk system.BlockDevice) error {
@@ -37,7 +35,6 @@ func removeCommand() *cobra.Command {
 }
 
 func remove(b system.BlockDevice) error {
-	logs.WithFields(b.GetFields()).Info("Disk remove")
 	if len(b.Children) > 0 {
 		for _, child := range b.Children {
 			if err := remove(child); err != nil {
@@ -48,6 +45,7 @@ func remove(b system.BlockDevice) error {
 
 	// TODO remove all mount points
 	if b.Mountpoint != "" {
+		logs.WithFields(b.GetFields()).Info("Umount")
 		if err := b.Umount("/mnt/"+b.GetUsableLabel()); err != nil {
 			return err
 		}
@@ -55,10 +53,12 @@ func remove(b system.BlockDevice) error {
 
 	switch b.Type {
 	case "crypt":
+		logs.WithFields(b.GetFields()).Info("Luks close")
 		if err := b.LuksClose(); err != nil {
 			return err
 		}
 	case "disk":
+		logs.WithFields(b.GetFields()).Info("Put in sleep")
 		if err := b.PutInSleepNow(); err != nil {
 			return err
 		}

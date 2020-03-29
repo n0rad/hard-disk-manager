@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"time"
 )
 
@@ -58,28 +57,28 @@ func (h *HandlerConfig) scan() error {
 		return nil
 	}
 
-	configs, err := hdm.FindConfigs(h.manager.BlockDevice, h.server)
-	if err != nil {
-		return err
-	}
+	//configs, err := hdm.FindConfigs(h.manager.BlockDevice, h.server)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//for _, e := range configs {
+	//	m := BlockManager{
+	//		Type: "path",
+	//		Path: e.GetConfigPath(),
+	//		ManagerService: h.manager.ManagerService,
+	//		//BlockDevice: h.manager.BlockDevice,
+	//		configPath: e.GetConfigPath(),
+	//		config: e,
+	//	}
+	//	if err := m.Init(); err != nil {
+	//		return err
+	//	}
+	//	h.manager.ManagerService.Register(&m)
+	//}
 
-	for _, e := range configs {
-		m := BlockManager{
-			Type: "path",
-			Path: e.GetConfigPath(),
-			ManagerService: h.manager.ManagerService,
-			//BlockDevice: h.manager.BlockDevice,
-			configPath: e.GetConfigPath(),
-			config: e,
-		}
-		if err := m.Init(); err != nil {
-			return err
-		}
-		h.manager.ManagerService.Register(&m)
-	}
-
-	logs.WithField("confs", configs).Warn("there")
+	//logs.WithField("confs", configs).Warn("there")
 	//os.Exit(1)
 
-	return err
+	return nil
 }

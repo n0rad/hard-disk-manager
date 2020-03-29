@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func withDiskSelector(selector *hdm.DisksSelector, cmd *cobra.Command) {
@@ -16,6 +18,13 @@ func withRequiredServerDiskAndLabelSelector(selector *hdm.DisksSelector, cmd *co
 	_ = cmd.MarkFlagRequired("server")
 	_ = cmd.MarkFlagRequired("disk")
 	_ = cmd.MarkFlagRequired("label")
+}
+
+func runningAsRoot() error {
+	if os.Getuid() != 0 {
+		return errs.With("Requires running as root")
+	}
+	return nil
 }
 
 //func commandWithRequiredDiskSelector(use string, aliases []string, hdmCommand func(selector hdm.DisksSelector) error, short string) *cobra.Command {

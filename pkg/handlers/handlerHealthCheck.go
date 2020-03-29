@@ -7,16 +7,16 @@ import (
 )
 
 func init() {
-	handlers = append(handlers, handler{
-		HandlerFilter{Type: "disk"},
-		func() Handler {
-			return &HandlerHealthCheck{
-				CommonHandler: CommonHandler{
-					handlerName: "healthCheck",
-				},
-			}
-		},
-	})
+	//handlers = append(handlers, handler{
+	//	HandlerFilter{Type: "disk"},
+	//	func() Handler {
+	//		return &HandlerHealthCheck{
+	//			CommonHandler: CommonHandler{
+	//				handlerName: "healthCheck",
+	//			},
+	//		}
+	//	},
+	//})
 }
 
 type HandlerHealthCheck struct {

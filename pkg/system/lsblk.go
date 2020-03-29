@@ -6,6 +6,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/hard-disk-manager/pkg/runner"
+	"time"
 )
 
 var lsblkMinVersion = semver.MustParse("2.33")
@@ -93,6 +94,8 @@ func (l Lsblk) callLsblk(args ...string) ([]BlockDevice, error) {
 	lsblk := struct {
 		Blockdevices []BlockDevice `json:"blockdevices"`
 	}{}
+
+	time.Sleep(1 * time.Second) // TODO lsblk is not up to date when called just after a change
 
 	output, err := l.exec.ExecGetStdout("lsblk", args...)
 	if err != nil {

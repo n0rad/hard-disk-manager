@@ -4,6 +4,7 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/pilebones/go-udev/netlink"
+	"strings"
 )
 
 // Types: part, lvm, crypt, dmraid, mpath, path, dm, loop, md, linear, raid0, raid1, raid4, raid5, raid10, multipath, disk, tape, printer, processor, worm, rom, scanner, mo-disk, changer, comm, raid, enclosure, rbc, osd, and no-lun
@@ -17,6 +18,7 @@ type BlockDeviceEvent struct {
 
 type UdevService struct {
 	EventChan chan<- BlockDeviceEvent
+	Filter string
 
 	stop  chan struct{}
 	lsblk *Lsblk
@@ -60,6 +62,9 @@ func (k *UdevService) addCurrentBlockDevices() error {
 		return errs.WithE(err, "Failed to list current block devices")
 	}
 	for _, v := range blockDevices {
+		if !strings.Contains(v.Path, k.Filter) {
+			continue
+		}
 		k.EventChan <- BlockDeviceEvent{
 			Action: netlink.ADD,
 			Type:   v.Type,
@@ -90,6 +95,9 @@ func (k *UdevService) watchUdevBlockEvents(udevConn *netlink.UEventConn) {
 		select {
 		case uevent := <-queue:
 			logs.WithField("uevent", uevent).Trace("Received udev event")
+			if !strings.Contains(uevent.Env["DEVNAME"], k.Filter) {
+				continue
+			}
 
 			if uevent.Env["DEVTYPE"] == "partition" {
 				uevent.Env["DEVTYPE"] = "part"
@@ -118,3 +126,20 @@ func (k *UdevService) watchUdevBlockEvents(udevConn *netlink.UEventConn) {
 		}
 	}
 }
+
+
+//add@/devices/virtual/block/dm-1
+//ACTION=add
+//DEVPATH=/devices/virtual/block/dm-1
+//DEVTYPE=disk
+//DM_UDEV_DISABLE_SUBSYSTEM_RULES_FLAG=1
+//DM_UDEV_DISABLE_OTHER_RULES_FLAG=1
+//TAGS=:systemd:
+//MAJOR=254
+//DEVNAME=/dev/dm-1
+//SEQNUM=4544
+//MINOR=1
+//SYSTEMD_READY=0
+//SUBSYSTEM=block
+//USEC_INITIALIZED=10831581682
+//DM_UDEV_DISABLE_DISK_RULES_FLAG=1

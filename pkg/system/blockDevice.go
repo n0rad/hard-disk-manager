@@ -5,7 +5,6 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"strings"
-	"time"
 )
 
 const luksPartitionCode = "ca7d7ccb-63ed-4c53-861c-1742536059cc"
@@ -113,8 +112,6 @@ func (b BlockDevice) LocationPath() (string, error) {
 }
 
 func (b *BlockDevice) Reload() error {
-	time.Sleep(1000 * time.Millisecond) // TODO info are missing when lsblk is run just after change
-
 	lsblk := Lsblk{}
 	if err := lsblk.Init(b.exec); err != nil {
 		return errs.WithE(err, "Failed to init lsblk to reload blockDevice")

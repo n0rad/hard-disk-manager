@@ -102,8 +102,13 @@ func (m *ManagersService) handleBlockDeviceEvent(event system.BlockDeviceEvent) 
 	case "remove":
 		m.Remove(event.Path)
 	case "change":
-		m.Remove(event.Path)
-		m.AddBlockDevice(event)
+		manager := m.Get(event.Path)
+		if manager == nil {
+			logs.WithField("path", event.Path).Warn("Receiving change event for unknown block. Creating")
+			m.AddBlockDevice(event)
+		} else {
+			// TODO notify change
+		}
 	default:
 		logs.WithField("event", event).Warn("Unknown udev event action")
 	}

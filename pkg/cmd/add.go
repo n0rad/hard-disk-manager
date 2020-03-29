@@ -8,7 +8,6 @@ import (
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func addCommand() *cobra.Command {
@@ -17,8 +16,8 @@ func addCommand() *cobra.Command {
 		Use:   "add",
 		Short: "Add disk(s) for usage (mdadm, luksOpen, mount, ...)",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if os.Getuid() != 0 {
-				return errs.With("Being root required")
+			if err := runningAsRoot(); err != nil {
+				return err
 			}
 
 			passService := password.Service{}
@@ -40,8 +39,6 @@ func addCommand() *cobra.Command {
 
 	return cmd
 }
-
-var filesystems = []string{"ext4", "xfs"}
 
 func addAndGiveNewDevices(d system.BlockDevice, passService *password.Service) (bool, error) {
 	logs.WithFields(d.GetFields()).Debug("Add device")
@@ -77,7 +74,7 @@ func addAndGiveNewDevices(d system.BlockDevice, passService *password.Service) (
 			return false, err
 		}
 		newDevices = true
-	} else if utils.SliceContains(filesystems, d.Fstype) {
+	} else if utils.SliceContains(system.Filesystems, d.Fstype) {
 		mountPath := "/mnt/" + d.GetUsableLabel()
 
 		if err := d.Mount(mountPath); err != nil {
