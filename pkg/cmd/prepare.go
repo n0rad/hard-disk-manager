@@ -58,9 +58,7 @@ func prepareCommand() *cobra.Command {
 			go passService.Start()
 			defer passService.Stop(nil)
 
-			bytes := []byte("aa")
-			if err := passService.FromBytes(&bytes); err != nil {
-			//if err := passService.FromStdin(true); err != nil {
+			if err := passService.FromStdin(true); err != nil {
 				return errs.WithE(err, "Failed to ask password")
 			}
 
