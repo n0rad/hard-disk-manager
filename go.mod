@@ -6,7 +6,6 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/alessio/shellescape v0.0.0-20190409004728-b115ca0f9053
 	github.com/awnumar/memguard v0.19.1
-	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/client9/misspell v0.3.4
 	github.com/cyphar/filepath-securejoin v0.2.2
 	github.com/davidmz/go-pageant v1.0.1 // indirect
@@ -16,7 +15,6 @@ require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8
 	github.com/kr/fs v0.1.0 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/n0rad/go-erlog v0.0.0-20190510152055-0a033e8086d8
 	github.com/oklog/run v1.0.0
@@ -24,7 +22,7 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pkg/sftp v1.10.0 // indirect
 	github.com/sfreiberg/simplessh v0.0.0-20180301191542-495cbb862a9c
-	github.com/spf13/cobra v0.0.4
+	github.com/spf13/cobra v0.0.7
 	github.com/stretchr/testify v1.2.2
 	go.uber.org/automaxprocs v1.2.0
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4

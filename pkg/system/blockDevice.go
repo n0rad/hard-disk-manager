@@ -1,14 +1,14 @@
 package system
 
 import (
-	"github.com/awnumar/memguard"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
-	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/runner"
-	"strconv"
 	"strings"
+	"time"
 )
+
+const luksPartitionCode = "ca7d7ccb-63ed-4c53-861c-1742536059cc"
 
 type BlockDevice struct {
 	Fsavail    string        `json:"fsavail"`
@@ -69,6 +69,18 @@ type BlockDevice struct {
 	exec   runner.Exec
 }
 
+func (b BlockDevice) String() string {
+	return b.Path
+}
+
+func (b BlockDevice) HasChildren() bool {
+	return len(b.Children) != 0
+}
+
+//func (b BlockDevice) GetFields() data.Fields {
+//	return b.fields
+//}
+
 func (b BlockDevice) GetExec() runner.Exec {
 	return b.exec
 }
@@ -90,88 +102,19 @@ func (b BlockDevice) LocationPath() (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-func (b *BlockDevice) LuksOpen(cryptPassword *memguard.LockedBuffer) error {
-	logs.WithFields(b.fields).Info("Disk luksOpen")
-	if b.Fstype != "crypto_LUKS" {
-		return errs.WithF(b.fields, "Cannot luks open, not a crypto block device")
+func (b *BlockDevice) Reload() error {
+	time.Sleep(1000 * time.Millisecond) // TODO info are mising when lsblk is run just after change
+
+	lsblk := Lsblk{}
+	if err := lsblk.Init(b.exec); err != nil {
+		return errs.WithE(err, "Failed to init lsblk to reload blockDevice")
 	}
 
-	if len(b.Children) > 0 {
-		logs.WithFields(b.fields).Debug("Already open")
-		return nil
-	}
-
-	volumeName := b.Partlabel
-	if volumeName == "" {
-		volumeName = b.Name
-	}
-
-	if std, err := b.exec.ExecShellGetStd("echo -n '" + cryptPassword.String() + "' | sudo cryptsetup luksOpen " + b.Path + " " + volumeName + " -"); err != nil {
-		return errs.WithEF(err, b.fields.WithField("std", std), "Failed to open luks")
-	}
-
-	return nil
-}
-
-func (b *BlockDevice) Mount(mountPath string) error {
-	logs.WithFields(b.fields.WithField("mountPath", mountPath)).Debug("Mount")
-	if mountPath == "" {
-		return errs.WithF(b.fields, "mountPath cannot be empty")
-	}
-
-	if _, err := b.exec.ExecShellGetStd("cat /proc/mounts | cut -f1,2 -d' ' | grep '" + b.Path + " " + mountPath + "$'"); err == nil {
-		logs.WithF(b.fields).Debug("Directory is already mounted")
-		return nil
-	}
-
-	if std, err := b.exec.ExecGetStd("mkdir", "-p", mountPath); err != nil {
-		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("std", std), "Failed to create mount directory")
-	}
-
-	out, err := b.exec.ExecGetStdout("ls", "-A", mountPath)
+	device, err := lsblk.GetBlockDevice(b.Path)
 	if err != nil {
-		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", out), "Failed to ls on mount path")
-	}
-	if string(out) != "" {
-		return errs.WithEF(err, b.fields.WithField("path", mountPath).WithField("out", out), "Directory is not empty")
+		return errs.WithE(err, "Failed to get device fro; lsblk to reload")
 	}
 
-	if std, err := b.exec.ExecShellGetStd("! cat /proc/mounts | cut -f2 -d' ' | grep " + mountPath + "$"); err != nil {
-		logs.WithEF(err, b.fields.WithField("path", mountPath).WithField("std", std)).Trace("Already mounted")
-		return nil
-	}
-
-	if std, err := b.exec.ExecGetStd("mount", b.Path, mountPath); err != nil {
-		return errs.WithEF(err, b.fields.WithField("std", std).WithField("target", mountPath), "Failed to mount")
-	}
+	*b = device
 	return nil
-}
-
-func (b *BlockDevice) Umount(mountPath string) error {
-	logs.WithFields(b.fields).Debug("Umount")
-
-	if b.Mountpoint != "" {
-		if std, err := b.exec.ExecGetStd("umount", b.Mountpoint); err != nil {
-			return errs.WithEF(err, b.fields.WithField("std", std), "Failed to unmount")
-		}
-	}
-
-	if std, err := b.exec.ExecGetStd("rmdir", mountPath); err != nil {
-		logs.WithEF(err, b.fields.WithField("std", std).WithField("path", mountPath)).Warn("Failed to cleanup mount path")
-	}
-
-	return nil
-}
-
-func (b *BlockDevice) SpaceAvailable() (int, error) {
-	output, err := b.exec.ExecShellGetStdout("df " + b.Path + " --output=avail | tail -n +2")
-	if err != nil {
-		return 0, errs.WithEF(err, b.fields, "Failed to run 'df' on blockDevice")
-	}
-
-	size, err := strconv.Atoi(strings.TrimSpace(string(output)))
-	if err != nil {
-		return 0, errs.WithEF(err, b.fields.WithField("output", string(output)), "Failed to parse 'df' result")
-	}
-	return size, nil
 }

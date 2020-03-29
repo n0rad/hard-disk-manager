@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/mitchellh/go-homedir"
+	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
@@ -40,40 +41,49 @@ import (
 //hdm load
 //hdm unload
 
-func RootCommand(version string, buildTime string) *cobra.Command {
+func RootCommand(version string, buildTime string) (*cobra.Command, error) {
 	var logLevel string
 	var hdmHome string
 
 	cmd := &cobra.Command{
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		SilenceErrors: true,
+		SilenceUsage: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if logLevel != "" {
 				level, err := logs.ParseLevel(logLevel)
 				if err != nil {
-					logs.WithField("value", logLevel).Fatal("Unknown log level")
+					return err
 				}
 				logs.SetLevel(level)
 			}
 
 			if err := hdm.HDM.Init(hdmHome); err != nil {
-				logs.WithE(err).Fatal("Failed to init hdm")
+				return errs.WithE(err, "Failed to init hdm")
 			}
+			return nil
 		},
 	}
+
+	path, err := homeDotConfigPath()
+	if err != nil {
+		return cmd, err
+	}
+
 	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "L", "", "Set log level")
-	cmd.PersistentFlags().StringVarP(&hdmHome, "home", "H", homeDotConfigPath()+"/hdm", "configFile")
+	cmd.PersistentFlags().StringVarP(&hdmHome, "home", "H", path+"/hdm", "configFile")
 
 	cmd.AddCommand(prepareCommand())
 	cmd.AddCommand(versionCommand(version, buildTime))
 	cmd.AddCommand(passwordCommand())
 	cmd.AddCommand(agentCommand())
 	cmd.AddCommand(listCommand())
-	return cmd
+	return cmd, nil
 }
 
-func homeDotConfigPath() string {
+func homeDotConfigPath() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
-		logs.WithError(err).Fatal("Failed to find user home folder")
+		return "", errs.WithE(err, "Failed to find user home folder")
 	}
-	return home + "/.config"
+	return home + "/.config", nil
 }

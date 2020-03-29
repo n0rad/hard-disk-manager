@@ -5,6 +5,7 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/sfreiberg/simplessh"
+	"io"
 	"strings"
 )
 
@@ -19,7 +20,13 @@ func (s SshExec) String() string {
 	return s.Hostname
 }
 
+
 func (s SshExec) ExecGetStdoutStderr(head string, args ...string) (string, string, error) {
+	return s.ExecSetStdinGetStdoutStderr(nil, head, args...)
+}
+
+func (s SshExec) ExecSetStdinGetStdoutStderr(stdin io.Reader, head string, args ...string) (string, string, error) {
+	// TODO stdin is not supported
 	if s.sshClient == nil {
 		//, "/root/.ssh/id_rsa"
 		client, err := simplessh.ConnectWithAgent(s.Hostname, s.Username)

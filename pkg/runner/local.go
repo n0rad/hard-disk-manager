@@ -3,6 +3,7 @@ package runner
 import (
 	"bytes"
 	"github.com/n0rad/go-erlog/logs"
+	"io"
 	"os/exec"
 	"strings"
 )
@@ -31,6 +32,11 @@ func (s LocalExec) ExecGetStdout(head string, args ...string) (string, error) {
 }
 
 func (s LocalExec) ExecGetStdoutStderr(head string, args ...string) (string, string, error) {
+	return s.ExecSetStdinGetStdoutStderr(nil, head, args...)
+}
+
+
+func (s LocalExec) ExecSetStdinGetStdoutStderr(stdin io.Reader, head string, args ...string) (string, string, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	//if !s.UnSudo {
@@ -45,6 +51,7 @@ func (s LocalExec) ExecGetStdoutStderr(head string, args ...string) (string, str
 	cmd := exec.Command(head, args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	cmd.Stdin = stdin
 	cmd.Start()
 	err := cmd.Wait()
 	return strings.TrimSpace(stdout.String()), stderr.String(), err

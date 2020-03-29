@@ -40,7 +40,11 @@ func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	sigQuitThreadDump()
 
-	if err := cmd.RootCommand(Version, BuildTime).Execute(); err != nil {
+	rootCommand, err := cmd.RootCommand(Version, BuildTime)
+	if err != nil {
+		logs.WithE(err).Fatal("Failed to init command line")
+	}
+	if err := rootCommand.Execute(); err != nil {
 		logs.WithE(err).Fatal("Command failed")
 	}
 	os.Exit(0)

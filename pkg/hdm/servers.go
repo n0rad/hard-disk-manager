@@ -27,6 +27,10 @@ func (s *Servers) Init() error {
 	}
 
 	*s = inited
+
+	if len(*s) == 0 {
+		*s = append(*s, s.GetLocal())
+	}
 	return nil
 }
 
@@ -47,14 +51,14 @@ func (s *Servers) GetLocal() Server {
 	}
 
 	logs.WithField("hostname", localHostname).Warn("Local server not found in hdm configuration, creating empty")
-
 	localServer = &Server{}
 	localServer.Name = localHostname
 	if err := localServer.Init(""); err != nil {
 		logs.WithE(err).Error("Failed to init local server properly")
 	}
-	servers := append(*s, *localServer)
-	*s = servers
+	// TODO this is stupid
+	//servers := append(*s, *localServer)
+	//*s = servers
 
 	return *localServer
 }
