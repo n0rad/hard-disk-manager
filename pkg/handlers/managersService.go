@@ -74,18 +74,6 @@ func (m *ManagersService) Register(manager *BlockManager) {
 	m.managers[manager.Path] = manager
 }
 
-func (m *ManagersService) Remove(path string) {
-	m.managersMutex.Lock()
-	defer m.managersMutex.Unlock()
-
-	if diskManager, ok := m.managers[path]; ok {
-		diskManager.Stop(nil)
-		delete(m.managers, path)
-	} else {
-		logs.WithField("path", path).Warn("Cannot remove disk, not found")
-	}
-}
-
 //
 
 func (m *ManagersService) Get(path string) *BlockManager {
@@ -100,7 +88,7 @@ func (m *ManagersService) handleBlockDeviceEvent(event system.BlockDeviceEvent) 
 	case "add":
 		m.AddBlockDevice(event)
 	case "remove":
-		m.Remove(event.Path)
+		m.RemoveBlockDevice(event.Path)
 	case "change":
 		manager := m.Get(event.Path)
 		if manager == nil {
@@ -111,6 +99,18 @@ func (m *ManagersService) handleBlockDeviceEvent(event system.BlockDeviceEvent) 
 		}
 	default:
 		logs.WithField("event", event).Warn("Unknown udev event action")
+	}
+}
+
+func (m *ManagersService) RemoveBlockDevice(path string) {
+	m.managersMutex.Lock()
+	defer m.managersMutex.Unlock()
+
+	if diskManager, ok := m.managers[path]; ok {
+		diskManager.Stop(nil)
+		delete(m.managers, path)
+	} else {
+		logs.WithField("path", path).Warn("Cannot remove disk, not found")
 	}
 }
 

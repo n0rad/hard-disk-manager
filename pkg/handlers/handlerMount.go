@@ -31,7 +31,6 @@ func (h *HandlerMount) Init(manager *BlockManager) {
 }
 
 func (h *HandlerMount) Start() {
-
 	if err := h.tryMount(); err != nil {
 		logs.WithEF(err, h.fields).Debug("Failed to mount")
 	}
@@ -41,7 +40,7 @@ func (h *HandlerMount) Start() {
 
 func (h *HandlerMount) tryMount() error {
 	if !utils.SliceContains(system.Filesystems, h.manager.BlockDevice.Fstype) {
-		logs.WithField("fstype", h.manager.BlockDevice.Fstype).Debug("Unsupported fstype")
+		logs.WithF(h.fields.WithField("fstype", h.manager.BlockDevice.Fstype)).Debug("Unsupported fstype")
 		return nil
 	}
 
