@@ -55,6 +55,13 @@ func (s *Service) FromConnection(conn net.Conn) error {
 	return nil
 }
 
+func (s *Service) AskPassword(confirmation bool) error {
+	if !terminal.IsTerminal(int(os.Stdout.Fd())) {
+		return errs.With("Cannot ask password, not in a terminal")
+	}
+	return s.FromStdin(confirmation)
+}
+
 func (s *Service) FromStdin(confirmation bool) error {
 	var password, passwordConfirm []byte
 	defer memguard.WipeBytes(password)

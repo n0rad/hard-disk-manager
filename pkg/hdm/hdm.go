@@ -4,12 +4,14 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
+	"github.com/n0rad/hard-disk-manager/pkg/password"
 	"io/ioutil"
 	"os"
 	"time"
 )
 
 var HDM Hdm
+
 const pathMnt = "/mnt"
 const pathDBDisk = "/db-disk"
 const pathConfig = "/config.yaml"
@@ -21,10 +23,13 @@ type Hdm struct {
 		keySize string
 	}
 	DefaultMountPath string
-	Servers Servers
+	Servers          Servers
 	//rpc.SocketServer
 
-	dbDisk DBDisk
+	password *password.Service
+	dbDisk   DBDisk
+	// dbFile
+	//
 
 	fields        data.Fields
 	CheckInterval time.Duration
@@ -56,10 +61,25 @@ func (hdm *Hdm) Init(home string) error {
 	if err := hdm.dbDisk.Init(home + pathDBDisk); err != nil {
 		return errs.WithE(err, "Failed to init db disk")
 	}
+
+	hdm.password = &password.Service{}
+	hdm.password.Init()
+
 	return nil
 }
 
-
 func (hdm Hdm) DBDisk() *DBDisk {
 	return &hdm.dbDisk
+}
+
+func (hdm Hdm) PassService() *password.Service {
+	return hdm.password
+}
+
+func (hdm *Hdm) Start() error {
+	return hdm.password.Start()
+}
+
+func (hdm *Hdm) Stop(error) {
+	hdm.password.Stop(nil)
 }

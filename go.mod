@@ -9,7 +9,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/cyphar/filepath-securejoin v0.2.2
 	github.com/davidmz/go-pageant v1.0.1 // indirect
-	github.com/fsnotify/fsnotify v1.4.7
+	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible

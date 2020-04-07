@@ -72,7 +72,7 @@ func (s Servers) GetBlockDeviceByLabel(label string) (system.BlockDevice, error)
 			return device, nil
 		}
 	}
-	return system.BlockDevice{}, errs.WithF(data.WithField("label", label), "Block device with label not found")
+	return system.BlockDevice{}, errs.WithF(data.WithField("label", label), "BlockDevice device with label not found")
 }
 
 func (s Servers) RunForDisks(selector DisksSelector, toRun func(srv Server, disk system.BlockDevice) error) error {

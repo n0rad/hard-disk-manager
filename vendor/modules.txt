@@ -16,8 +16,6 @@ github.com/cyphar/filepath-securejoin
 github.com/davecgh/go-spew/spew
 # github.com/davidmz/go-pageant v1.0.1
 github.com/davidmz/go-pageant
-# github.com/fsnotify/fsnotify v1.4.7
-github.com/fsnotify/fsnotify
 # github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835
 github.com/fzipp/gocyclo
 # github.com/ghodss/yaml v1.0.0
@@ -53,7 +51,7 @@ github.com/pkg/sftp
 github.com/pmezard/go-difflib/difflib
 # github.com/sfreiberg/simplessh v0.0.0-20180301191542-495cbb862a9c
 github.com/sfreiberg/simplessh
-# github.com/spf13/cobra v0.0.5
+# github.com/spf13/cobra v0.0.7
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
