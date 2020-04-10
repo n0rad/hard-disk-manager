@@ -8,13 +8,14 @@ import (
 var BlockHandlers = map[string]BlockHandlerBuilder{}
 
 type BlockHandlerBuilder struct {
+	Name string
 	Filter HandlerFilter
 	New func() BlockHandler
 }
 
 type BlockHandler interface {
 	Handler
-	Init(manager *BlockManager)
+	Init(name string, manager *BlockManager)
 }
 
 //////////////////
@@ -24,8 +25,8 @@ type CommonBlockHandler struct {
 	manager *BlockManager
 }
 
-func (h *CommonBlockHandler) Init(manager *BlockManager) {
-	h.CommonHandler.Init(data.WithField("path", manager.Block.Path).WithField("handler", h.HandlerName))
+func (h *CommonBlockHandler) Init(name string, manager *BlockManager) {
+	h.CommonHandler.Init(name, data.WithField("path", manager.Block.Path))
 	h.manager = manager
 }
 

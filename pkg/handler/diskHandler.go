@@ -9,7 +9,7 @@ type diskHandlerBuilder struct {
 
 type DiskHandler interface {
 	Handler
-	Init(manager *DiskManager)
+	Init(name string, manager *DiskManager)
 }
 
 
@@ -17,6 +17,6 @@ type CommonDiskHandler struct {
 	CommonBlockHandler
 }
 
-func (h *CommonDiskHandler) Init(manager *DiskManager) {
-	h.CommonBlockHandler.Init(&manager.BlockManager)
+func (h *CommonDiskHandler) Init(name string, manager *DiskManager) {
+	h.CommonBlockHandler.Init(name, &manager.BlockManager)
 }

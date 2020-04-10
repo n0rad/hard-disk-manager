@@ -7,17 +7,9 @@ import (
 )
 
 func init() {
-	DiskHandlerBuilders["disk-info"] = diskHandlerBuilder{
+	DiskHandlerBuilders["info"] = diskHandlerBuilder{
 		New: func() DiskHandler {
-			return &HandlerInfo{
-				CommonDiskHandler: CommonDiskHandler{
-					CommonBlockHandler: CommonBlockHandler{
-						CommonHandler: CommonHandler{
-							HandlerName: "info",
-						},
-					},
-				},
-			}
+			return &HandlerInfo{}
 		},
 	}
 }

@@ -1,18 +1,9 @@
 package handler
 
 func init() {
-	DiskHandlerBuilders["power"] = diskHandlerBuilder{
-		//block.HandlerFilter{Type: "disk"},
+	DiskHandlerBuilders["disk-power"] = diskHandlerBuilder{
 		New: func() DiskHandler {
-			return &HandlerPower{
-				CommonDiskHandler: CommonDiskHandler{
-					CommonBlockHandler: CommonBlockHandler{
-						CommonHandler: CommonHandler{
-							HandlerName: "power",
-						},
-					},
-				},
-			}
+			return &HandlerPower{}
 		},
 	}
 }

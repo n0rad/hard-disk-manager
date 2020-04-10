@@ -11,13 +11,7 @@ func init() {
 	BlockHandlers["crypto"] = BlockHandlerBuilder{
 		Filter: HandlerFilter{FSType: "crypto_LUKS"},
 		New: func() BlockHandler {
-			return &HandlerCrypto{
-				CommonBlockHandler: CommonBlockHandler{
-					CommonHandler: CommonHandler{
-						HandlerName: "crypto",
-					},
-				},
-			}
+			return &HandlerCrypto{}
 		},
 	}
 }
@@ -131,7 +125,7 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 
 	// mount handler
 	handlerMount := BlockHandlers[handlerNameMount].New()
-	handlerMount.Init(&manager)
+	handlerMount.Init(handlerNameMount, &manager)
 
 	go handlerMount.Start()
 	if err := handlerMount.Remove(); err != nil {

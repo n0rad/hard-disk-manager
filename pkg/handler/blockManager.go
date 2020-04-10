@@ -18,10 +18,10 @@ func (m *BlockManager) Init(block system.BlockDevice) {
 	m.Block = block
 
 	// init builder
-	for _, builder := range BlockHandlers {
+	for name, builder := range BlockHandlers {
 		//if builder.filter.Match(HandlerFilter{Type: m.block.Type, FSType: m.block.Fstype}) {
 		handler := builder.New()
-		handler.Init(m)
+		handler.Init(name, m)
 		logs.WithF(handler.GetFields()).Trace("New builder")
 
 		m.handlers = append(m.handlers, handler)

@@ -14,13 +14,7 @@ const handlerNameMount = "mount"
 func init() {
 	BlockHandlers[handlerNameMount] = BlockHandlerBuilder{
 		New: func() BlockHandler {
-			return &HandlerMount{
-				CommonBlockHandler: CommonBlockHandler{
-					CommonHandler: CommonHandler{
-						HandlerName: "mount",
-					},
-				},
-			}
+			return &HandlerMount{}
 		},
 	}
 }
@@ -30,8 +24,8 @@ type HandlerMount struct {
 	DefaultMountPath string
 }
 
-func (h *HandlerMount) Init(manager *BlockManager) {
-	h.CommonBlockHandler.Init(manager)
+func (h *HandlerMount) Init(name string, manager *BlockManager) {
+	h.CommonBlockHandler.Init(name, manager)
 
 	h.DefaultMountPath = manager.GetHDM().DefaultMountPath
 }

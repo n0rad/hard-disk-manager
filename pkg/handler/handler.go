@@ -21,17 +21,18 @@ type Handler interface {
 /////////////////////
 
 type CommonHandler struct {
-	HandlerName string
-	fields      data.Fields
-	StopChan    chan struct{}
+	Name     string
+	fields   data.Fields
+	StopChan chan struct{}
 }
 
 func (h *CommonHandler) GetFields() data.Fields {
 	return h.fields
 }
 
-func (h *CommonHandler) Init(fields data.Fields) {
-	h.fields = fields
+func (h *CommonHandler) Init(name string, fields data.Fields) {
+	h.Name = name
+	h.fields = fields.WithField("name", h.Name)
 	h.StopChan = make(chan struct{})
 }
 

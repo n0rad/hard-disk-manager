@@ -9,17 +9,8 @@ import (
 
 func init() {
 	DiskHandlerBuilders["health-check"] = diskHandlerBuilder{
-		//block.HandlerFilter{Type: "disk"},
 		New: func() DiskHandler {
-			return &HandlerHealthCheck{
-				CommonDiskHandler: CommonDiskHandler{
-					CommonBlockHandler: CommonBlockHandler{
-						CommonHandler: CommonHandler{
-							HandlerName: "health-check",
-						},
-					},
-				},
-			}
+			return &HandlerHealthCheck{}
 		},
 	}
 }
@@ -29,8 +20,8 @@ type HandlerHealthCheck struct {
 	CheckInterval time.Duration
 }
 
-func (h *HandlerHealthCheck) Init(manager *DiskManager) {
-	h.CommonBlockHandler.Init(&manager.BlockManager)
+func (h *HandlerHealthCheck) Init(name string, manager *DiskManager) {
+	h.CommonBlockHandler.Init(name, &manager.BlockManager)
 
 	if h.CheckInterval == 0 {
 		h.CheckInterval = 6 * time.Hour
