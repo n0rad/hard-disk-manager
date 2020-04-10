@@ -2,11 +2,6 @@ package handler
 
 import "github.com/n0rad/go-erlog/data"
 
-type HandlerBuilder struct {
-	//filter HandlerFilter
-	New func() Handler
-}
-
 type Handler interface {
 	Start() error
 	Stop(err error)
