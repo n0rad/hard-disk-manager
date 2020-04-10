@@ -1,49 +1,47 @@
-package block
+package handler
 
 import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
 )
 
-type Manager struct {
-	hdm      *hdm.Hdm
-	block    system.BlockDevice
+type EventType string
+
+const (
+	Add    EventType = "add"
+	Remove EventType = "remove"
+	Change EventType = "change"
+)
+
+type Manager interface {
+	GetHDM() *hdm.Hdm
+	HandleEvent(eventType EventType)
+	//Parent() Manager
+	Start() error
+	Stop(err error)
+}
+
+type CommonManager struct {
+	hdm    *hdm.Hdm
+	fields data.Fields
 	handlers []Handler
 	children map[string]Manager
-	stop       chan struct{}
+	stop     chan struct{}
 }
 
-func (m *Manager) Init(block system.BlockDevice, hdm *hdm.Hdm) {
-	logs.WithField("path", block.Path).Info("New block manager")
+func (m *CommonManager) GetHDM() *hdm.Hdm {
+	return m.hdm
+}
+
+func (m *CommonManager) Init(fields data.Fields, hdm *hdm.Hdm) {
+	logs.WithF(fields).Info("New manager")
 	m.children = map[string]Manager{}
-	m.block = block
 	m.hdm = hdm
-
-	// init handlers
-	for _, handler := range handlers {
-		if handler.filter.Match(HandlerFilter{Type: m.block.Type, FSType: m.block.Fstype}) {
-			handler := handler.new()
-			handler.Init(m)
-			logs.WithF(handler.GetFields()).Trace("New handler")
-
-			m.handlers = append(m.handlers, handler)
-
-			// TODO load configuration for handler
-			// TODO if disabled, remove
-		}
-	}
-
-	// init children managers
-	for _, child := range m.block.Children {
-		manager := Manager{}
-		manager.Init(child, hdm)
-		m.children[child.Path] = manager
-	}
+	m.fields = fields
 }
 
-func (m *Manager) HandleEvent(eventType EventType) {
+func (m *CommonManager) HandleEvent(eventType EventType) {
 	switch eventType {
 	case Add:
 		// going downstream
@@ -71,7 +69,7 @@ func (m *Manager) HandleEvent(eventType EventType) {
 	}
 }
 
-func (m *Manager) Start() error {
+func (m *CommonManager) Start() error {
 	m.stop = make(chan struct{})
 
 	for _, h := range m.handlers {
@@ -92,6 +90,6 @@ func (m *Manager) Start() error {
 	return nil
 }
 
-func (m *Manager) Stop(error) {
+func (m *CommonManager) Stop(error) {
 	close(m.stop)
 }

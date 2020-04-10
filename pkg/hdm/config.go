@@ -53,8 +53,8 @@ func (h *Config) Init(configPath string) error {
 	return nil
 }
 
-//if len(b.Children) > 0 {
-//	for _, child := range b.Children {
+//if len(b.children) > 0 {
+//	for _, child := range b.children {
 //		configs, err := hdm.FindConfigs(child)
 //		if err != nil {
 //			return hdmConfigs, err

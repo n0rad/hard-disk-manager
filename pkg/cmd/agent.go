@@ -35,14 +35,14 @@ func agentCommand() *cobra.Command {
 			//passService.FromBytes(&pass)
 			g.Add(passService.Start, passService.Stop)
 
-			////managers
-			//managers := handlers.ManagersService{PassService: &passService}
-			//managers.Init()
-			//g.Add(managers.Start, managers.Stop)
+			////manager
+			//manager := handler.ManagersService{PassService: &passService}
+			//manager.Init()
+			//g.Add(manager.Start, manager.Stop)
 			//
 			////udevService
 			//udevService := system.UdevService{
-			//	EventChan: managers.GetBlockDeviceEventChan(),
+			//	EventChan: manager.GetBlockDeviceEventChan(),
 			//	Filter: selector.Disk,
 			//}
 			//lsblk := system.Lsblk{}

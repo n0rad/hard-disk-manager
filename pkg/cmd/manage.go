@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"github.com/n0rad/go-erlog/logs"
+	"github.com/n0rad/hard-disk-manager/pkg/handler"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
-	"github.com/n0rad/hard-disk-manager/pkg/managers"
-	"github.com/n0rad/hard-disk-manager/pkg/managers/block"
 	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
@@ -13,13 +12,13 @@ import (
 )
 
 func manageCommand() *cobra.Command {
-	var disk string
+	var diskName string
 	cmd := &cobra.Command{
 		Use:   "manage",
 		Short: "Manage a disk",
 	}
 
-	cmd.PersistentFlags().StringVarP(&disk, "p", "d", "", "disk")
+	cmd.PersistentFlags().StringVarP(&diskName, "p", "d", "", "disk")
 	_ = cmd.MarkFlagRequired("disk")
 
 	cmd.AddCommand(&cobra.Command{
@@ -30,12 +29,12 @@ func manageCommand() *cobra.Command {
 				return err
 			}
 
-			manage, err := startManage(disk)
+			manage, err := startManage(diskName)
 			if err != nil {
 				return err
 			}
 
-			manage.HandleEvent(block.Add)
+			manage.HandleEvent(handler.Add)
 			return nil
 		},
 	})
@@ -48,12 +47,12 @@ func manageCommand() *cobra.Command {
 				return err
 			}
 
-			manage, err := startManage(disk)
+			manage, err := startManage(diskName)
 			if err != nil {
 				return err
 			}
 
-			manage.HandleEvent(block.Remove)
+			manage.HandleEvent(handler.Remove)
 			return nil
 		},
 	})
@@ -61,7 +60,7 @@ func manageCommand() *cobra.Command {
 	return cmd
 }
 
-func startManage(disk string) (*managers.DiskManager, error) {
+func startManage(diskName string) (*handler.DiskManager, error) {
 	var g run.Group
 
 	//sigterm
@@ -77,8 +76,8 @@ func startManage(disk string) (*managers.DiskManager, error) {
 	lsblk.Init(runner.Local)
 
 	// disk manager
-	m := managers.DiskManager{}
-	if err := m.Init(lsblk, disk); err != nil {
+	m := handler.DiskManager{}
+	if err := m.Init(lsblk, diskName); err != nil {
 		return nil, err
 	}
 	g.Add(m.Start, m.Stop)

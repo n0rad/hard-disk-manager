@@ -77,7 +77,7 @@ func (s Smartctl) SmartctlVersion() (semver.Version, error) {
 
 func (s Smartctl) All() (SmartResult, error) {
 	smartResult := SmartResult{}
-	output, err := s.exec.ExecGetStdout("smartctl", "--all", "-j", s.path) // TODO parse json  error to get message
+	output, err := s.exec.ExecGetStd("smartctl", "--all", "-j", s.path) // TODO parse json  error to get message
 	if err != nil {
 		return smartResult, errs.WithEF(err, s.fields, "Fail to run smartctl")
 	}
