@@ -13,7 +13,7 @@ const PathBackups = "/Backups"
 type BackupConfig struct {
 	TargetLabel string
 	//Interval time.Duration
-	//Filter   string
+	//filter   string
 	Path   string
 	Delete bool
 }

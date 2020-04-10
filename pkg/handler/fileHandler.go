@@ -2,7 +2,7 @@ package handler
 
 
 //type fileHandlerBuilder struct {
-//	New func() diskHandlerBuilder
+//	new func() diskHandlerBuilder
 //}
 //
 //

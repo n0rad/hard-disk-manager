@@ -35,7 +35,7 @@ func (m *CommonManager) GetHDM() *hdm.Hdm {
 }
 
 func (m *CommonManager) Init(fields data.Fields, hdm *hdm.Hdm) {
-	logs.WithF(fields).Info("New manager")
+	logs.WithF(fields).Info("new manager")
 	m.children = map[string]Manager{}
 	m.hdm = hdm
 	m.fields = fields

@@ -9,7 +9,7 @@ import (
 
 func init() {
 	DiskHandlerBuilders["health-check"] = diskHandlerBuilder{
-		New: func() DiskHandler {
+		new: func() DiskHandler {
 			return &HandlerHealthCheck{}
 		},
 	}
@@ -37,7 +37,7 @@ func (h *HandlerHealthCheck) Start() error {
 			if err := h.Add(); err != nil {
 				logs.WithE(err).Error("Health check failed")
 			}
-		case <-h.StopChan:
+		case <-h.stopChan:
 			ticker.Stop()
 			return nil
 		}
@@ -47,7 +47,7 @@ func (h *HandlerHealthCheck) Start() error {
 func (h *HandlerHealthCheck) Add() error {
 	//TODO init elsewhere
 	smartctl := system.Smartctl{}
-	if err := smartctl.Init(h.manager.Block.GetExec(), h.manager.Block); err != nil {
+	if err := smartctl.Init(h.manager.block.GetExec(), h.manager.block); err != nil {
 		return errs.WithEF(err, h.GetFields(), "Failed to create smartctl")
 	}
 	result, err := smartctl.All()

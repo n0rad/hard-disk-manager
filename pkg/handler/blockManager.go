@@ -10,28 +10,28 @@ import (
 type BlockManager struct {
 	CommonManager
 
-	Block system.BlockDevice
+	block system.BlockDevice
 }
 
 func (m *BlockManager) Init(block system.BlockDevice) {
 	m.CommonManager.Init(data.WithField("path", block.Path), &hdm.HDM)
-	m.Block = block
+	m.block = block
 
 	// init builder
 	for name, builder := range BlockHandlers {
-		//if builder.filter.Match(HandlerFilter{Type: m.block.Type, FSType: m.block.Fstype}) {
-		handler := builder.New()
-		handler.Init(name, m)
-		logs.WithF(handler.GetFields()).Trace("New builder")
+		if builder.filter.Match(HandlerFilter{Type: m.block.Type, FSType: m.block.Fstype}) {
+			handler := builder.new()
+			handler.Init(name, m)
+			logs.WithF(handler.GetFields()).Trace("new builder")
 
-		m.handlers = append(m.handlers, handler)
+			m.handlers = append(m.handlers, handler)
 
-		// TODO load configuration for builder
-		// TODO if disabled, remove
-		//}
+			// TODO load configuration for builder
+			// TODO if disabled, remove
+		}
 	}
 
-	for _, child := range m.Block.Children {
+	for _, child := range m.block.Children {
 		manager := &BlockManager{}
 		manager.Init(child)
 		m.children[child.Path] = manager

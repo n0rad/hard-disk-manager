@@ -8,12 +8,12 @@ import (
 
 func TestDisksSelector_Match(t *testing.T) {
 	assert.True(t, DisksSelector{Server: "srv1"}.MatchDisk(Server{Name: "srv1"}, system.BlockDevice{}))
-	//assert.False(t, DisksSelector{Server: "srv1"}.MatchDisk(Server{Name: "srv2"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{}}))
+	//assert.False(t, DisksSelector{Server: "srv1"}.MatchDisk(Server{name: "srv2"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{}}))
 	//
-	//assert.True(t, DisksSelector{Server: "srv1", Label: "toto"}.MatchDisk(Server{Name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{Partlabel: "toto"}}))
-	//assert.False(t, DisksSelector{Server: "srv1", Label: "toto"}.MatchDisk(Server{Name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{Partlabel: "titi"}}))
+	//assert.True(t, DisksSelector{Server: "srv1", Label: "toto"}.MatchDisk(Server{name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{Partlabel: "toto"}}))
+	//assert.False(t, DisksSelector{Server: "srv1", Label: "toto"}.MatchDisk(Server{name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{Partlabel: "titi"}}))
 	//
-	//assert.True(t, DisksSelector{Server: "srv1", Disk: "toto"}.MatchDisk(Server{Name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{Name: "toto"}}))
-	//assert.False(t, DisksSelector{Server: "srv1", Disk: "toto"}.MatchDisk(Server{Name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{Name: "titi"}}))
+	//assert.True(t, DisksSelector{Server: "srv1", Disk: "toto"}.MatchDisk(Server{name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{name: "toto"}}))
+	//assert.False(t, DisksSelector{Server: "srv1", Disk: "toto"}.MatchDisk(Server{name: "srv1"}, system.BlockDevice{BlockDeviceOLD: &system.BlockDevice{name: "titi"}}))
 
 }

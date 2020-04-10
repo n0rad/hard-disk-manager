@@ -8,7 +8,7 @@ import (
 
 func init() {
 	DiskHandlerBuilders["info"] = diskHandlerBuilder{
-		New: func() DiskHandler {
+		new: func() DiskHandler {
 			return &HandlerInfo{}
 		},
 	}
@@ -24,12 +24,12 @@ func (h *HandlerInfo) Change() error {
 }
 
 func (h *HandlerInfo) Add() error {
-	if h.manager.Block.Serial == "" {
+	if h.manager.block.Serial == "" {
 		logs.WithF(h.GetFields()).Trace("Disk has no serial, not saving")
 		return nil
 	}
 
-	if err := hdm.HDM.DBDisk().Save(h.manager.Block); err != nil {
+	if err := hdm.HDM.DBDisk().Save(h.manager.block); err != nil {
 		return errs.WithE(err, "Failed to save disk to db")
 	}
 	return nil

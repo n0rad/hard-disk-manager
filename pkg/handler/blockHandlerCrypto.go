@@ -9,8 +9,8 @@ import (
 
 func init() {
 	BlockHandlers["crypto"] = BlockHandlerBuilder{
-		Filter: HandlerFilter{FSType: "crypto_LUKS"},
-		New: func() BlockHandler {
+		filter: HandlerFilter{FSType: "crypto_LUKS"},
+		new: func() BlockHandler {
 			return &HandlerCrypto{}
 		},
 	}
@@ -36,8 +36,8 @@ type HandlerCrypto struct {
 //}
 
 func (h *HandlerCrypto) Remove() error {
-	if len(h.manager.Block.Children) == 1 {
-		if err := h.manager.Block.Children[0].LuksClose(); err != nil {
+	if len(h.manager.block.Children) == 1 {
+		if err := h.manager.block.Children[0].LuksClose(); err != nil {
 			return err
 		}
 	}
@@ -45,7 +45,7 @@ func (h *HandlerCrypto) Remove() error {
 }
 
 func (h *HandlerCrypto) Add() error {
-	if h.manager.Block.IsLuksOpen() {
+	if h.manager.block.IsLuksOpen() {
 		logs.WithF(h.GetFields()).Info("Already Open")
 		return nil
 	}
@@ -59,17 +59,17 @@ func (h *HandlerCrypto) Add() error {
 	//	return errs.WithE(err, "Cannot get password")
 	//}
 
-	used, err := h.manager.Block.IsLuksNameUsed()
+	used, err := h.manager.block.IsLuksNameUsed()
 	if err != nil {
 		logs.WithEF(err, h.GetFields()).Warn("Cannot check is luks name is already in use, continuing but it may fail")
 	}
 	if used {
-		if h.manager.Block.IsLuksUsed() {
-			logs.WithF(h.GetFields()).Warn("Luks already open for same Block but not linked to device, trying to cleanup")
+		if h.manager.block.IsLuksUsed() {
+			logs.WithF(h.GetFields()).Warn("Luks already open for same block but not linked to device, trying to cleanup")
 
-			h.cleanupRemovedBlockDevice(h.manager.Block.GetUsableLabel())
+			h.cleanupRemovedBlockDevice(h.manager.block.GetUsableLabel())
 		} else {
-			return errs.WithF(h.GetFields().WithField("name", h.manager.Block.GetUsableLabel()), "deviceMapper name is already used by another Block")
+			return errs.WithF(h.GetFields().WithField("name", h.manager.block.GetUsableLabel()), "deviceMapper name is already used by another block")
 		}
 	}
 
@@ -84,7 +84,7 @@ func (h *HandlerCrypto) Add() error {
 	}
 	defer buffer.Destroy()
 
-	if err := h.manager.Block.LuksOpen(buffer); err != nil {
+	if err := h.manager.block.LuksOpen(buffer); err != nil {
 		return errs.WithEF(err, h.GetFields(), "Failed to luks open")
 	}
 	return nil
@@ -94,12 +94,12 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 	blockDevicePath := "/dev/mapper/" + label
 
 	mapper := system.DeviceMapper{
-		Exec: h.manager.Block.GetExec(),
+		Exec: h.manager.block.GetExec(),
 	}
 
 	blockName, err := mapper.BlockFromName(label)
 	if err != nil {
-		logs.WithEF(err, data.WithField("blockDevice", blockDevicePath)).Debug("Cannot get Block name from blockDevice")
+		logs.WithEF(err, data.WithField("blockDevice", blockDevicePath)).Debug("Cannot get block name from blockDevice")
 	}
 
 	mountPoint := ""
@@ -109,7 +109,7 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 		mountPoint = mount.Path
 	}
 
-	// Block device
+	// block device
 	fakeOpenedBlockDevice := system.BlockDevice{
 		Name:       label,
 		Path:       blockDevicePath,
@@ -117,14 +117,14 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 		Label:      label,
 		Kname:      blockName,
 	}
-	fakeOpenedBlockDevice.Init(h.manager.Block.GetExec())
+	fakeOpenedBlockDevice.Init(h.manager.block.GetExec())
 
 	// manager
 	manager := BlockManager{}
 	manager.Init(fakeOpenedBlockDevice)
 
 	// mount handler
-	handlerMount := BlockHandlers[handlerNameMount].New()
+	handlerMount := BlockHandlers[handlerNameMount].new()
 	handlerMount.Init(handlerNameMount, &manager)
 
 	go handlerMount.Start()

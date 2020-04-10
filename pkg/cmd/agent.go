@@ -43,7 +43,7 @@ func agentCommand() *cobra.Command {
 			////udevService
 			//udevService := system.UdevService{
 			//	EventChan: manager.GetBlockDeviceEventChan(),
-			//	Filter: selector.Disk,
+			//	filter: selector.Disk,
 			//}
 			//lsblk := system.Lsblk{}
 			//if err := lsblk.Init(runner.Local); err != nil {

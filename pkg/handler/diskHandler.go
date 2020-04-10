@@ -4,7 +4,7 @@ package handler
 var DiskHandlerBuilders = map[string]diskHandlerBuilder{}
 
 type diskHandlerBuilder struct {
-	New func() DiskHandler
+	new func() DiskHandler
 }
 
 type DiskHandler interface {

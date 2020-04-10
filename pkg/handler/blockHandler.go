@@ -4,13 +4,13 @@ import (
 	"github.com/n0rad/go-erlog/data"
 )
 
-// all available Block handler
+// all available block handler
 var BlockHandlers = map[string]BlockHandlerBuilder{}
 
 type BlockHandlerBuilder struct {
-	Name string
-	Filter HandlerFilter
-	New func() BlockHandler
+	name   string
+	filter HandlerFilter
+	new    func() BlockHandler
 }
 
 type BlockHandler interface {
@@ -26,7 +26,7 @@ type CommonBlockHandler struct {
 }
 
 func (h *CommonBlockHandler) Init(name string, manager *BlockManager) {
-	h.CommonHandler.Init(name, data.WithField("path", manager.Block.Path))
+	h.CommonHandler.Init(name, data.WithField("path", manager.block.Path))
 	h.manager = manager
 }
 

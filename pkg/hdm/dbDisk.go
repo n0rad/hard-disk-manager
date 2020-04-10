@@ -55,7 +55,7 @@ func (db *DBDisk) Save(blockDevice system.BlockDevice) error {
 //
 //	for _, file := range files {
 //		disk := system.Disk{}
-//		filePath := db.path + "/" + file.Name()
+//		filePath := db.path + "/" + file.name()
 //
 //		bytes, err := ioutil.ReadFile(filePath)
 //		fileField := data.WithField("file", filePath)

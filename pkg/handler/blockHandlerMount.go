@@ -13,7 +13,7 @@ const handlerNameMount = "mount"
 
 func init() {
 	BlockHandlers[handlerNameMount] = BlockHandlerBuilder{
-		New: func() BlockHandler {
+		new: func() BlockHandler {
 			return &HandlerMount{}
 		},
 	}
@@ -31,24 +31,24 @@ func (h *HandlerMount) Init(name string, manager *BlockManager) {
 }
 
 func (h *HandlerMount) Add() error {
-	if !utils.SliceContains(system.Filesystems, h.manager.Block.Fstype) {
-		logs.WithF(h.GetFields().WithField("fstype", h.manager.Block.Fstype)).Trace("Unsupported fstype")
+	if !utils.SliceContains(system.Filesystems, h.manager.block.Fstype) {
+		logs.WithF(h.GetFields().WithField("fstype", h.manager.block.Fstype)).Trace("Unsupported fstype")
 		return nil
 	}
 
 	logs.WithFields(h.GetFields()).Info("Add")
 
-	if h.manager.Block.Mountpoint != "" {
+	if h.manager.block.Mountpoint != "" {
 		logs.WithF(h.GetFields()).Debug("Already mounted")
 		return nil
 	}
 
-	mountPath := h.DefaultMountPath + "/" + h.manager.Block.GetUsableLabel()
+	mountPath := h.DefaultMountPath + "/" + h.manager.block.GetUsableLabel()
 	if err := os.MkdirAll(mountPath, 0755); err != nil {
 		return errs.WithEF(err, h.GetFields(), "Failed to create mount directory")
 	}
 
-	if err := h.manager.Block.Mount(mountPath); err != nil {
+	if err := h.manager.block.Mount(mountPath); err != nil {
 		return errs.WithEF(err, h.GetFields(), "Failed to mount")
 	}
 
@@ -61,16 +61,16 @@ func (h *HandlerMount) Remove() error {
 	// TODO free
 	// kill lsof
 
-	if h.manager.Block.Mountpoint != "" {
-		if err := h.manager.Block.Umount(h.manager.Block.Mountpoint); err != nil {
+	if h.manager.block.Mountpoint != "" {
+		if err := h.manager.block.Umount(h.manager.block.Mountpoint); err != nil {
 			return err
 		}
 	}
 
-	stat, err := os.Stat(h.manager.Block.Mountpoint)
+	stat, err := os.Stat(h.manager.block.Mountpoint)
 	if err == nil && stat.IsDir() {
-		if err := syscall.Rmdir(h.manager.Block.Mountpoint); err != nil {
-			return errs.WithEF(err, h.GetFields().WithField("dir", h.manager.Block.Mountpoint), "Failed to remove mount dir")
+		if err := syscall.Rmdir(h.manager.block.Mountpoint); err != nil {
+			return errs.WithEF(err, h.GetFields().WithField("dir", h.manager.block.Mountpoint), "Failed to remove mount dir")
 		}
 	}
 

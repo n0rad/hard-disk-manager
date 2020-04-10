@@ -2,7 +2,7 @@ package handler
 
 func init() {
 	DiskHandlerBuilders["disk-power"] = diskHandlerBuilder{
-		New: func() DiskHandler {
+		new: func() DiskHandler {
 			return &HandlerPower{}
 		},
 	}
@@ -13,5 +13,5 @@ type HandlerPower struct {
 }
 
 func (h *HandlerPower) Remove() error {
-	return h.manager.Block.PutInSleepNow()
+	return h.manager.block.PutInSleepNow()
 }

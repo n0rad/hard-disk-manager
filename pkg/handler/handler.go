@@ -16,9 +16,9 @@ type Handler interface {
 /////////////////////
 
 type CommonHandler struct {
-	Name     string
+	name     string
 	fields   data.Fields
-	StopChan chan struct{}
+	stopChan chan struct{}
 }
 
 func (h *CommonHandler) GetFields() data.Fields {
@@ -26,18 +26,18 @@ func (h *CommonHandler) GetFields() data.Fields {
 }
 
 func (h *CommonHandler) Init(name string, fields data.Fields) {
-	h.Name = name
-	h.fields = fields.WithField("name", h.Name)
-	h.StopChan = make(chan struct{})
+	h.name = name
+	h.fields = fields.WithField("name", h.name)
+	h.stopChan = make(chan struct{})
 }
 
 func (h *CommonHandler) Start() error {
-	<-h.StopChan
+	<-h.stopChan
 	return nil
 }
 
 func (h *CommonHandler) Stop(err error) {
-	close(h.StopChan)
+	close(h.stopChan)
 }
 
 func (h *CommonHandler) Add() error {
