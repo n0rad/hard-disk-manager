@@ -17,8 +17,8 @@ func (m *BlockManager) Init(block system.BlockDevice) {
 	m.CommonManager.Init(data.WithField("path", block.Path), &hdm.HDM)
 	m.block = block
 
-	// init builder
-	for name, builder := range BlockHandlers {
+	// init handlers
+	for name, builder := range blockHandlers {
 		if builder.filter.Match(HandlerFilter{Type: m.block.Type, FSType: m.block.Fstype}) {
 			handler := builder.new()
 			handler.Init(name, m)
@@ -39,7 +39,7 @@ func (m *BlockManager) Init(block system.BlockDevice) {
 
 	//// INIT children mananger for files if mountpoint
 	//if block.Mountpoint != "" {
-	//	f := &FileManager{}
+	//	f := &FsManager{}
 	//	f.Init()
 	//	m.children["fs"] = f
 	//}

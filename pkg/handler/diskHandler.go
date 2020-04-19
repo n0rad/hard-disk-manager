@@ -1,7 +1,7 @@
 package handler
 
 // all available disk handler
-var DiskHandlerBuilders = map[string]diskHandlerBuilder{}
+var diskHandlerBuilders = map[string]diskHandlerBuilder{}
 
 type diskHandlerBuilder struct {
 	new func() DiskHandler

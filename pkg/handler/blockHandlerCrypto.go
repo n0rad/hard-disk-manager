@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	BlockHandlers["crypto"] = BlockHandlerBuilder{
+	blockHandlers["crypto"] = blockHandlerBuilder{
 		filter: HandlerFilter{FSType: "crypto_LUKS"},
 		new: func() BlockHandler {
 			return &HandlerCrypto{}
@@ -124,7 +124,8 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 	manager.Init(fakeOpenedBlockDevice)
 
 	// mount handler
-	handlerMount := BlockHandlers[handlerNameMount].new()
+	// TODO is already registered by init ?
+	handlerMount := blockHandlers[handlerNameMount].new()
 	handlerMount.Init(handlerNameMount, &manager)
 
 	go handlerMount.Start()

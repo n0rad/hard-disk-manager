@@ -1,7 +1,7 @@
 package handler
 
 func init() {
-	DiskHandlerBuilders["disk-power"] = diskHandlerBuilder{
+	diskHandlerBuilders["disk-power"] = diskHandlerBuilder{
 		new: func() DiskHandler {
 			return &HandlerPower{}
 		},

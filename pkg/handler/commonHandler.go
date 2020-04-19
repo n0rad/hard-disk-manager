@@ -1,6 +1,9 @@
 package handler
 
-import "github.com/n0rad/go-erlog/data"
+import (
+	"github.com/n0rad/go-erlog/data"
+	"github.com/n0rad/go-erlog/logs"
+)
 
 type Handler interface {
 	Start() error
@@ -29,6 +32,7 @@ func (h *CommonHandler) Init(name string, fields data.Fields) {
 	h.name = name
 	h.fields = fields.WithField("name", h.name)
 	h.stopChan = make(chan struct{})
+	logs.WithF(h.GetFields()).Debug("New handler")
 }
 
 func (h *CommonHandler) Start() error {

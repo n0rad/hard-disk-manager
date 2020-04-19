@@ -5,10 +5,9 @@ import (
 )
 
 // all available block handler
-var BlockHandlers = map[string]BlockHandlerBuilder{}
+var blockHandlers = map[string]blockHandlerBuilder{}
 
-type BlockHandlerBuilder struct {
-	name   string
+type blockHandlerBuilder struct {
 	filter HandlerFilter
 	new    func() BlockHandler
 }

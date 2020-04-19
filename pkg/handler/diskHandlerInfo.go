@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	DiskHandlerBuilders["info"] = diskHandlerBuilder{
+	diskHandlerBuilders["info"] = diskHandlerBuilder{
 		new: func() DiskHandler {
 			return &HandlerInfo{}
 		},

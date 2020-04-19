@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	DiskHandlerBuilders["health-check"] = diskHandlerBuilder{
+	diskHandlerBuilders["health-check"] = diskHandlerBuilder{
 		new: func() DiskHandler {
 			return &HandlerHealthCheck{}
 		},

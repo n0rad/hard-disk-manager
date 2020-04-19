@@ -12,7 +12,7 @@ import (
 const handlerNameMount = "mount"
 
 func init() {
-	BlockHandlers[handlerNameMount] = BlockHandlerBuilder{
+	blockHandlers[handlerNameMount] = blockHandlerBuilder{
 		new: func() BlockHandler {
 			return &HandlerMount{}
 		},
@@ -75,4 +75,13 @@ func (h *HandlerMount) Remove() error {
 	}
 
 	return nil
+}
+
+func (h *HandlerMount) registerFileManager() {
+	manager := &FsManager{}
+	manager.Init(h.manager.block.Mountpoint, h.manager.block.GetExec())
+
+	h.manager.children[h.manager.block.Mountpoint] = manager
+
+
 }

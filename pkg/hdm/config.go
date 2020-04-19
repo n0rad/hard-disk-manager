@@ -4,10 +4,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
-	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
+	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"io/ioutil"
-	"os"
 	"strings"
 )
 
@@ -24,25 +22,6 @@ type Config struct {
 	fields     data.Fields
 }
 
-func NewConfig(hdmConfigPath string) (Config, error) {
-	var cfg Config
-
-	bytes, err := ioutil.ReadFile(hdmConfigPath)
-	if err != nil {
-		return cfg, errs.WithEF(err, data.WithField("path", hdmConfigPath), "Failed to read hdm config file")
-	}
-
-	if err := yaml.Unmarshal([]byte(bytes), &cfg); err != nil {
-		return cfg, errs.WithEF(err, data.WithField("content", string(bytes)).WithField("path", hdmConfigPath), "Failed to parse hdm file")
-	}
-
-	if err := cfg.Init(hdmConfigPath); err != nil {
-		return cfg, errs.WithEF(err, data.WithField("content", string(bytes)), "Failed to init hdm file")
-	}
-
-	return cfg, nil
-}
-
 func (h Config) GetConfigPath() string {
 	return h.configPath
 }
@@ -53,59 +32,45 @@ func (h *Config) Init(configPath string) error {
 	return nil
 }
 
-//if len(b.children) > 0 {
-//	for _, child := range b.children {
-//		configs, err := hdm.FindConfigs(child)
-//		if err != nil {
-//			return hdmConfigs, err
-//		}
-//		hdmConfigs = append(hdmConfigs, configs...)
-//	}
-//	return hdmConfigs, nil
-//}
-
-func FindConfigs(blockdevice system.BlockDevice, server Server) ([]Config, error) {
-	var hdmConfigs []Config
-
-	if blockdevice.Mountpoint == "" {
-		return hdmConfigs, errs.WithF(data.WithField("path", blockdevice.Mountpoint), "BlockDevice is not mounted")
-	}
-
-	hdmRootFilePath := blockdevice.Mountpoint + PathHdmYaml
-
-	if _, err := os.Stat(hdmRootFilePath); err != nil {
-		logs.WithEF(err, data.WithField("path", blockdevice.Mountpoint)).Debug("hdm root file does not exists or cannot be read")
-		return hdmConfigs, nil
-	}
-
-	config, err := NewConfig(hdmRootFilePath)
+func (h *Config) Load(configPath string) error {
+	bytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		logs.WithEF(err, data.WithField("path", hdmRootFilePath)).Debug("Failed to read hdm root file")
-		return hdmConfigs, nil
+		return errs.WithEF(err, data.WithField("path", configPath), "Failed to read hdm config file")
 	}
 
-	hdmConfigs = append(hdmConfigs, config)
-	if !config.RecursiveConfig {
-		return hdmConfigs, nil
+	if err := yaml.Unmarshal(bytes, h); err != nil {
+		return errs.WithEF(err, data.WithField("content", string(bytes)).WithField("path", configPath), "Failed to parse hdm file")
 	}
 
-	configs, err := blockdevice.GetExec().ExecGetStdout("find", blockdevice.Mountpoint, "-type", "f", "-not", "-path", blockdevice.Mountpoint+PathBackups+"/*", "-name", HdmYamlFilename)
+	if err := h.Init(configPath); err != nil {
+		return errs.WithEF(err, data.WithField("content", string(bytes)), "Failed to init hdm file")
+	}
+	return nil
+}
+
+/////////////////
+
+
+// TODO remove
+func NewConfig(hdmConfigPath string) (Config, error) {
+	var cfg Config
+	return cfg, cfg.Load(hdmConfigPath)
+}
+
+func FindConfigs(rootPath string, exec runner.Exec) ([]string, error) {
+	var hdmConfigs []string
+
+	configs, err := exec.ExecGetStdout("find", rootPath, "-type", "f", "-not", "-path", rootPath+PathBackups+"/*", "-name", HdmYamlFilename)
 	if err != nil {
 		return hdmConfigs, errs.WithE(err, "Failed to find hdm.yaml files")
 	}
 
-	lines := strings.Split(string(configs), "\n")
+	lines := strings.Split(configs, "\n")
 	for _, line := range lines {
 		if line == "" {
 			continue
 		}
-
-		logs.WithField("path", line).Debug(HdmYamlFilename + " found")
-		if cfg, err := NewConfig(line); err != nil {
-			logs.WithField("path", line).Warn("Failed to read hdm.yaml configuration")
-		} else {
-			hdmConfigs = append(hdmConfigs, cfg)
-		}
+		hdmConfigs = append(hdmConfigs, line)
 	}
 	return hdmConfigs, nil
 }
