@@ -2,21 +2,22 @@ package handler
 
 import (
 	"github.com/n0rad/go-erlog/errs"
-	"github.com/n0rad/hard-disk-manager/pkg/runner"
+	"github.com/n0rad/hard-disk-manager/pkg/system"
 )
 
 type FsManager struct {
 	PathManager
 
+	block system.BlockDevice
 	config   FsConfig
 }
 
-func (m *FsManager) Init(rootPath string, exec runner.Exec) error {
-	// TODO use block device instead ???
-	m.PathManager.Init(rootPath)
+func (m *FsManager) Init(parent *CommonManager, block system.BlockDevice) error {
+	if err := m.PathManager.Init(parent, block.GetUsableLabel(), block.Mountpoint); err != nil {
+		return errs.WithEF(err, m.fields, "Failed to init fs manager")
+	}
 
-	m.path = rootPath
-	if err := m.config.LoadFromDirIfExists(rootPath); err != nil {
+	if err := m.config.LoadFromDirIfExists(block.Mountpoint); err != nil {
 		return errs.WithE(err, "Failed to load config")
 	}
 

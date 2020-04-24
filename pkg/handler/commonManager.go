@@ -14,31 +14,52 @@ const (
 	Change EventType = "change"
 )
 
+type Job struct {
+	f    func() interface{}
+	done chan interface{}
+}
+
 type Manager interface {
 	GetHDM() *hdm.Hdm
 	HandleEvent(eventType EventType)
-	//Parent() Manager
 	Start() error
 	Stop(err error)
 }
 
 type CommonManager struct {
-	hdm    *hdm.Hdm
-	fields data.Fields
-	handlers []Handler
-	children map[string]Manager
-	stop     chan struct{}
+	hdm        *hdm.Hdm
+	fields     data.Fields
+	handlers   []Handler
+	parent     *CommonManager
+	children   map[string]Manager
+	serialJobs chan Job // reduce pressure on disk
+	stop       chan struct{}
+}
+
+func (m *CommonManager) Init(parent *CommonManager, fields data.Fields, hdm *hdm.Hdm) {
+	logs.WithF(fields).Debug("new manager")
+	m.children = map[string]Manager{}
+	m.hdm = hdm
+	m.fields = fields
+	m.parent = parent
+	m.serialJobs = make(chan Job, 5)
+}
+
+func (m *CommonManager) RunSerialJob(f func() interface{}) <-chan interface{} {
+	if m.parent != nil {
+		return m.parent.RunSerialJob(f)
+	} else {
+		job := Job{
+			f:    f,
+			done: make(chan interface{}, 1),
+		}
+		m.serialJobs <- job
+		return job.done
+	}
 }
 
 func (m *CommonManager) GetHDM() *hdm.Hdm {
 	return m.hdm
-}
-
-func (m *CommonManager) Init(fields data.Fields, hdm *hdm.Hdm) {
-	logs.WithF(fields).Info("new manager")
-	m.children = map[string]Manager{}
-	m.hdm = hdm
-	m.fields = fields
 }
 
 func (m *CommonManager) HandleEvent(eventType EventType) {
@@ -82,12 +103,25 @@ func (m *CommonManager) Start() error {
 		go manager.Start()
 	}
 
-	<-m.stop
+	m.handleSerialJobs()
 
 	for _, h := range m.handlers {
 		h.Stop(nil)
 	}
 	return nil
+}
+
+func (m *CommonManager) handleSerialJobs() {
+	for {
+		select {
+		case job := <-m.serialJobs:
+			res := job.f()
+			job.done <- res
+			// TODO close channel ?
+		case <-m.stop:
+			return
+		}
+	}
 }
 
 func (m *CommonManager) Stop(error) {

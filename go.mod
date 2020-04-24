@@ -7,7 +7,7 @@ require (
 	github.com/alessio/shellescape v0.0.0-20190409004728-b115ca0f9053
 	github.com/awnumar/memguard v0.19.1
 	github.com/client9/misspell v0.3.4
-	github.com/cyphar/filepath-securejoin v0.2.2
+	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/davidmz/go-pageant v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835

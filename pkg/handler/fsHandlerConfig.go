@@ -22,7 +22,7 @@ type FsHandlerConfig struct {
 
 func (h *FsHandlerConfig) Add() error {
 	if h.manager.config.SearchConfigs {
-		configs, err := h.findConfigs(h.rootPath, runner.Local)
+		configs, err := h.findConfigs(h.manager.path, runner.Local)
 		if err != nil {
 			return errs.WithEF(err, h.fields, "Failed to find configs")
 		}
@@ -35,7 +35,7 @@ func (h *FsHandlerConfig) Add() error {
 			}
 
 			m := PathManager{}
-			if err := m.Init(configDir); err != nil {
+			if err := m.Init(&h.manager.CommonManager, h.manager.diskLabel, configDir); err != nil {
 				return err
 			}
 			h.manager.children[configDir] = &m

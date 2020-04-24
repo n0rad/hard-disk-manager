@@ -8,21 +8,21 @@ import (
 	"os"
 )
 
-type DBDisk struct {
+type DiskDB struct {
 	path string
 }
 
-func (db *DBDisk) Init(path string) error {
+func (db *DiskDB) Init(path string) error {
 
 	if err := os.MkdirAll(path, 0755); err != nil {
-		return errs.WithEF(err, data.WithField("path", path), "Failed to create disks db path")
+		return errs.WithEF(err, data.WithField("path", path), "Failed to create db path")
 	}
 
 	db.path = path
 	return nil
 }
 
-func (db *DBDisk) Save(blockDevice system.BlockDevice) error {
+func (db *DiskDB) Save(blockDevice system.BlockDevice) error {
 	if blockDevice.Serial == "" {
 		return errs.WithF(data.WithField("path", blockDevice.Path), "Cannot save, blockDevice has no serial")
 	}
@@ -44,7 +44,7 @@ func (db *DBDisk) Save(blockDevice system.BlockDevice) error {
 	return nil
 }
 //
-//func (db *DBDisk) LoadDisks( /*servers Servers*/ ) ([]system.Disk, error) {
+//func (db *DiskDB) LoadDisks( /*servers Servers*/ ) ([]system.Disk, error) {
 //	var disks []system.Disk
 //	pathField := data.WithField("path", db.path)
 //

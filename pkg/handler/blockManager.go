@@ -13,8 +13,8 @@ type BlockManager struct {
 	block system.BlockDevice
 }
 
-func (m *BlockManager) Init(block system.BlockDevice) {
-	m.CommonManager.Init(data.WithField("path", block.Path), &hdm.HDM)
+func (m *BlockManager) Init(parent *CommonManager, block system.BlockDevice) {
+	m.CommonManager.Init(parent, data.WithField("path", block.Path), &hdm.HDM)
 	m.block = block
 
 	// init handlers
@@ -33,7 +33,7 @@ func (m *BlockManager) Init(block system.BlockDevice) {
 
 	for _, child := range m.block.Children {
 		manager := &BlockManager{}
-		manager.Init(child)
+		manager.Init(&m.CommonManager, child)
 		m.children[child.Path] = manager
 	}
 

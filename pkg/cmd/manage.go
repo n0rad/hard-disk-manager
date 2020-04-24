@@ -35,6 +35,10 @@ func manageCommand() *cobra.Command {
 			}
 
 			manage.HandleEvent(handler.Add)
+
+			service := utils.SigtermService{}
+			service.Start()
+
 			return nil
 		},
 	})

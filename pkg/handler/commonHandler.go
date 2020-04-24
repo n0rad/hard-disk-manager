@@ -35,11 +35,13 @@ func (h *CommonHandler) Init(name string, fields data.Fields) {
 	logs.WithF(h.GetFields()).Debug("New handler")
 }
 
+// called only once to start the handler
 func (h *CommonHandler) Start() error {
 	<-h.stopChan
 	return nil
 }
 
+// This handler needs to be stopped
 func (h *CommonHandler) Stop(err error) {
 	close(h.stopChan)
 }
@@ -48,6 +50,7 @@ func (h *CommonHandler) Add() error {
 	return nil
 }
 
+// The handled layer needs to be removed
 func (h *CommonHandler) Remove() error {
 	return nil
 }

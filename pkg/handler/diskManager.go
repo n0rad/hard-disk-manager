@@ -22,6 +22,6 @@ func (m *DiskManager) Init(lsblk system.Lsblk, disk string) error {
 		return errs.WithF(data.WithField("disk", disk), "Not a disk device")
 	}
 
-	m.BlockManager.Init(block)
+	m.BlockManager.Init(nil, block)
 	return nil
 }

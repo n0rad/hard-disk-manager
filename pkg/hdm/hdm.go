@@ -14,6 +14,7 @@ var HDM Hdm
 
 const pathMnt = "/mnt"
 const pathDBDisk = "/db-disk"
+const pathDBBackup = "/db-backup"
 const pathConfig = "/config.yaml"
 
 type Hdm struct {
@@ -27,9 +28,10 @@ type Hdm struct {
 	//rpc.SocketServer
 
 	password *password.Service
-	dbDisk   DBDisk
+
+	diskDB   DiskDB
+	backupDB BackupDB
 	// dbFile
-	//
 
 	fields        data.Fields
 	CheckInterval time.Duration
@@ -58,8 +60,12 @@ func (hdm *Hdm) Init(home string) error {
 		return errs.WithE(err, "Failed to init servers")
 	}
 
-	if err := hdm.dbDisk.Init(home + pathDBDisk); err != nil {
+	if err := hdm.diskDB.Init(home + pathDBDisk); err != nil {
 		return errs.WithE(err, "Failed to init db disk")
+	}
+
+	if err := hdm.backupDB.Init(home + pathDBBackup, hdm.Servers); err != nil {
+		return errs.WithE(err, "Failed to init db backup")
 	}
 
 	hdm.password = &password.Service{}
@@ -68,8 +74,12 @@ func (hdm *Hdm) Init(home string) error {
 	return nil
 }
 
-func (hdm Hdm) DBDisk() *DBDisk {
-	return &hdm.dbDisk
+func (hdm Hdm) DiskDB() *DiskDB {
+	return &hdm.diskDB
+}
+
+func (hdm Hdm) BackupDB() *BackupDB {
+	return &hdm.backupDB
 }
 
 func (hdm Hdm) PassService() *password.Service {

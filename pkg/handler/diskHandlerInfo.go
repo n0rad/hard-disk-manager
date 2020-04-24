@@ -29,7 +29,7 @@ func (h *HandlerInfo) Add() error {
 		return nil
 	}
 
-	if err := hdm.HDM.DBDisk().Save(h.manager.block); err != nil {
+	if err := hdm.HDM.DiskDB().Save(h.manager.block); err != nil {
 		return errs.WithE(err, "Failed to save disk to db")
 	}
 	return nil

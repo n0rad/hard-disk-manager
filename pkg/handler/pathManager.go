@@ -9,13 +9,15 @@ import (
 type PathManager struct {
 	CommonManager
 
-	path string
-	config PathConfig
+	diskLabel string
+	path      string
+	config    PathConfig
 }
 
-func (m *PathManager) Init(path string) error {
-	m.CommonManager.Init(data.WithField("path", path), &hdm.HDM)
+func (m *PathManager) Init(parent *CommonManager, disklabel string, path string) error {
+	m.CommonManager.Init(parent, data.WithField("path", path), &hdm.HDM)
 	m.path = path
+	m.diskLabel = disklabel
 	if err := m.config.LoadFromDirIfExists(path); err != nil {
 		return errs.WithE(err, "Failed to load config")
 	}

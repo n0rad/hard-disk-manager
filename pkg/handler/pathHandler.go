@@ -17,7 +17,6 @@ type PathHandler interface {
 type CommonPathHandler struct {
 	CommonHandler
 	manager  *PathManager
-	rootPath string
 }
 
 func (h *CommonPathHandler) Init(name string, manager *PathManager) {

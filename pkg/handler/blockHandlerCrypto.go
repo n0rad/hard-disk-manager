@@ -46,7 +46,7 @@ func (h *HandlerCrypto) Remove() error {
 
 func (h *HandlerCrypto) Add() error {
 	if h.manager.block.IsLuksOpen() {
-		logs.WithF(h.GetFields()).Info("Already Open")
+		logs.WithF(h.GetFields()).Debug("Already Open")
 		return nil
 	}
 
@@ -121,7 +121,7 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 
 	// manager
 	manager := BlockManager{}
-	manager.Init(fakeOpenedBlockDevice)
+	manager.Init(&h.manager.CommonManager, fakeOpenedBlockDevice)
 
 	// mount handler
 	// TODO is already registered by init ?
