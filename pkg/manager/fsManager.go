@@ -12,7 +12,7 @@ type FsManager struct {
 	config   FsConfig
 }
 
-func (m *FsManager) Init(parent *CommonManager, block system.BlockDevice) error {
+func (m *FsManager) Init(parent Manager, block system.BlockDevice) error {
 	if err := m.PathManager.Init(parent, block.GetUsableLabel(), block.Mountpoint); err != nil {
 		return errs.WithEF(err, m.fields, "Failed to init fs manager")
 	}

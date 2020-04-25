@@ -9,7 +9,7 @@ import (
 type DiskManager struct {
 	BlockManager
 
-	serialJobs chan func() // reduce pressure on disk
+	serialJobs chan job
 }
 
 func (m *DiskManager) Init(lsblk system.Lsblk, disk string) error {
@@ -23,5 +23,46 @@ func (m *DiskManager) Init(lsblk system.Lsblk, disk string) error {
 	}
 
 	m.BlockManager.Init(nil, block)
+	m.serialJobs = make(chan job, 5)
 	return nil
+}
+
+func (m *DiskManager) Start() error {
+	if err := m.preStart(); err != nil {
+		return err
+	}
+
+	m.handleSerialJobs()
+
+	return m.postStart()
+}
+
+////////////////////////
+
+type job struct {
+	f    func() interface{}
+	done chan interface{}
+}
+
+func (m *DiskManager) runSerialJob(f func() interface{}) <-chan interface{} {
+	job := job{
+		f:    f,
+		done: make(chan interface{}, 1),
+	}
+	m.serialJobs <- job
+	return job.done
+}
+
+func (m *DiskManager) handleSerialJobs() {
+	for {
+		select {
+		case job := <-m.serialJobs:
+			res := job.f()
+			job.done <- res
+			// TODO close channel ?
+			close(job.done)
+		case <-m.stop:
+			return
+		}
+	}
 }

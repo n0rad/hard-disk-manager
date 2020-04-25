@@ -14,7 +14,7 @@ type PathManager struct {
 	config    PathConfig
 }
 
-func (m *PathManager) Init(parent *CommonManager, disklabel string, path string) error {
+func (m *PathManager) Init(parent Manager, disklabel string, path string) error {
 	m.CommonManager.Init(parent, data.WithField("path", path), &hdm.HDM)
 	m.path = path
 	m.diskLabel = disklabel

@@ -30,7 +30,7 @@ func (h *PathHandlerBackup) Add() error {
 
 func (h *PathHandlerBackup) handleBackup(config hdm.BackupConfig) {
 	for {
-		backup, err := h.manager.GetHDM().BackupDB().GetOrCreateBackup(h.manager.diskLabel, h.manager.path)
+		backup, err := h.manager.hdm.BackupDB().GetOrCreateBackup(h.manager.diskLabel, h.manager.path)
 		if err != nil {
 			logs.WithEF(err, h.fields).Error("Failed to get backup from db")
 			return
@@ -46,7 +46,7 @@ func (h *PathHandlerBackup) handleBackup(config hdm.BackupConfig) {
 		case <-h.stopChan:
 			return
 		case <-time.After(backup.LastBackup.Add(config.Interval).Sub(time.Now())):
-			res := <-h.manager.RunSerialJob(func() interface{} {
+			res := <-h.manager.runSerialJob(func() interface{} {
 				logs.WithFields(h.fields).Info("Time to backup")
 				if err := runner.Backup(); err != nil {
 					return errs.WithEF(err, h.fields, "Backup failed")

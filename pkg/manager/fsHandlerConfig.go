@@ -35,7 +35,7 @@ func (h *FsHandlerConfig) Add() error {
 			}
 
 			m := PathManager{}
-			if err := m.Init(&h.manager.CommonManager, h.manager.diskLabel, configDir); err != nil {
+			if err := m.Init(h.manager, h.manager.diskLabel, configDir); err != nil {
 				return err
 			}
 			h.manager.children[configDir] = &m

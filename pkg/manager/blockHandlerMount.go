@@ -27,7 +27,7 @@ type HandlerMount struct {
 func (h *HandlerMount) Init(name string, manager *BlockManager) {
 	h.CommonBlockHandler.Init(name, manager)
 
-	h.DefaultMountPath = manager.GetHDM().DefaultMountPath
+	h.DefaultMountPath = manager.hdm.DefaultMountPath
 }
 
 func (h *HandlerMount) Add() error {
@@ -82,7 +82,7 @@ func (h *HandlerMount) Remove() error {
 
 func (h *HandlerMount) registerFsManager() error {
 	manager := &FsManager{}
-	if err := manager.Init(&h.manager.CommonManager, h.manager.block); err != nil {
+	if err := manager.Init(h.manager, h.manager.block); err != nil {
 		return errs.WithEF(err, h.fields, "Failed to init fsManager")
 	}
 

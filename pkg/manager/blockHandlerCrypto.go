@@ -51,7 +51,7 @@ func (h *HandlerCrypto) Add() error {
 	}
 
 	b := []byte("aa")
-	if err := h.manager.GetHDM().PassService().FromBytes(&b); err != nil {
+	if err := h.manager.hdm.PassService().FromBytes(&b); err != nil {
 		return errs.WithE(err, "Cannot get password")
 	}
 
@@ -73,12 +73,12 @@ func (h *HandlerCrypto) Add() error {
 		}
 	}
 
-	if !h.manager.GetHDM().PassService().IsSet() {
+	if !h.manager.hdm.PassService().IsSet() {
 		logs.WithF(h.GetFields()).Debug("Password is not set, cannot open")
 		return nil
 	}
 
-	buffer, err := h.manager.GetHDM().PassService().Get()
+	buffer, err := h.manager.hdm.PassService().Get()
 	if err != nil {
 		return errs.WithEF(err, h.GetFields(), "Failed to get password from password service")
 	}
@@ -121,7 +121,7 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 
 	// manager
 	manager := BlockManager{}
-	manager.Init(&h.manager.CommonManager, fakeOpenedBlockDevice)
+	manager.Init(h.manager, fakeOpenedBlockDevice)
 
 	// mount manager
 	// TODO is already registered by init ?
