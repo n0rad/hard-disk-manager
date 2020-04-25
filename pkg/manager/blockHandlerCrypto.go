@@ -1,4 +1,4 @@
-package handler
+package manager
 
 import (
 	"github.com/n0rad/go-erlog/data"
@@ -123,7 +123,7 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 	manager := BlockManager{}
 	manager.Init(&h.manager.CommonManager, fakeOpenedBlockDevice)
 
-	// mount handler
+	// mount manager
 	// TODO is already registered by init ?
 	handlerMount := blockHandlers[handlerNameMount].new()
 	handlerMount.Init(handlerNameMount, &manager)

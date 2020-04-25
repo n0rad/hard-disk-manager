@@ -1,6 +1,6 @@
-package handler
+package manager
 
-// all available file handler
+// all available file manager
 var fsHandlerBuilders = map[string]fsHandlerBuilder{}
 
 type fsHandlerBuilder struct {

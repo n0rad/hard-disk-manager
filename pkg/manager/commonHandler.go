@@ -1,4 +1,4 @@
-package handler
+package manager
 
 import (
 	"github.com/n0rad/go-erlog/data"
@@ -32,16 +32,16 @@ func (h *CommonHandler) Init(name string, fields data.Fields) {
 	h.name = name
 	h.fields = fields.WithField("name", h.name)
 	h.stopChan = make(chan struct{})
-	logs.WithF(h.GetFields()).Debug("New handler")
+	logs.WithF(h.GetFields()).Debug("New manager")
 }
 
-// called only once to start the handler
+// called only once to start the manager
 func (h *CommonHandler) Start() error {
 	<-h.stopChan
 	return nil
 }
 
-// This handler needs to be stopped
+// This manager needs to be stopped
 func (h *CommonHandler) Stop(err error) {
 	close(h.stopChan)
 }

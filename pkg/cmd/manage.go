@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/n0rad/go-erlog/logs"
-	"github.com/n0rad/hard-disk-manager/pkg/handler"
+	"github.com/n0rad/hard-disk-manager/pkg/manager"
 	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/n0rad/hard-disk-manager/pkg/runner"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
@@ -34,7 +34,7 @@ func manageCommand() *cobra.Command {
 				return err
 			}
 
-			manage.HandleEvent(handler.Add)
+			manage.HandleEvent(manager.Add)
 
 			service := utils.SigtermService{}
 			service.Start()
@@ -56,7 +56,7 @@ func manageCommand() *cobra.Command {
 				return err
 			}
 
-			manage.HandleEvent(handler.Remove)
+			manage.HandleEvent(manager.Remove)
 			return nil
 		},
 	})
@@ -64,7 +64,7 @@ func manageCommand() *cobra.Command {
 	return cmd
 }
 
-func startManage(diskName string) (*handler.DiskManager, error) {
+func startManage(diskName string) (*manager.DiskManager, error) {
 	var g run.Group
 
 	//sigterm
@@ -80,7 +80,7 @@ func startManage(diskName string) (*handler.DiskManager, error) {
 	lsblk.Init(runner.Local)
 
 	// disk manager
-	m := handler.DiskManager{}
+	m := manager.DiskManager{}
 	if err := m.Init(lsblk, diskName); err != nil {
 		return nil, err
 	}

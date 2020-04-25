@@ -1,4 +1,4 @@
-package handler
+package manager
 
 import (
 	"github.com/n0rad/go-erlog/data"

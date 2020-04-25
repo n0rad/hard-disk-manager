@@ -1,4 +1,4 @@
-package handler
+package manager
 
 type FsConfig struct {
 	PathConfig

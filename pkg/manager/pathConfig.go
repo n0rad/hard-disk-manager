@@ -1,4 +1,4 @@
-package handler
+package manager
 
 import (
 	"github.com/ghodss/yaml"

@@ -1,8 +1,8 @@
-package handler
+package manager
 
 //
 //func init() {
-//	handler["health-test"] = manager.HandlerBuilder{
+//	manager["health-test"] = manager.HandlerBuilder{
 //		//block.HandlerFilter{Type: "disk"},
 //		func() manager.Handler {
 //			return &HandlerHealthTest{

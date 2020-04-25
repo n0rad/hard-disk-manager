@@ -1,10 +1,10 @@
-package handler
+package manager
 
 import (
 	"github.com/n0rad/go-erlog/data"
 )
 
-// all available block handler
+// all available block manager
 var blockHandlers = map[string]blockHandlerBuilder{}
 
 type blockHandlerBuilder struct {

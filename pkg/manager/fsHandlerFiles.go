@@ -1,4 +1,4 @@
-package handler
+package manager
 
 func init() {
 	fsHandlerBuilders["files"] = fsHandlerBuilder{

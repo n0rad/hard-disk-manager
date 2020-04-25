@@ -46,7 +46,6 @@ func (k *UdevService) Start() error {
 	k.watchUdevBlockEvents(udevConn)
 
 	logs.Info("Stop Agent")
-
 	return nil
 }
 

@@ -1,4 +1,4 @@
-package handler
+package manager
 
 import (
 	"github.com/n0rad/go-erlog/data"
@@ -94,7 +94,7 @@ func (m *CommonManager) Start() error {
 	m.stop = make(chan struct{})
 
 	for _, h := range m.handlers {
-		logs.WithF(h.GetFields()).Trace("Starting handler")
+		logs.WithF(h.GetFields()).Trace("Starting manager")
 		go h.Start()
 	}
 

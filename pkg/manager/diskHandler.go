@@ -1,6 +1,6 @@
-package handler
+package manager
 
-// all available disk handler
+// all available disk manager
 var diskHandlerBuilders = map[string]diskHandlerBuilder{}
 
 type diskHandlerBuilder struct {
