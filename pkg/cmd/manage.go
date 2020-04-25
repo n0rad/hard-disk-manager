@@ -1,13 +1,8 @@
 package cmd
 
 import (
-	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/manager"
-	"github.com/n0rad/hard-disk-manager/pkg/hdm"
-	"github.com/n0rad/hard-disk-manager/pkg/runner"
-	"github.com/n0rad/hard-disk-manager/pkg/system"
 	"github.com/n0rad/hard-disk-manager/pkg/utils"
-	"github.com/oklog/run"
 	"github.com/spf13/cobra"
 )
 
@@ -65,34 +60,35 @@ func manageCommand() *cobra.Command {
 }
 
 func startManage(diskName string) (*manager.DiskManager, error) {
-	var g run.Group
-
-	//sigterm
-	sigterm := utils.SigtermService{}
-	sigterm.Init()
-	g.Add(sigterm.Start, sigterm.Stop)
-
-	// hdm
-	g.Add(hdm.HDM.Start, hdm.HDM.Stop)
-
-	// lsblk
-	lsblk := system.Lsblk{}
-	lsblk.Init(runner.Local)
-
-	// disk manager
-	m := manager.DiskManager{}
-	if err := m.Init(lsblk, diskName); err != nil {
-		return nil, err
-	}
-	g.Add(m.Start, m.Stop)
-
-	// start services
-	go func(g *run.Group) {
-		if err := g.Run(); err != nil {
-			logs.WithE(err).Error("error")
-			//return err
-		}
-	}(&g)
-
-	return &m, nil
+	//var g run.Group
+	//
+	////sigterm
+	//sigterm := utils.SigtermService{}
+	//sigterm.Init()
+	//g.Add(sigterm.Start, sigterm.Stop)
+	//
+	//// hdm
+	//g.Add(hdm.HDM.Start, hdm.HDM.Stop)
+	//
+	//// lsblk
+	//lsblk := system.Lsblk{}
+	//lsblk.Init(runner.Local)
+	//
+	//// disk manager
+	//m := manager.DiskManager{}
+	//if err := m.Init(lsblk, diskName); err != nil {
+	//	return nil, err
+	//}
+	//g.Add(m.Start, m.Stop)
+	//
+	//// start services
+	//go func(g *run.Group) {
+	//	if err := g.Run(); err != nil {
+	//		logs.WithE(err).Error("error")
+	//		//return err
+	//	}
+	//}(&g)
+	//
+	//return &m, nil
+	return nil, nil
 }

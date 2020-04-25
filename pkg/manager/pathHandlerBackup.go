@@ -43,7 +43,7 @@ func (h *PathHandlerBackup) handleBackup(config hdm.BackupConfig) {
 		}
 
 		select {
-		case <-h.stopChan:
+		case <-h.stop:
 			return
 		case <-time.After(backup.LastBackup.Add(config.Interval).Sub(time.Now())):
 			res := <-h.manager.runSerialJob(func() interface{} {
@@ -56,7 +56,7 @@ func (h *PathHandlerBackup) handleBackup(config hdm.BackupConfig) {
 			if err, _ :=res.(error); err != nil {
 				logs.WithEF(err, h.fields).Error("Backup failed, retry in 10min")
 				select {
-				case <-h.stopChan:
+				case <-h.stop:
 					return
 				case <-time.After(10*time.Minute):
 				}

@@ -121,7 +121,7 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 
 	// manager
 	manager := BlockManager{}
-	manager.Init(h.manager, fakeOpenedBlockDevice)
+	manager.Init(h.manager, fakeOpenedBlockDevice, h.manager.udev)
 
 	// mount manager
 	// TODO is already registered by init ?

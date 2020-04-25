@@ -19,9 +19,9 @@ type Handler interface {
 /////////////////////
 
 type CommonHandler struct {
-	name     string
-	fields   data.Fields
-	stopChan chan struct{}
+	name   string
+	fields data.Fields
+	stop   chan struct{}
 }
 
 func (h *CommonHandler) GetFields() data.Fields {
@@ -31,19 +31,19 @@ func (h *CommonHandler) GetFields() data.Fields {
 func (h *CommonHandler) Init(name string, fields data.Fields) {
 	h.name = name
 	h.fields = fields.WithField("name", h.name)
-	h.stopChan = make(chan struct{})
+	h.stop = make(chan struct{})
 	logs.WithF(h.GetFields()).Debug("New manager")
 }
 
 // called only once to start the manager
 func (h *CommonHandler) Start() error {
-	<-h.stopChan
+	<-h.stop
 	return nil
 }
 
 // This manager needs to be stopped
 func (h *CommonHandler) Stop(err error) {
-	close(h.stopChan)
+	close(h.stop)
 }
 
 func (h *CommonHandler) Add() error {

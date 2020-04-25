@@ -37,7 +37,7 @@ func (h *HandlerHealthCheck) Start() error {
 			if err := h.Add(); err != nil {
 				logs.WithE(err).Error("Health check failed")
 			}
-		case <-h.stopChan:
+		case <-h.stop:
 			ticker.Stop()
 			return nil
 		}

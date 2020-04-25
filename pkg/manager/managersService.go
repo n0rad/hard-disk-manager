@@ -10,6 +10,7 @@ import (
 
 type ManagersService struct {
 	PassService *password.Service
+	Udev *system.UdevService
 
 	blockDeviceEvents chan system.BlockDeviceEvent
 	stop              chan struct{}
@@ -121,7 +122,7 @@ func (m *ManagersService) AddBlockDevice(event system.BlockDeviceEvent) {
 		manager := DiskManager{}
 
 		// TODO handle partitions
-		if err := manager.Init(hdm.HDM.Servers.GetLocal().Lsblk, event.Path); err != nil {
+		if err := manager.Init(hdm.HDM.Servers.GetLocal().Lsblk, event.Path, m.Udev); err != nil {
 			logs.WithE(err).Warn("Failed to init blockdevice manager")
 		}
 		m.Register(&manager)
