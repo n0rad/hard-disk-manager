@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
@@ -87,7 +86,8 @@ func (h *HandlerCrypto) Add() error {
 	if err := h.manager.block.LuksOpen(buffer); err != nil {
 		return errs.WithEF(err, h.GetFields(), "Failed to luks open")
 	}
-	return nil
+
+	return h.manager.updateBlockDeviceAndChildren()
 }
 
 func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
@@ -97,31 +97,32 @@ func (h *HandlerCrypto) cleanupRemovedBlockDevice(label string) {
 		Exec: h.manager.block.GetExec(),
 	}
 
-	blockName, err := mapper.BlockFromName(label)
-	if err != nil {
-		logs.WithEF(err, data.WithField("blockDevice", blockDevicePath)).Debug("Cannot get block name from blockDevice")
-	}
-
-	mountPoint := ""
-	if mount, err := system.MountFromBlockDevice(blockDevicePath); err != nil {
-		logs.WithEF(err, data.WithField("blockDevice", blockDevicePath)).Debug("Cannot get mount from blockDevice")
-	} else if mount != nil {
-		mountPoint = mount.Path
-	}
+	//blockName, err := mapper.BlockFromName(label)
+	//if err != nil {
+	//	logs.WithEF(err, data.WithField("blockDevice", blockDevicePath)).Debug("Cannot get block name from blockDevice")
+	//}
+	//
+	//mountPoint := ""
+	//if mount, err := system.MountFromBlockDevice(blockDevicePath); err != nil {
+	//	logs.WithEF(err, data.WithField("blockDevice", blockDevicePath)).Debug("Cannot get mount from blockDevice")
+	//} else if mount != nil {
+	//	mountPoint = mount.Path
+	//}
 
 	// block device
-	fakeOpenedBlockDevice := system.BlockDevice{
-		Name:       label,
-		Path:       blockDevicePath,
-		Mountpoint: mountPoint,
-		Label:      label,
-		Kname:      blockName,
-	}
-	fakeOpenedBlockDevice.Init(h.manager.block.GetExec())
+	//fakeOpenedBlockDevice := system.BlockDevice{
+	//	Name:       label,
+	//	Path:       blockDevicePath,
+	//	Mountpoint: mountPoint,
+	//	Label:      label,
+	//	Kname:      blockName,
+	//}
+	//fakeOpenedBlockDevice.Init(h.manager.block.GetExec())
 
 	// manager
+	// TODO this will not work
 	manager := BlockManager{}
-	manager.Init(h.manager, fakeOpenedBlockDevice, h.manager.udev)
+	manager.Init(h.manager, h.manager.lsblk, blockDevicePath, h.manager.udev)
 
 	// mount manager
 	// TODO is already registered by init ?

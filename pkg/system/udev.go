@@ -26,11 +26,11 @@ type UdevService struct {
 
 func (s *UdevService) Init(lsblk *Lsblk) {
 	s.lsblk = lsblk
+	s.watchersWithPathFilter = make(map[chan BlockDeviceEvent]string)
 }
 
 func (s *UdevService) Start() error {
 	s.stop = make(chan struct{})
-	s.watchersWithPathFilter = make(map[chan BlockDeviceEvent]string)
 
 	udevConn := new(netlink.UEventConn)
 	if err := udevConn.Connect(netlink.UdevEvent); err != nil {
@@ -51,6 +51,7 @@ func (s *UdevService) Start() error {
 	defer s.watchersWithPathFilterLock.Unlock()
 	for channel := range s.watchersWithPathFilter {
 		close(channel)
+		delete(s.watchersWithPathFilter, channel)
 	}
 	return nil
 }
@@ -72,6 +73,10 @@ func (s *UdevService) Watch(filter string) chan BlockDeviceEvent {
 func (s *UdevService) Unwatch(c chan BlockDeviceEvent) {
 	s.watchersWithPathFilterLock.Lock()
 	defer s.watchersWithPathFilterLock.Unlock()
+
+	if _, ok := s.watchersWithPathFilter[c]; !ok {
+		return
+	}
 
 	close(c)
 	delete(s.watchersWithPathFilter, c)

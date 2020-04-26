@@ -39,7 +39,7 @@ func (s *Service) Start() error {
 	case <-s.stop:
 	}
 
-	logs.Info("Purge memguard")
+	logs.Debug("Purge memguard")
 	memguard.Purge()
 	return nil
 }

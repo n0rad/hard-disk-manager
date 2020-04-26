@@ -12,7 +12,7 @@ type DiskManager struct {
 	serialJobs chan job
 }
 
-func (m *DiskManager) Init(lsblk system.Lsblk, disk string, udev *system.UdevService) error {
+func (m *DiskManager) Init(lsblk *system.Lsblk, disk string, udev *system.UdevService) error {
 	block, err := lsblk.GetBlockDevice(disk)
 	if err != nil {
 		return errs.WithE(err, "Failed to get block device to init manager")
@@ -22,7 +22,7 @@ func (m *DiskManager) Init(lsblk system.Lsblk, disk string, udev *system.UdevSer
 		return errs.WithF(data.WithField("disk", disk), "Not a disk device")
 	}
 
-	m.BlockManager.Init(nil, block, udev)
+	m.BlockManager.Init(nil, lsblk, disk, udev)
 	m.serialJobs = make(chan job, 5)
 	return nil
 }

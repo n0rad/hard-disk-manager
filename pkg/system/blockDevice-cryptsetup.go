@@ -8,6 +8,7 @@ import (
 )
 
 func (b *BlockDevice) IsLuksNameUsed() (bool, error) {
+	// TODO use runner exec
 	if _, err := os.Stat("/dev/mapper/" + b.GetUsableLabel()); err == nil {
 		return true, nil
 	} else if os.IsNotExist(err) {

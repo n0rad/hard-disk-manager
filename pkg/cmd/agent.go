@@ -59,7 +59,7 @@ func agentCommand() *cobra.Command {
 			//
 			//hdm := rpc.HdmServer{}
 			//rpcServer := rpc2.NewServer()
-			//if err := rpcServer.Register(&hdm); err != nil {
+			//if err := rpcServer.register(&hdm); err != nil {
 			//	return errs.WithE(err, "Failed to register hdm rpc server")
 			//}
 			//// http

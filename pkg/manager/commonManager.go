@@ -11,7 +11,7 @@ type EventType string
 const (
 	Add    EventType = "add"
 	Remove EventType = "remove"
-	Change EventType = "change"
+	Change EventType = "change" // new children
 )
 
 type Manager interface {
@@ -52,6 +52,7 @@ func (m *CommonManager) HandleEvent(eventType EventType) {
 			subManager.HandleEvent(eventType)
 		}
 	case Change:
+
 		// going downstream
 		// TODO
 	case Remove:
@@ -71,7 +72,7 @@ func (m *CommonManager) preStart() error {
 	m.stop = make(chan struct{})
 
 	for _, h := range m.handlers {
-		logs.WithF(h.GetFields()).Trace("Starting manager")
+		logs.WithF(h.GetFields()).Trace("Starting handler")
 		go h.Start()
 	}
 
