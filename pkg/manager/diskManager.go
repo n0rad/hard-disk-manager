@@ -4,6 +4,7 @@ import (
 	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/hard-disk-manager/pkg/system"
+	"github.com/pilebones/go-udev/netlink"
 )
 
 type DiskManager struct {
@@ -27,14 +28,33 @@ func (m *DiskManager) Init(lsblk *system.Lsblk, disk string, udev *system.UdevSe
 	return nil
 }
 
+
 func (m *DiskManager) Start() error {
+	udevChan := m.udev.Watch(m.block.Path)
+	defer m.udev.Unwatch(udevChan)
+
 	if err := m.preStart(); err != nil {
 		return err
 	}
 
-	m.handleSerialJobs()
+	for {
+		select {
+		case job := <-m.serialJobs:
+			res := job.f()
+			job.done <- res
+			close(job.done)
 
-	return m.postStart()
+		case event := <-udevChan:
+			if event.Action == netlink.ADD {
+				m.HandleEvent(Add)
+			} else if event.Action == netlink.REMOVE {
+				m.HandleEvent(Remove)
+			}
+
+		case <-m.stop:
+			return m.postStart()
+		}
+	}
 }
 
 ////////////////////////
@@ -51,18 +71,4 @@ func (m *DiskManager) runSerialJob(f func() interface{}) <-chan interface{} {
 	}
 	m.serialJobs <- job
 	return job.done
-}
-
-func (m *DiskManager) handleSerialJobs() {
-	for {
-		select {
-		case job := <-m.serialJobs:
-			res := job.f()
-			job.done <- res
-			// TODO close channel ?
-			close(job.done)
-		case <-m.stop:
-			return
-		}
-	}
 }

@@ -31,3 +31,8 @@ func (m *FsManager) Init(parent Manager, block system.BlockDevice) error {
 
 	return nil
 }
+
+
+// TODO free
+// TODO kill lsof
+// TODO sync

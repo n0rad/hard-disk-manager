@@ -32,8 +32,9 @@ func (m *ManagersService) Start() error {
 	// cleanup
 	m.managersMutex.Lock()
 	defer m.managersMutex.Unlock()
-	for _, v := range m.managers {
+	for k, v := range m.managers {
 		v.Stop(nil)
+		delete(m.managers, k)
 	}
 	return nil
 }
@@ -86,17 +87,17 @@ func (m *ManagersService) handleEvents(channel <-chan system.BlockDeviceEvent) {
 	//}
 //}
 
-func (m *ManagersService) RemoveBlockDevice(path string) {
-	m.managersMutex.Lock()
-	defer m.managersMutex.Unlock()
-
-	if diskManager, ok := m.managers[path]; ok {
-		diskManager.Stop(nil)
-		delete(m.managers, path)
-	} else {
-		logs.WithField("path", path).Warn("Cannot remove disk, not found")
-	}
-}
+//func (m *ManagersService) RemoveBlockDevice(path string) {
+//	m.managersMutex.Lock()
+//	defer m.managersMutex.Unlock()
+//
+//	if diskManager, ok := m.managers[path]; ok {
+//		diskManager.Stop(nil)
+//		delete(m.managers, path)
+//	} else {
+//		logs.WithField("path", path).Warn("Cannot remove disk, not found")
+//	}
+//}
 
 func (m *ManagersService) AddBlockDevice(event system.BlockDeviceEvent) {
 	m.managersMutex.RLock()
@@ -108,7 +109,8 @@ func (m *ManagersService) AddBlockDevice(event system.BlockDeviceEvent) {
 		// TODO handle partitions
 		lsblk := hdm.HDM.Servers.GetLocal().Lsblk
 		if err := manager.Init(&lsblk, event.Path, m.Udev); err != nil {
-			logs.WithE(err).Warn("Failed to init blockdevice manager")
+			logs.WithE(err).Error("Failed to init blockdevice manager")
+			return
 		}
 		m.register(&manager)
 		// TODO add vs start

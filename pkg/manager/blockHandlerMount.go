@@ -40,9 +40,7 @@ func (h *HandlerMount) Add() error {
 
 	if h.manager.block.Mountpoint != "" {
 		logs.WithF(h.GetFields()).Debug("Already mounted")
-
-		//TODO -------
-		return h.registerFsManager()
+		return nil
 	}
 
 	mountPath := h.DefaultMountPath + "/" + h.manager.block.GetUsableLabel()
@@ -54,15 +52,15 @@ func (h *HandlerMount) Add() error {
 		return errs.WithEF(err, h.GetFields(), "Failed to mount")
 	}
 
-	//TODO -------
-	return h.registerFsManager()
+	if err := h.manager.updateBlockDeviceAndChildren(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (h *HandlerMount) Remove() error {
-	logs.WithFields(h.GetFields()).Info("Remove")
-
-	// TODO free
-	// kill lsof
+	logs.WithFields(h.GetFields()).Debug("Remove")
 
 	if h.manager.block.Mountpoint != "" {
 		if err := h.manager.block.Umount(h.manager.block.Mountpoint); err != nil {
@@ -77,15 +75,5 @@ func (h *HandlerMount) Remove() error {
 		}
 	}
 
-	return nil
-}
-
-func (h *HandlerMount) registerFsManager() error {
-	manager := &FsManager{}
-	if err := manager.Init(h.manager, h.manager.block); err != nil {
-		return errs.WithEF(err, h.fields, "Failed to init fsManager")
-	}
-
-	h.manager.children[h.manager.block.Mountpoint] = manager
 	return nil
 }

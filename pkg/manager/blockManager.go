@@ -66,12 +66,31 @@ func (m *BlockManager) updateBlockDeviceAndChildren() error {
 			logs.WithF(m.fields.WithField("child-path", child.Path).WithField("found", found)).Fatal("Update already exists children")
 		}
 	}
+
+	for path, manager := range m.children {
+		if _, ok := m.children[path].(*FsManager); ok && m.block.Mountpoint == "" {
+			logs.WithF(m.fields).Info("Mount point removed")
+			manager.Stop(nil)
+			delete(m.children, path)
+		}
+	}
+
+	if m.block.Mountpoint != "" && len(m.children) == 0 {
+		logs.WithF(m.fields).Info("Mount point added")
+
+		manager := &FsManager{}
+		if err := manager.Init(m, m.block); err != nil {
+			return errs.WithEF(err, m.fields, "Failed to init fsManager")
+		}
+
+		m.children[m.block.Mountpoint] = manager
+	}
+
 	return nil
 }
 
 func (m *BlockManager) Start() error {
 	udevChan := m.udev.Watch(m.block.Path)
-	defer m.udev.Unwatch(udevChan)
 
 	if err := m.preStart(); err != nil {
 		return err
@@ -82,10 +101,12 @@ func (m *BlockManager) Start() error {
 		case event := <-udevChan:
 			if event.Action == netlink.ADD {
 				m.HandleEvent(Add)
+			} else if event.Action == netlink.REMOVE {
+				m.HandleEvent(Remove)
 			}
 		case <-m.stop:
+			m.udev.Unwatch(udevChan)
+			return m.postStart()
 		}
 	}
-
-	return m.postStart()
 }

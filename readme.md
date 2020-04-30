@@ -43,8 +43,9 @@ Global lifecycle:
 - lsblk >= 2.33 detect disks
 - smartctl >= 7.0 -> disk health
 - hdparm -> put disk in sleep
-- rsync -> all backups commands
+- rsync -> all backups/sync commands
 - udev -> list disks by path
+
 
 ## Install
 

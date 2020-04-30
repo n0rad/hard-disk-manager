@@ -43,6 +43,7 @@ func (h *CommonHandler) Start() error {
 
 // This manager needs to be stopped
 func (h *CommonHandler) Stop(err error) {
+	logs.WithF(h.fields).Debug("Closing")
 	close(h.stop)
 }
 

@@ -57,14 +57,16 @@ func (m *CommonManager) HandleEvent(eventType EventType) {
 		// TODO
 	case Remove:
 		// going upstream
-		for _, subManager := range m.children {
+		for k, subManager := range m.children {
 			subManager.HandleEvent(eventType)
+			delete(m.children, k)
 		}
 		for _, h := range m.handlers {
 			if err := h.Remove(); err != nil {
 				logs.WithEF(err, data.WithField("event", eventType)).Error("Failed to handle event")
 			}
 		}
+		m.Stop(nil)
 	}
 }
 
@@ -84,6 +86,11 @@ func (m *CommonManager) preStart() error {
 }
 
 func (m *CommonManager) postStart() error {
+	for s := range m.children {
+		m.children[s].Stop(nil)
+		delete(m.children, s)
+	}
+
 	for _, h := range m.handlers {
 		h.Stop(nil)
 	}
@@ -101,6 +108,7 @@ func (m *CommonManager) Start() error {
 }
 
 func (m *CommonManager) Stop(e error) {
+	logs.WithF(m.fields).Trace("Stopping")
 	close(m.stop)
 }
 

@@ -34,7 +34,7 @@ func sigQuitThreadDump() {
 }
 
 func main() {
-	if _, err := maxprocs.Set(); err != nil{
+	if _, err := maxprocs.Set(); err != nil {
 		logs.WithE(err).Warn("Failed to set maxprocs")
 	}
 	rand.Seed(time.Now().UTC().UnixNano())

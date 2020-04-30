@@ -1,16 +1,22 @@
-FROM golang:1.13 as builder
+FROM golang:1.14-alpine as builder
 
 WORKDIR /app
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -o /hdm
 
 #####
-FROM archlinux
-RUN pacman -Sy --noconfirm smartmontools
+FROM alpine
+RUN apk add \
+    bash \
+    smartmontools \
+    util-linux \
+    rsync \
+    sgdisk \
+    cryptsetup \
+    device-mapper \
+    hdparm \
+    udev
 
-#FROM debian
-#RUN apt-get update &&apt-get install -y --no-install-recommends smartmontools
+COPY --from=builder /hdm /usr/bin/hdm
 
-COPY --from=builder /hdm /hdm
-
-CMD [ "/hdm", "agent", "-L", "debug" ]
+CMD [ "hdm", "agent" ]

@@ -1,0 +1,256 @@
+#!/usr/bin/env bash
+set -e
+
+ : ${target_name:=dist}
+ : ${work_path:=.}
+ : ${app:=$(basename $(cd "${work_path}"; pwd))}
+ : ${repo:=$(git config --get remote.origin.url | sed -n 's/.*@\(.*\)\.git/\1/p' | tr : /)}
+ : ${osarchi:="$(go env GOHOSTOS)-$(go env GOHOSTARCH)"}
+ : ${release_osarchi:="linux-amd64,darwin-amd64,windows-amd64"}
+ : ${token:=}
+ : ${version:="1.$(date -u '+%-Y%m%d.%-H%M%S')-$(git rev-parse --short HEAD)"} # TODO fix post midnight
+ : ${upx:=}
+
+read -d '' helper <<EOF || true
+Usage: gomake [-v version][-t token] command...
+  gomake is a script to build go apps
+
+  command
+      clean                 clean '${target_name}/' directory
+      build                 build (current platform only by default)
+      quality               Format, Fix, check error handled, lint, vet, misspell, ineffassign, Gocyclo
+      test                  run go tests
+      release               clean, build all platform, test, check git is clean, tag, push tag & build ZIPs
+      gomake_update         self updating by downloading and replacing with latest version
+
+         default is 'clean build test quality'
+
+  -h, --help                this helper
+  -W, --work-path=path      set working path, default is ./
+EOF
+
+
+echo_red() {
+    echo -e "\e[0;31m${@}\e[0m"
+}
+
+echo_purple() {
+    echo -e "\e[0;35m${@}\e[0m"
+}
+
+echo_green() {
+    echo -e "\e[0;32m${@}\e[0m"
+}
+
+echo_yellow() {
+    echo -e "\e[0;93m${@}\e[0m"
+}
+
+gomake_update() {
+    echo_green "Downloading gomake"
+    wget -q -O ${work_path}/gomake.tmp https://raw.githubusercontent.com/n0rad/gomake/master/gomake
+    chmod +x ${work_path}/gomake.tmp
+    mv ${work_path}/gomake.tmp ${work_path}/$0
+}
+
+ensure_tool() {
+    if [ ! -f ${work_path}/dist-tools/$1 ] ; then
+        echo_green "Building tool $1"
+        mkdir -p ${work_path}/dist-tools
+        (
+            cd ${work_path}/dist-tools
+            go build -mod vendor $2
+        )
+    fi
+}
+
+tools_clean() {
+    echo_green "Cleaning tools"
+    rm -Rf ${work_path}/dist-tools
+}
+
+clean() {
+    echo_green "Cleaning"
+    rm -Rf ${work_path}/${target_name}
+}
+
+build() {
+    start=`date +%s`
+
+    [ -z "$1" ] || osarchi="$1"
+
+    mkdir -p ${work_path}/${target_name}/bindata
+
+    if [ `type -t pre-build`"" == 'function' ]; then
+        pre-build
+    fi
+
+    if [ "$(ls -A ${work_path}/${target_name}/bindata)" ]; then
+        ensure_tool "go-bindata" "github.com/go-bindata/go-bindata/go-bindata"
+        ${work_path}/dist-tools/go-bindata -nomemcopy -pkg dist -prefix dist/bindata -o ${work_path}/${target_name}/bindata.go ${work_path}/${target_name}/bindata/...
+    fi
+
+    echo_green "Format"
+    (cd ${work_path} && go fmt)
+
+    echo_green "Fix"
+    (cd ${work_path} && go fix)
+
+    IFS=',' read -ra current <<< "$osarchi"
+    for e in "${current[@]}"; do
+        echo_green "Building $e"
+        $(cd ${work_path} && GOOS="${e%-*}" GOARCH="${e#*-}" go build -mod vendor -ldflags "-s -w -X main.Version=${version}" -o ${target_name}/${app}-${e}/bbc)
+    done
+
+    if [ `type -t pre-build`"" == 'function' ]; then
+        pre-build
+    fi
+
+    echo_purple "Build duration : $((`date +%s`-${start}))s"
+}
+
+
+install() {
+    echo_green "Installing"
+    cp ${work_path}/${target_name}/${app}-v${version}-$(go env GOHOSTOS)-$(go env GOHOSTARCH)/bin/${app}* ${GOPATH}/bin/
+}
+
+quality() {
+    start=`date +%s`
+    (
+        cd ${work_path} > /dev/null
+
+        go_files=`find . -name '*.go' 2> /dev/null | grep -v ${target_name}/ | grep -v vendor/ | grep -v .git`
+
+        echo_green "Format"
+        go fmt
+
+        echo_green "Fix"
+        go fix
+
+        echo_green "Lint"
+        ensure_tool golint golang.org/x/lint/golint
+        for i in ${go_files}; do
+            ${work_path}/dist-tools/golint ${i} | grep -v 'should have comment ' || true
+        done
+
+        echo_green "Vet"
+        go vet || true
+
+        echo_green "Misspell"
+        ensure_tool misspell github.com/client9/misspell/cmd/misspell
+        ${work_path}/dist-tools/misspell -source=text ${go_files}
+
+        echo_green "Ineffassign"
+        ensure_tool ineffassign github.com/gordonklaus/ineffassign
+        for i in ${go_files}; do
+            ${work_path}/dist-tools/ineffassign -n ${i} || true
+        done
+
+        echo_green "Gocyclo"
+        ensure_tool gocyclo github.com/fzipp/gocyclo
+        ${work_path}/dist-tools/gocyclo -over 15 ${go_files} || true
+
+    )
+    echo_purple "Quality duration : $((`date +%s`-${start}))s"
+}
+
+require_clean_work_tree() {
+    # Update the index
+    git update-index -q --ignore-submodules --refresh
+    err=0
+
+    # Disallow unstaged changes in the working tree
+    if ! git diff-files --quiet --ignore-submodules --
+    then
+        echo_red "cannot release: you have unstaged changes."
+        git diff-files --name-status -r --ignore-submodules -- >&2
+        err=1
+    fi
+
+    # Disallow uncommitted changes in the index
+    if ! git diff-index --cached --quiet HEAD --ignore-submodules --
+    then
+        echo_red "cannot release: your index contains uncommitted changes."
+        git diff-index --cached --name-status -r --ignore-submodules HEAD -- >&2
+        err=1
+    fi
+
+    if [ ${err} = 1 ]
+    then
+        echo_red "Please commit or stash them."
+        exit 1
+    fi
+}
+
+release() {
+    start=`date +%s`
+
+    github_repo=${repo#*/}
+
+    clean
+    build ${release_osarchi}
+    test
+    quality
+    require_clean_work_tree
+    echo_green "Compress release"
+
+    # TODO that sux
+    tar czf ${work_path}/${target_name}/${app}-${version}-darwin-amd64.tar.gz -C ${work_path}/${target_name}/${app}-darwin-amd64 .
+    tar czf ${work_path}/${target_name}/${app}-${version}-linux-amd64.tar.gz -C ${work_path}/${target_name}/${app}-linux-amd64 .
+    cp ${work_path}/${target_name}/${app}-${version}-darwin-amd64.tar.gz ${work_path}/${target_name}/${app}-darwin-amd64.tar.gz
+    cp ${work_path}/${target_name}/${app}-${version}-linux-amd64.tar.gz ${work_path}/${target_name}/${app}-linux-amd64.tar.gz
+
+    gsutil -h "x-goog-meta-bbc-version:${version}" -m cp ${work_path}/${target_name}/*.tar.gz gs://bbc.blbl.cr
+
+    echo_purple "Release duration : $((`date +%s`-${start}))s"
+}
+
+test() {
+    start=`date +%s`
+    echo_green "Testing"
+    go test -cover $(go list ${work_path}/... | grep -v vendor/)
+
+    echo_purple "Test duration : $((`date +%s`-${start}))s"
+}
+
+#########################################
+#########################################
+
+global_start=`date +%s`
+
+commands=()
+while [ $# -gt 0 ]; do
+    case "${1}" in
+        -h|--help)  echo "${helper}"; exit 0;;
+        --version=*)version="${1#*=}"; shift;;
+        --token=*)  token="${1#*=}"; shift;;
+        --work-path=*) work_path="${1#*=}"; shift;;
+        -v)         version="${2}"; [ $# -gt 1 ] || (echo_red "Missing argument for ${1}"; exit 1); shift 2;;
+        -t)         token="${2}"; [ $# -gt 1 ] || (echo_red "Missing argument for ${1}"; exit 1); shift 2;;
+        -W)         work_path="${2}"; [ $# -gt 1 ] || (echo_red "Missing argument for ${1}"; exit 1); shift 2;;
+        --)         shift; commands+=("${@}"); break;;
+        *)          commands+=("${1}"); shift;;
+    esac
+done
+
+if [ -f ${work_path}/gomake.cfg ]; then
+ . ${work_path}/gomake.cfg
+fi
+
+if [ ${#commands[@]} -eq 0 ]; then
+    commands=(clean build test quality)
+fi
+command_count=0
+for i in "${commands[@]}"; do
+    case ${i} in
+        test|build|release|clean|quality|gomake_update|tools_clean) ${i}; ((++command_count));;
+        *)                                              echo_red "Unknown command '${i}'"; echo ${helper}; exit 1;;
+    esac
+done
+
+if [ ${command_count} -gt 1 ]; then
+    echo_purple "Global duration : $((`date +%s`-global_start))s"
+fi
+
+exit 0
