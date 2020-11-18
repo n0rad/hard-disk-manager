@@ -1,8 +1,10 @@
 FROM golang:1.14-alpine as builder
 
+RUN apk add git
+
 WORKDIR /app
 COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -o /hdm
+RUN ./gomake build -L debug && cp dist/hdm-linux-amd64/hdm /hdm
 
 #####
 FROM alpine

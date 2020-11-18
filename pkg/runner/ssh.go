@@ -25,6 +25,12 @@ func (s SshExec) ExecGetStdoutStderr(head string, args ...string) (string, strin
 	return s.ExecSetStdinGetStdoutStderr(nil, head, args...)
 }
 
+func (s SshExec) Exec(head string, args ...string) error {
+	// TODO not supported
+	return nil
+}
+
+
 func (s SshExec) ExecSetStdinGetStdoutStderr(stdin io.Reader, head string, args ...string) (string, string, error) {
 	// TODO stdin is not supported
 	if s.sshClient == nil {

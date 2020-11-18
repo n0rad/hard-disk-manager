@@ -1,0 +1,77 @@
+#servers:
+#- name: srv1
+#  hostname: lmr.io:65531
+#  localHostname: 192.168.42.41
+#  username: n0rad
+#  bays:
+##  - {path: "", location: "1:1"}
+##  - {path: "", location: "1:2"}
+##  - {path: "", location: "1:3"}
+##  - {path: "", location: "1:4"}
+#
+#  - {path: "pci-0000:00:1f.2-ata-5", location: "2:1"}
+#  - {path: "pci-0000:00:1f.2-ata-2", location: "2:2"}
+#  - {path: "pci-0000:00:1f.2-ata-6", location: "2:3"}
+#  - {path: "pci-0000:00:1f.2-ata-3", location: "2:4"}
+#
+#  - {path: "pci-0000:01:00.0-sas-phy12-lun-0", location: "3:1"}
+#  - {path: "pci-0000:01:00.0-sas-phy13-lun-0", location: "3:2"}
+#  - {path: "pci-0000:01:00.0-sas-phy14-lun-0", location: "3:3"}
+#  - {path: "pci-0000:01:00.0-sas-phy15-lun-0", location: "3:4"}
+#
+#  - {path: "pci-0000:01:00.0-sas-phy8-lun-0", location: "4:1"}
+#  - {path: "pci-0000:01:00.0-sas-phy9-lun-0", location: "4:2"}
+#  - {path: "pci-0000:01:00.0-sas-phy10-lun-0", location: "4:3"}
+#  - {path: "pci-0000:01:00.0-sas-phy11-lun-0", location: "4:4"}
+#
+#  - {path: "pci-0000:01:00.0-sas-phy0-lun-0", location: "5:1"}
+#  - {path: "pci-0000:01:00.0-sas-phy1-lun-0", location: "5:2"}
+#  - {path: "pci-0000:01:00.0-sas-phy2-lun-0", location: "5:3"}
+#  - {path: "pci-0000:01:00.0-sas-phy3-lun-0", location: "5:4"}
+#
+#  - {path: "pci-0000:01:00.0-sas-phy4-lun-0", location: "6:1"}
+#  - {path: "pci-0000:01:00.0-sas-phy5-lun-0", location: "6:2"}
+#  - {path: "pci-0000:01:00.0-sas-phy6-lun-0", location: "6:3"}
+#  - {path: "pci-0000:01:00.0-sas-phy7-lun-0", location: "6:4"}
+#
+#- name: srv2
+#  hostname: lmr.io:65532
+#  localHostname: 192.168.42.42
+#  username: n0rad
+#  bays:
+##  - {path: "", location: "1:1"}
+##  - {path: "", location: "1:2"}
+##  - {path: "", location: "1:3"}
+##  - {path: "", location: "1:4"}
+#
+#  - {path: "pci-0000:00:1f.2-ata-6", location: "2:1"}
+#  - {path: "pci-0000:00:1f.2-ata-3", location: "2:2"}
+#  - {path: "pci-0000:00:1f.2-ata-2", location: "2:3"}
+#  - {path: "pci-0000:00:1f.2-ata-1", location: "2:4"}
+#
+#  - {path: "pci-0000:02:00.0-ata-1", location: "3:1"}
+#  - {path: "pci-0000:02:00.0-ata-2", location: "3:2"}
+#  - {path: "pci-0000:02:00.0-ata-3", location: "3:3"}
+#  - {path: "pci-0000:02:00.0-ata-4", location: "3:4"}
+#
+#  - {path: "pci-0000:01:00.0-ata-1", location: "4:1"}
+#  - {path: "pci-0000:01:00.0-ata-2", location: "4:2"}
+#  - {path: "pci-0000:01:00.0-ata-3", location: "2:3"}
+#  - {path: "pci-0000:01:00.0-ata-4", location: "2:4"}
+#
+#  - {path: "pci-0000:00:1f.2-ata-5", location: "5:1"}
+#  - {path: "pci-0000:00:1f.2-ata-4", location: "5:2"}
+##  - {path: "", location: "5:3"}
+##  - {path: "", location: "5:4"}
+#
+#
+## rsync -avP /mnt/3005/ srv2:/mnt/3004
+## rsync -avP /mnt/3002/ srv2:/mnt/3001
+#
+## rsync -avP /mnt/3000/ srv2:/mnt/3011
+## rsync -avP /mnt/3006/ srv2:/mnt/3012
+## rsync -avP /mnt/3010/ srv2:/mnt/3008
+## rsync -avP /mnt/8000/ srv2:/mnt/8001
+#
+#
+##sudo mount -t overlay overlay -olowerdir=/mnt/3001:/mnt/3004:/mnt/3008:/mnt/3011:/mnt/3012:/mnt/8001:/mnt/8003 /media/

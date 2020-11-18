@@ -1,0 +1,265 @@
+alignment: 0
+children:
+- alignment: 0
+  children: null
+  disc-aln: 0
+  disc-gran: 4K
+  disc-max: 2G
+  disc-zero: false
+  fsavail: 126.4M
+  fssize: 196.9M
+  fstype: vfat
+  fsuse%: 36%
+  fsused: 70.5M
+  group: disk
+  hctl: ""
+  hotplug: false
+  kname: sda1
+  label: EFI
+  log-sec: 512
+  maj:min: "8:1"
+  min-io: 4096
+  mode: brw-rw----
+  model: ""
+  mountpoint: /boot
+  name: sda1
+  opt-io: 0
+  owner: root
+  partflags: ""
+  partlabel: EFI System Partition
+  parttype: c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+  partuuid: 4cf14a4a-3f32-425c-a36f-36080b95cb27
+  path: /dev/sda1
+  phy-sec: 4096
+  pkname: sda
+  pttype: gpt
+  ptuuid: 9a72bc94-0ee7-4669-ac25-a6cebccadd07
+  ra: 128
+  rand: false
+  rev: ""
+  rm: false
+  ro: false
+  rota: false
+  rq-size: 64
+  sched: mq-deadline
+  serial: ""
+  size: 200M
+  state: ""
+  subsystems: block:scsi:pci
+  tran: ""
+  type: part
+  uuid: 67E3-17ED
+  vendor: ""
+  wsame: 0B
+  wwn: "0x5002538900000000"
+  zoned: none
+- alignment: 0
+  children: null
+  disc-aln: 0
+  disc-gran: 4K
+  disc-max: 2G
+  disc-zero: false
+  fsavail: ""
+  fssize: ""
+  fstype: ""
+  fsuse%: ""
+  fsused: ""
+  group: disk
+  hctl: ""
+  hotplug: false
+  kname: sda2
+  label: ""
+  log-sec: 512
+  maj:min: "8:2"
+  min-io: 4096
+  mode: brw-rw----
+  model: ""
+  mountpoint: ""
+  name: sda2
+  opt-io: 0
+  owner: root
+  partflags: ""
+  partlabel: Sans titre
+  parttype: 53746f72-6167-11aa-aa11-00306543ecac
+  partuuid: d226c96c-7005-42a3-aecf-143065712cb5
+  path: /dev/sda2
+  phy-sec: 4096
+  pkname: sda
+  pttype: gpt
+  ptuuid: 9a72bc94-0ee7-4669-ac25-a6cebccadd07
+  ra: 128
+  rand: false
+  rev: ""
+  rm: false
+  ro: false
+  rota: false
+  rq-size: 64
+  sched: mq-deadline
+  serial: ""
+  size: 19G
+  state: ""
+  subsystems: block:scsi:pci
+  tran: ""
+  type: part
+  uuid: ""
+  vendor: ""
+  wsame: 0B
+  wwn: "0x5002538900000000"
+  zoned: none
+- alignment: 0
+  children: null
+  disc-aln: 0
+  disc-gran: 4K
+  disc-max: 2G
+  disc-zero: false
+  fsavail: ""
+  fssize: ""
+  fstype: hfsplus
+  fsuse%: ""
+  fsused: ""
+  group: disk
+  hctl: ""
+  hotplug: false
+  kname: sda3
+  label: Recovery HD
+  log-sec: 512
+  maj:min: "8:3"
+  min-io: 4096
+  mode: brw-rw----
+  model: ""
+  mountpoint: ""
+  name: sda3
+  opt-io: 0
+  owner: root
+  partflags: ""
+  partlabel: Recovery HD
+  parttype: 426f6f74-0000-11aa-aa11-00306543ecac
+  partuuid: 21d135d6-deeb-4783-b339-85cf85c023c2
+  path: /dev/sda3
+  phy-sec: 4096
+  pkname: sda
+  pttype: gpt
+  ptuuid: 9a72bc94-0ee7-4669-ac25-a6cebccadd07
+  ra: 128
+  rand: false
+  rev: ""
+  rm: false
+  ro: false
+  rota: false
+  rq-size: 64
+  sched: mq-deadline
+  serial: ""
+  size: 619.9M
+  state: ""
+  subsystems: block:scsi:pci
+  tran: ""
+  type: part
+  uuid: 51371925-eb4c-3280-b4f4-10f60147c56e
+  vendor: ""
+  wsame: 0B
+  wwn: "0x5002538900000000"
+  zoned: none
+- alignment: 0
+  children: null
+  disc-aln: 0
+  disc-gran: 4K
+  disc-max: 2G
+  disc-zero: false
+  fsavail: 91.1G
+  fssize: 438G
+  fstype: ext4
+  fsuse%: 74%
+  fsused: 324.6G
+  group: disk
+  hctl: ""
+  hotplug: false
+  kname: sda4
+  label: ""
+  log-sec: 512
+  maj:min: "8:4"
+  min-io: 4096
+  mode: brw-rw----
+  model: ""
+  mountpoint: /mnt/self
+  name: sda4
+  opt-io: 0
+  owner: root
+  partflags: ""
+  partlabel: DOS_FAT_32_Untitled_3
+  parttype: 0fc63daf-8483-4772-8e79-3d69d8477de4
+  partuuid: 77eda65f-8cae-43af-879e-a725e4d7f234
+  path: /dev/sda4
+  phy-sec: 4096
+  pkname: sda
+  pttype: gpt
+  ptuuid: 9a72bc94-0ee7-4669-ac25-a6cebccadd07
+  ra: 128
+  rand: false
+  rev: ""
+  rm: false
+  ro: false
+  rota: false
+  rq-size: 64
+  sched: mq-deadline
+  serial: ""
+  size: 446G
+  state: ""
+  subsystems: block:scsi:pci
+  tran: ""
+  type: part
+  uuid: 4901f251-b6a3-4c46-a7c4-29b4b5c65f68
+  vendor: ""
+  wsame: 0B
+  wwn: "0x5002538900000000"
+  zoned: none
+disc-aln: 0
+disc-gran: 4K
+disc-max: 2G
+disc-zero: false
+fsavail: ""
+fssize: ""
+fstype: ""
+fsuse%: ""
+fsused: ""
+group: disk
+hctl: "0:0:0:0"
+hotplug: false
+kname: sda
+label: ""
+log-sec: 512
+maj:min: "8:0"
+min-io: 4096
+mode: brw-rw----
+model: APPLE_SSD_SM0512G
+mountpoint: ""
+name: sda
+opt-io: 0
+owner: root
+partflags: ""
+partlabel: ""
+parttype: ""
+partuuid: ""
+path: /dev/sda
+phy-sec: 4096
+pkname: ""
+pttype: gpt
+ptuuid: 9a72bc94-0ee7-4669-ac25-a6cebccadd07
+ra: 128
+rand: false
+rev: 3A0Q
+rm: false
+ro: false
+rota: false
+rq-size: 64
+sched: mq-deadline
+serial: S2ZCNY0H885558
+size: 465.9G
+state: running
+subsystems: block:scsi:pci
+tran: sata
+type: disk
+uuid: ""
+vendor: 'ATA     '
+wsame: 0B
+wwn: "0x5002538900000000"
+zoned: none

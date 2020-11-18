@@ -54,7 +54,7 @@ func (h *HandlerCrypto) Add() error {
 		return errs.WithE(err, "Cannot get password")
 	}
 
-	//if err := h.manager.hdm.PassService().AskPassword(false); err != nil {
+	//if err := h.manager.hdm.PassService().AskSecret(false); err != nil {
 	//	return errs.WithE(err, "Cannot get password")
 	//}
 
