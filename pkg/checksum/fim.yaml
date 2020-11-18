@@ -1,0 +1,7 @@
+#pattern: (?i)\.*$
+pattern: (?i)\.(jpg|lock|avi)$
+patternIsInclusive: true
+#hash: crc32-ieee
+hash: sha1
+strategy: sumfile
+#strategy: filename
