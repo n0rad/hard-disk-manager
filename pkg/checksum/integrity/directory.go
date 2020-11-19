@@ -3,6 +3,7 @@ package integrity
 import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
+	"github.com/n0rad/go-erlog/data"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	"os"
@@ -24,63 +25,64 @@ type Directory struct {
 type DirectoryAction func(p []byte) (n int, err error)
 
 func (d Directory) List(path string) error {
-	return d.directoryWalk(path, func(path string, info os.FileInfo) {
+	return d.directoryWalk(path, func(path string, info os.FileInfo) (error, error) {
 		println(path)
+		return nil, nil
 	})
 }
 
 func (d Directory) Check(path string) error {
-	return d.directoryWalk(path, func(path string, info os.FileInfo) {
+	return d.directoryWalk(path, func(path string, info os.FileInfo) (error, error) {
 		set, err := d.Strategy.IsSet(path)
 		if err != nil {
-			logs.WithE(err).Error("Failed to check if sum is set")
-			return
+			return nil, errs.WithE(err, "Failed to check if sum is set")
 		}
 		if !set {
 			logs.WithField("path", path).Warn("Missing sum")
-			return
+			return nil, nil
 		}
 
 		logs.WithField("path", path).Info("Processing file")
 		ok, err := d.Strategy.Check(path)
 		if err != nil {
-			logs.WithField("path", path).Error("Failed to check file integrity")
+			return nil, errs.WithEF(err, data.WithField("path", path), "Failed to check file integrity")
 		}
 		if ok != nil {
-			logs.WithE(ok).WithField("path", path).Error("File integrity failed")
+			return errs.WithEF(ok, data.WithField("path", path), "File integrity failed"), nil
 		}
+		return nil, nil
 	})
 }
 
 func (d Directory) Set(path string) error {
-	return d.directoryWalk(path, func(path string, info os.FileInfo) {
+	return d.directoryWalk(path, func(path string, info os.FileInfo) (error, error) {
 		if d.Strategy.IsSumFile(path) {
-			return
+			return nil, nil
 		}
 
 		set, err := d.Strategy.IsSet(path)
 		if err != nil {
-			logs.WithE(err).Error("Failed to check if sum is set")
-			return
+			return nil, errs.WithE(err, "Failed to check if sum is set")
 		}
 
 		if !set {
 			logs.WithField("path", path).Info("Processing file")
 			if _, err := d.Strategy.SumAndSet(path); err != nil {
-				logs.WithE(err).Error("Failed to set sum")
-				return
+				return errs.WithE(err, "Failed to set sum"), nil
 			}
 		} else {
 			logs.WithField("path", path).Debug("Sum already exists")
 		}
+		return nil, nil
 	})
 }
 
 func (d Directory) Remove(path string) error {
-	return d.directoryWalk(path, func(path string, info os.FileInfo) {
+	return d.directoryWalk(path, func(path string, info os.FileInfo) (error, error) {
 		if err := d.Strategy.Remove(path); err != nil {
-			logs.WithE(err).WithField("path", path).Error("Failed to remove integrity")
+			return nil, errs.WithEF(err, data.WithField("path", path), "Failed to remove integrity")
 		}
+		return nil, nil
 	})
 }
 
@@ -179,26 +181,41 @@ func (d Directory) processEvent(event fsnotify.Event, watcher *fsnotify.Watcher)
 
 ////////////////////
 
-func (d Directory) directoryWalk(path string, f func(path string, info os.FileInfo)) error {
-	return filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+func (d Directory) directoryWalk(path string, f func(path string, info os.FileInfo) (error, error)) error {
+	var fail bool
+	if err := filepath.Walk(path, func(path string, info os.FileInfo, errIn error) error {
+		if errIn != nil {
+			logs.WithE(errIn).WithField("path", path).Error("Failed to process path")
+			return nil
+		}
+
 		if d.Strategy.IsSumFile(path) {
 			return nil
 		}
 
-		if err != nil {
-			logs.WithE(err).WithField("path", path).Error("Failed to process path")
-			return nil
-		}
 		if info.IsDir() {
 			return nil
 		}
 
 		if d.matchesPattern(path) {
 			logs.WithField("path", path).Debug("Processing file")
-			f(path, info)
+			ok, err := f(path, info)
+			if err != nil {
+				return err
+			}
+			if ok != nil {
+				logs.WithError(ok).Error("File failed")
+				fail = true
+			}
 		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
+	if fail {
+		return errs.With("Some file failed")
+	}
+	return nil
 }
 
 func (d Directory) matchesPattern(path string) bool {

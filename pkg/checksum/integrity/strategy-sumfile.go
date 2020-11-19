@@ -104,7 +104,7 @@ func (s StrategySumFile) Check(file string) (error, error) {
 		return nil, errs.WithE(err, "Failed to get saved sum")
 	}
 	if savedSum != sum {
-		return errs.WithF(data.WithField("sum", sum).WithField("saved-sum", savedSum), "sums do not match"), nil
+		return errs.WithF(data.WithField("sum", sum).WithField("saved-sum", savedSum), "Sums do not match"), nil
 	}
 	return nil, nil
 }
