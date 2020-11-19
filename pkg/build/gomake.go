@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/n0rad/gomake"
 )
 
 func main() {
-	gomake.ProjectBuilder().
+	err := gomake.ProjectBuilder().
 		WithName("hdm").
 		WithStep(&gomake.StepBuild{
 			// TODO generate readme
@@ -29,5 +30,8 @@ func main() {
 		WithStep(&gomake.StepRelease{
 			OsArchRelease: []string{"linux-amd64"},
 		}).
-		MustBuild().MustExecute()
+		MustBuild().Execute()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
