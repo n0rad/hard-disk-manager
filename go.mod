@@ -13,9 +13,9 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/n0rad/go-checksum v0.0.0-20201115160905-41d7ed73f156
 	github.com/n0rad/go-erlog v0.0.0-20190510152055-0a033e8086d8
-	github.com/n0rad/gomake v0.0.0-20201111222446-6e37199d9308
+	github.com/n0rad/gomake v0.0.0-20201119231227-fc2d14a0cf87
 	github.com/spf13/cobra v1.1.1
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
-	golang.org/x/sys v0.0.0-20201118182958-a01c418693c7 // indirect
-	golang.org/x/tools v0.0.0-20201118215654-4d9c4f8a78b0 // indirect
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
+	golang.org/x/tools v0.0.0-20201119191246-c0d5e8918928 // indirect
 )

@@ -11,5 +11,7 @@ jobs:
         run: ./gomake build
 
       - name: Push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.ref == 'refs/heads/master'
         run: ./gomake release
