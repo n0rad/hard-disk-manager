@@ -14,5 +14,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.ref == 'refs/heads/master'
-        uses: actions/create-release@v1
-        run: ./gomake release
+        run: ./gomake release -t ${GITHUB_TOKEN}
