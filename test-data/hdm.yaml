@@ -3,6 +3,6 @@ checksum:
   pattern: (?i)\.(jpg|lock)$
   patternIsExclusive: true
   #hash: crc32-ieee
-  hash: sha1
+#  hash: sha1
   strategy: sumfile
   #strategy: filename

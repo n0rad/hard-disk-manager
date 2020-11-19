@@ -79,8 +79,20 @@ func (d Directory) Set(path string) error {
 
 func (d Directory) Remove(path string) error {
 	return d.directoryWalk(path, func(path string, info os.FileInfo) (error, error) {
-		if err := d.Strategy.Remove(path); err != nil {
-			return nil, errs.WithEF(err, data.WithField("path", path), "Failed to remove integrity")
+		if d.Strategy.IsSumFile(path) {
+			return nil, nil
+		}
+
+		set, err := d.Strategy.IsSet(path)
+		if err != nil {
+			return nil, errs.WithE(err, "Failed to check if sum is set")
+		}
+
+		if set {
+			logs.WithField("path", path).Info("Processing file")
+			if err := d.Strategy.Remove(path); err != nil {
+				return nil, errs.WithEF(err, data.WithField("path", path), "Failed to remove integrity")
+			}
 		}
 		return nil, nil
 	})
@@ -184,12 +196,12 @@ func (d Directory) processEvent(event fsnotify.Event, watcher *fsnotify.Watcher)
 func (d Directory) directoryWalk(path string, f func(path string, info os.FileInfo) (error, error)) error {
 	var fail bool
 	if err := filepath.Walk(path, func(path string, info os.FileInfo, errIn error) error {
-		if errIn != nil {
-			logs.WithE(errIn).WithField("path", path).Error("Failed to process path")
+		if d.Strategy.IsSumFile(path) {
 			return nil
 		}
 
-		if d.Strategy.IsSumFile(path) {
+		if errIn != nil {
+			logs.WithE(errIn).WithField("path", path).Error("Failed to process path")
 			return nil
 		}
 
