@@ -13,7 +13,7 @@ type Backup struct {
 	// target
 	//append only
 	//Versioning string // trash, periodic, ...
-	Count      string // how many backup
+	Count string // how many backup
 }
 
 type Disc struct {

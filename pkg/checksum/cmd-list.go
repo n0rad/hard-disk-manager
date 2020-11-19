@@ -2,10 +2,11 @@ package checksum
 
 import (
 	"github.com/n0rad/hard-disk-manager/pkg/checksum/integrity"
+	"github.com/n0rad/hard-disk-manager/pkg/config"
 	"github.com/spf13/cobra"
 )
 
-func listCommand(config *Config) *cobra.Command {
+func listCommand(conf *config.GlobalConfig) *cobra.Command {
 	var reverse bool
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -13,12 +14,10 @@ func listCommand(config *Config) *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for _, arg := range args {
-				inclusive := config.PatternIsInclusive
-				if reverse {
-					inclusive = !inclusive
-				}
-				if err := runCmdForPath(config, arg, func(d integrity.Directory) func(path string) error {
-					d.Inclusive = inclusive
+				if err := runCmdForPath(conf, arg, func(pathConf config.PathConfig, d integrity.Directory) func(path string) error {
+					if reverse {
+						d.Exclusive = !d.Exclusive
+					}
 					return d.List
 				}); err != nil {
 					return err

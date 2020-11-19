@@ -10,6 +10,7 @@ require (
 	github.com/gordonklaus/ineffassign v0.0.0-20201107091007-3b93a8888063 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/n0rad/go-checksum v0.0.0-20201115160905-41d7ed73f156
 	github.com/n0rad/go-erlog v0.0.0-20190510152055-0a033e8086d8
 	github.com/n0rad/gomake v0.0.0-20201111222446-6e37199d9308

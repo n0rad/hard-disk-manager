@@ -2,6 +2,9 @@ package integrity
 
 import "github.com/n0rad/hard-disk-manager/pkg/checksum/hashs"
 
+const SumfileStrategy = "sumfile"
+const FilenameStrategy = "filename"
+
 type Strategy interface {
 	IsSet(file string) (bool, error)
 	GetSum(file string) (string, error)
@@ -15,12 +18,12 @@ type Strategy interface {
 
 func NewStrategy(strategyName string, hash hashs.Hash) Strategy {
 	switch strategyName {
-	case "sumfile":
+	case SumfileStrategy:
 		return StrategySumFile{
 			Hash:     hashs.NewHash(hash),
 			HashName: string(hash),
 		}
-	case "filename":
+	case FilenameStrategy:
 		return StrategyFilename{
 			Hash:    hashs.NewHash(hash),
 			OldHash: hashs.NewHash(hash), // support old HASH

@@ -14,7 +14,7 @@ import (
 
 type Directory struct {
 	Regex     *regexp.Regexp
-	Inclusive bool
+	Exclusive bool
 	Strategy  Strategy
 
 	timers      map[string]*time.Timer
@@ -202,6 +202,6 @@ func (d Directory) directoryWalk(path string, f func(path string, info os.FileIn
 }
 
 func (d Directory) matchesPattern(path string) bool {
-	return d.Inclusive && d.Regex.MatchString(path) ||
-		!d.Inclusive && !d.Regex.MatchString(path)
+	return !d.Exclusive && d.Regex.MatchString(path) ||
+		d.Exclusive && !d.Regex.MatchString(path)
 }

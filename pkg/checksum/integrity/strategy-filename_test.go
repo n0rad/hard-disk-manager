@@ -33,6 +33,6 @@ var c = checksum.NewHash(checksum.Crc32_ieee)
 //}
 
 //func TestCheckOrAddIntegrityFilenameSum(t *testing.T) {
-//	Regex := regexp.MustCompile("(?i)\\.(socket|lock)$")
-//	assert.NoError(t, directoryWalk("/tmp", Regex))
+//	regex := regexp.MustCompile("(?i)\\.(socket|lock)$")
+//	assert.NoError(t, directoryWalk("/tmp", regex))
 //}

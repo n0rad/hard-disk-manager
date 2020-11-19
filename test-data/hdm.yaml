@@ -1,0 +1,8 @@
+checksum:
+  #pattern: (?i)\.*$
+  pattern: (?i)\.(jpg|lock)$
+  patternIsExclusive: true
+  #hash: crc32-ieee
+  hash: sha1
+  strategy: sumfile
+  #strategy: filename

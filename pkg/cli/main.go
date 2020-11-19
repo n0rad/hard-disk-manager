@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var Version = "0.0.0"
+var Version = "0"
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -18,7 +18,7 @@ func main() {
 		logs.WithE(err).Warn("Failed to set process priority")
 	}
 
-	if err := cmd.RootCmd().Execute(); err != nil {
+	if err := cmd.RootCmd(Version).Execute(); err != nil {
 		logs.WithE(err).Fatal("Command failed")
 	}
 	os.Exit(0)
