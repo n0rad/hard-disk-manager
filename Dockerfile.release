@@ -1,0 +1,15 @@
+FROM alpine
+RUN apk add \
+    bash \
+    smartmontools \
+    util-linux \
+    rsync \
+    sgdisk \
+    cryptsetup \
+    device-mapper \
+    hdparm \
+    udev
+
+ADD ./dist/hdm-linux-amd64/hdm /usr/bin/hdm
+
+ENTRYPOINT [ "hdm" ]

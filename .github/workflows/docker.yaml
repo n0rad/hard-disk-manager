@@ -4,14 +4,25 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
 
       - name: Build / Test
-        run: ./gomake build
+        run: ./gomake build test check
+
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u n0rad --password-stdin
 
       - name: Push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: github.ref == 'refs/heads/master'
         run: ./gomake release
+
