@@ -14,4 +14,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.ref == 'refs/heads/test'
-        run: git config --get remote.origin.url && ./gomake release -L debug
+        run: ./gomake release
