@@ -19,7 +19,7 @@ const Sha3_512 Hash = "sha3-512"
 const Sha512 Hash = "sha512"
 const Sha512_224 Hash = "sha512-224"
 const Sha512_256 Hash = "sha512-256"
-const Crc32_ieee Hash = "crc32-ieee"
+const Crc32 Hash = "crc32"
 const Crc64_iso Hash = "crc64-iso"
 const Crc64_ecma Hash = "crc64-ecma"
 const Adler32 Hash = "adler32"
@@ -56,7 +56,7 @@ var Hashs = []Hash{
 	Sha512,
 	Sha512_224,
 	Sha512_256,
-	Crc32_ieee,
+	Crc32,
 	Crc64_iso,
 	Crc64_ecma,
 	Adler32,
