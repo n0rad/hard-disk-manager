@@ -1,7 +1,6 @@
 package checksum
 
 import (
-	_ "github.com/n0rad/go-erlog/register"
 	"github.com/n0rad/hard-disk-manager/pkg/checksum/integrity"
 	"github.com/n0rad/hard-disk-manager/pkg/config"
 	"github.com/spf13/cobra"

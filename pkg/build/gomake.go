@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/n0rad/go-erlog/errs"
+	_ "github.com/n0rad/go-erlog/register"
 	"github.com/n0rad/gomake"
 )
 
