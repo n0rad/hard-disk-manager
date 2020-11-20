@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/gomake"
 )
 
@@ -28,6 +29,24 @@ func main() {
 		}).
 		WithStep(&gomake.StepRelease{
 			OsArchRelease: []string{"linux-amd64"},
+			PostReleaseHook: func(step gomake.StepRelease) error {
+				if err := gomake.Exec("docker", "build", ".",
+					"-f", "Dockerfile.release",
+					"-t", "n0rad/hdm:"+step.Version,
+					"-t", "n0rad/hdm:latest"); err != nil {
+					return errs.WithE(err, "Failed to build docker image")
+				}
+
+				if err := gomake.Exec("docker", "push", "n0rad/hdm:"+step.Version); err != nil {
+					return errs.WithE(err, "Failed to push docker image")
+				}
+
+				if err := gomake.Exec("docker", "push", "n0rad/hdm:latest"); err != nil {
+					return errs.WithE(err, "Failed to push latest docker image")
+				}
+
+				return nil
+			},
 		}).
 		MustBuild().MustExecute()
 }
