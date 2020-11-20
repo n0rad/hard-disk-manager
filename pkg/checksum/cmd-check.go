@@ -7,7 +7,6 @@ import (
 )
 
 func checkCommand(conf *config.GlobalConfig) *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "check",
 		Short: "check integrity of files",
