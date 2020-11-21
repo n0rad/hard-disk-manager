@@ -38,7 +38,7 @@ func (s StrategySumFile) GetSum(file string) (string, error) {
 	if err != nil {
 		return "", errs.WithEF(err, data.WithField("file", sumFilename), "Failed to read sum file")
 	}
-	if s.HashName == string(hashs.Crc32_ieee) {
+	if s.HashName == string(hashs.Crc32) {
 		return hashs.SumFromSumSfvLine(string(readFile)), nil
 	} else {
 		return hashs.SumFromSumLine(string(readFile)), nil
@@ -68,7 +68,7 @@ func (s StrategySumFile) Set(file string, sum string) error {
 	}
 
 	var line string
-	if s.HashName == string(hashs.Crc32_ieee) {
+	if s.HashName == string(hashs.Crc32) {
 		line = hashs.SumSfvLine(filepath.Base(file), sum)
 	} else {
 		line = hashs.SumLine(filepath.Base(file), sum)
@@ -116,7 +116,7 @@ func (s StrategySumFile) sumFilename(file string) string {
 }
 
 func (s StrategySumFile) sumFileSuffix() string {
-	if s.HashName == string(hashs.Crc32_ieee) {
+	if s.HashName == string(hashs.Crc32) {
 		return ".sfv"
 	}
 	return "." + s.HashName

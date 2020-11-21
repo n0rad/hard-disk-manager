@@ -38,6 +38,7 @@ func RootCmd(version string) *cobra.Command {
 
 	cmd.AddCommand(
 		checksum.RootCmd(config),
+		agentCommand(config),
 		versionCommand(version),
 	)
 
