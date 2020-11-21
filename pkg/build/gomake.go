@@ -5,7 +5,6 @@ import (
 	"github.com/n0rad/go-erlog/errs"
 	_ "github.com/n0rad/go-erlog/register"
 	"github.com/n0rad/gomake"
-	"github.com/n0rad/hard-disk-manager/pkg/cmd"
 	"github.com/wangjia184/sortedset"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
@@ -72,7 +71,7 @@ func main() {
 }
 
 func writeCommitLog() error {
-	w, err := os.OpenFile(buildAssetFolder+cmd.PathChangelog, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+	w, err := os.OpenFile("dist/bindata/assets/CHANGELOG.md", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 	if err != nil {
 		return errs.WithE(err, "Failed to open commit log")
 	}
