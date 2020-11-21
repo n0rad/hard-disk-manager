@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
 )
 
-func versionCommand(version string) *cobra.Command {
+func versionCommand(hdm *hdm.Hdm, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display HDM version",
@@ -15,5 +16,8 @@ func versionCommand(version string) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.AddCommand(versionChangelogCommand(hdm))
+
 	return cmd
 }

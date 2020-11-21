@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/mitchellh/go-homedir"
 	"github.com/n0rad/go-erlog/errs"
 	"github.com/n0rad/go-erlog/logs"
 	_ "github.com/n0rad/go-erlog/register"
 	"github.com/n0rad/hard-disk-manager/pkg/checksum"
 	"github.com/n0rad/hard-disk-manager/pkg/config"
+	"github.com/n0rad/hard-disk-manager/pkg/hdm"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +15,7 @@ func RootCmd(version string) *cobra.Command {
 	var logLevel string
 
 	config := &config.GlobalConfig{}
+	hdm2 := &hdm.Hdm{}
 
 	cmd := &cobra.Command{
 		Use:           "hdm",
@@ -39,24 +40,11 @@ func RootCmd(version string) *cobra.Command {
 	cmd.AddCommand(
 		checksum.RootCmd(config),
 		agentCommand(config),
-		versionCommand(version),
+		versionCommand(hdm2, version),
 	)
 
-	homeDotConfig, err := homeDotConfigPath()
-	if err != nil {
-		homeDotConfig = "/tmp"
-	}
-
-	cmd.PersistentFlags().StringVarP(&hdmHome, "home", "H", homeDotConfig+"/hdm", "configFile")
+	cmd.PersistentFlags().StringVarP(&hdm2.Home, "home", "H", hdm.DefaultHomeFolder(), "home folder")
 	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "L", "", "Set log level")
 
 	return cmd
-}
-
-func homeDotConfigPath() (string, error) {
-	home, err := homedir.Dir()
-	if err != nil {
-		return "", errs.WithE(err, "Failed to find user home folder")
-	}
-	return home + "/.config", nil
 }
