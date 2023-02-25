@@ -14,7 +14,7 @@ require (
 	github.com/wangjia184/sortedset v0.0.0-20200422044937-080872f546ba
 	go.uber.org/automaxprocs v1.3.0
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
-	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/tools v0.0.0-20201120155355-20be4ac4bd6e // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
 )
